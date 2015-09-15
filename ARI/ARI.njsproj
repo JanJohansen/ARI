@@ -38,6 +38,7 @@
     <Compile Include="www\app\app.js" />
     <Compile Include="www\app\bower_components\bootstrap\dist\js\bootstrap.js" />
     <Compile Include="www\app\bower_components\bootstrap\dist\js\bootstrap.min.js" />
+    <Compile Include="www\app\bower_components\bootstrap\dist\js\npm.js" />
     <Compile Include="www\app\bower_components\jquery-ui\jquery-ui.js" />
     <Compile Include="www\app\bower_components\jquery-ui\jquery-ui.min.js" />
     <Compile Include="www\app\bower_components\jquery\dist\jquery.js" />
@@ -59,8 +60,17 @@
     <Content Include="www\.bowerrc" />
     <Content Include="www\.jshintrc" />
     <Content Include="www\app\app.css" />
+    <Content Include="www\app\bower_components\bootstrap\dist\css\bootstrap-theme.css" />
+    <Content Include="www\app\bower_components\bootstrap\dist\css\bootstrap-theme.css.map" />
+    <Content Include="www\app\bower_components\bootstrap\dist\css\bootstrap-theme.min.css" />
     <Content Include="www\app\bower_components\bootstrap\dist\css\bootstrap.css" />
+    <Content Include="www\app\bower_components\bootstrap\dist\css\bootstrap.css.map" />
     <Content Include="www\app\bower_components\bootstrap\dist\css\bootstrap.min.css" />
+    <Content Include="www\app\bower_components\bootstrap\dist\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="www\app\bower_components\bootstrap\dist\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="www\app\bower_components\bootstrap\dist\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="www\app\bower_components\bootstrap\dist\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="www\app\bower_components\bootstrap\dist\fonts\glyphicons-halflings-regular.woff2" />
     <Content Include="www\app\css\simple-sidebar.css" />
     <Content Include="www\app\index-async.html" />
     <Content Include="www\app\index.html" />
@@ -79,6 +89,7 @@
     <Folder Include="www\app\bower_components\bootstrap\" />
     <Folder Include="www\app\bower_components\bootstrap\dist\" />
     <Folder Include="www\app\bower_components\bootstrap\dist\css\" />
+    <Folder Include="www\app\bower_components\bootstrap\dist\fonts\" />
     <Folder Include="www\app\bower_components\bootstrap\dist\js\" />
     <Folder Include="www\app\bower_components\jquery-ui\" />
     <Folder Include="www\app\bower_components\jquery\" />
