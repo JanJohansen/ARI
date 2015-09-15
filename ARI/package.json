@@ -1,0 +1,14 @@
+{
+  "name": "ARI",
+  "version": "0.0.0",
+  "description": "ARI",
+  "main": "server.js",
+  "author": {
+    "name": "Jan",
+    "email": ""
+  },
+  "dependencies": {
+    "express": "^4.13.3",
+    "ws": "^0.8.0"
+  }
+}

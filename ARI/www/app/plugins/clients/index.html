@@ -1,0 +1,19 @@
+<div class="panel panel-default" ng-controller="clientsController">
+    <div class="panel-heading">
+        Clients:
+        <input ng-model="clientquery">
+    </div>
+    <!-- Table -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name:</th>
+                <th>Connected:</th>
+            </tr>
+        </thead>
+        <tr ng-repeat="client in clients | filter:clientquery">
+            <td>{{client.name}}</td>
+            <td>{{client.connected}}</td>
+        </tr>
+    </table>
+</div>

@@ -1,0 +1,73 @@
+﻿<!doctype html>
+<html lang="en" ng-app="ari" ng-controller="ariMainController">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+        <title>ARI - Automation Routing Infrastructure</title>
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+        <!-- Custom CSS -->
+        <link href="css/simple-sidebar.css" rel="stylesheet">
+        <!-- Local CSS -->
+        <link rel="stylesheet" href="app.css">
+
+        <script src="bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="bower_components/angular/angular.js"></script>
+        <script src="bower_components/angular-route/angular-route.js"></script>
+        <script src="script.min.js"></script>
+        
+        <script src="app.js"></script>
+
+    </head>
+    <body>
+        <a href="#menu-toggle" class="btn btn-default" id="menu-toggle"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
+        
+        <div id="wrapper" class="toggled">
+            <!-- Sidebar -->
+            <div id="sidebar-wrapper">
+                <a href="#menu-toggle" id="menu-toggle2"><span class="glyphicon glyphicon-menu-left"></span></a>
+                <ul class="sidebar-nav">
+                    <li>
+                        <br />
+                    </li>
+                    <li>
+                        <a href="#plugins/users">Users</a>
+                    </li>
+                    <li>
+                        <a href="#plugins/clients">Clients</a>
+                    </li>
+                    <li>
+                        <a href="#plugins">Plugins</a>
+                    </li>
+                    <li>
+                        <a href="#plugins/clock">TEST!</a>
+                    </li>
+                    <li>
+                        <a href="#about">About</a>
+                    </li>
+                    <li>
+                        <a href="#contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /#sidebar-wrapper -->
+
+            <div id="page-content-wrapper" style="padding: 0px; height: 100vh">
+                <div ng-view></div>
+            </div>
+            <!-- /#page-content-wrapper -->
+            
+    </div>
+    <script>
+        $("#menu-toggle").click(function (e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+            console.log("Toggling!");
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<div class="panel panel-default" ng-controller="usersController">
+    <div class="panel-heading">
+        Users:
+        <input ng-model="query">
+    </div>
+    <!-- Table -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name:</th>
+                <th>Roles:</th>
+                <th>Online:</th>
+            </tr>
+        </thead>
+        <tr ng-repeat="user in users | filter:query">
+            <td>{{user.name}}</td>
+            <td>{{user.roles}}</td>
+            <td>{{user.online}}</td>
+        </tr>
+    </table>
+</div>
