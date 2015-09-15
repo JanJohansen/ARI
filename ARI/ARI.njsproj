@@ -36,6 +36,8 @@
     <Compile Include="ariclientserver.js" />
     <Compile Include="server.js" />
     <Compile Include="www\app\app.js" />
+    <Compile Include="www\app\bower_components\bootstrap\dist\js\bootstrap.js" />
+    <Compile Include="www\app\bower_components\bootstrap\dist\js\bootstrap.min.js" />
     <Compile Include="www\app\bower_components\jquery-ui\jquery-ui.js" />
     <Compile Include="www\app\bower_components\jquery-ui\jquery-ui.min.js" />
     <Compile Include="www\app\bower_components\jquery\dist\jquery.js" />
@@ -77,6 +79,7 @@
     <Folder Include="www\app\bower_components\bootstrap\" />
     <Folder Include="www\app\bower_components\bootstrap\dist\" />
     <Folder Include="www\app\bower_components\bootstrap\dist\css\" />
+    <Folder Include="www\app\bower_components\bootstrap\dist\js\" />
     <Folder Include="www\app\bower_components\jquery-ui\" />
     <Folder Include="www\app\bower_components\jquery\" />
     <Folder Include="www\app\bower_components\jquery\dist\" />
