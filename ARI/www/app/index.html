@@ -1,5 +1,5 @@
 ﻿<!doctype html>
-<html lang="en" ng-app="ari" ng-controller="ariMainController">
+<html lang="en" id="app" ng-app="ari" ng-controller="ariMainController">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -25,7 +25,10 @@
     </head>
     <body>
         <a href="#menu-toggle" class="btn btn-default" id="menu-toggle"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
-        
+        <a id="fs-toggle" class="btn btn-default" onclick="tgglFS()" style="position: absolute; left: 0px; top: 50px; z-index: 65535">
+            <span class="glyphicon glyphicon-fullscreen"></span>
+        </a>
+
         <div id="wrapper" class="toggled">
             <!-- Sidebar -->
             <div id="sidebar-wrapper">
@@ -63,6 +66,12 @@
             
     </div>
     <script>
+        // Make app fullscreen!
+        function tgglFS() {
+            console.log("Going FS!");
+            document.documentElement.webkitRequestFullScreen();
+        }
+
         $("#menu-toggle").click(function (e) {
             e.preventDefault();
             $("#wrapper").toggleClass("toggled");
