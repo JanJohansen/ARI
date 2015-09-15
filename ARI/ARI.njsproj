@@ -55,7 +55,6 @@
     <Content Include="package.json" />
     <Content Include="README.md" />
     <Content Include="www\.bowerrc" />
-    <Content Include="www\.gitignore" />
     <Content Include="www\.jshintrc" />
     <Content Include="www\app\app.css" />
     <Content Include="www\app\bower_components\bootstrap\dist\css\bootstrap.css" />
