@@ -10,73 +10,87 @@
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
         <!-- Custom CSS -->
-        <link href="css/simple-sidebar.css" rel="stylesheet">
         <!-- Local CSS -->
-        <link rel="stylesheet" href="app.css">
+        <link rel="stylesheet" href="css/ari.css">
+
+        <link rel="stylesheet" href="node_modules/jquery-ui/themes/dark-hive/jquery.ui.theme.css">
 
         <script src="bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="node_modules/jquery-ui/jquery-ui.js"></script>
+
         <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
         <script src="bower_components/angular/angular.js"></script>
         <script src="bower_components/angular-route/angular-route.js"></script>
         <script src="script.min.js"></script>
+
+        <script src="node_modules/jquery-ui/jquery-ui.js"></script>
         
         <script src="app.js"></script>
+        <script src="makeDraggable.js"></script>
 
+        <style>
+            #draggable {
+                padding: 0.5em;
+                position: absolute;
+                border-radius: 20px;
+                border-style: solid;
+                border-width: 1px;
+                border-color:gray;
+                background-color: black;
+            }
+
+            label {
+                cursor: pointer;
+            }
+
+            #menu-toggle {
+                display: none; /* hide the checkbox */
+            }
+
+            #menu {
+                display: none; /* default hide the menu */
+            }
+            
+            #menu-toggle:checked + #menu {
+                display: block; /* Show menu if "invisible checkbox" is checked */
+                background-color: black;
+            }
+        </style>
     </head>
     <body>
-        <a href="#menu-toggle" class="btn btn-default" id="menu-toggle"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
-        <a id="fs-toggle" class="btn btn-default" onclick="tgglFS()" style="position: absolute; left: 0px; top: 50px; z-index: 65535">
-            <span class="glyphicon glyphicon-fullscreen"></span>
-        </a>
 
-        <div id="wrapper" class="toggled">
-            <!-- Sidebar -->
-            <div id="sidebar-wrapper">
-                <a href="#menu-toggle" id="menu-toggle2"><span class="glyphicon glyphicon-menu-left"></span></a>
-                <ul class="sidebar-nav">
-                    <li>
-                        <br />
-                    </li>
-                    <li>
-                        <a href="#plugins/users">Users</a>
-                    </li>
-                    <li>
-                        <a href="#plugins/clients">Clients</a>
-                    </li>
-                    <li>
-                        <a href="#plugins">Plugins</a>
-                    </li>
-                    <li>
-                        <a href="#plugins/clock">TEST!</a>
-                    </li>
-                    <li>
-                        <a href="#about">About</a>
-                    </li>
-                    <li>
-                        <a href="#contact">Contact</a>
-                    </li>
-                </ul>
-            </div>
-            <!-- /#sidebar-wrapper -->
+        <div id="draggable" >
+            <label for="menu-toggle" style="margin:0;"><span style="font-size:2em;" class="glyphicon glyphicon-menu-hamburger fa-5x"></span></label>
+            <input type="checkbox" id="menu-toggle" />
+            <ul id="menu">
+                <li>
+                    <a id="fs-toggle" class="btn btn-default" onclick="tgglFS()">
+                        <span class="glyphicon glyphicon-fullscreen"></span>
+                    </a>
+                </li>
+                <li><a href="#plugins/users">Users</a></li>
+                <li><a href="#plugins/clients">Clients</a></li>
+                <li><a href="#plugins">Plugins</a></li>
+                <li><a href="#plugins/clock">TEST!</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
 
-            <div id="page-content-wrapper" style="padding: 0px; height: 100vh">
-                <div ng-view></div>
-            </div>
-            <!-- /#page-content-wrapper -->
-            
-    </div>
-    <script>
-        // Make app fullscreen!
-        function tgglFS() {
-            console.log("Going FS!");
-            document.documentElement.webkitRequestFullScreen();
-        }
+        <div ng-view></div>
 
-        $("#menu-toggle").click(function (e) {
-            e.preventDefault();
-            $("#wrapper").toggleClass("toggled");
-            console.log("Toggling!");
-        });
-    </script>
-</body>
+
+        <script>
+            // Make app fullscreen!
+            function tgglFS() {
+                console.log("Going FS!");
+                document.documentElement.webkitRequestFullScreen();
+            }
+
+            $(function () {
+                $("#draggable").draggable({ containment: "parent" });
+            });
+
+        </script>
+    </body>
 </html>
