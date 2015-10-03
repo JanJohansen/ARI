@@ -85,4 +85,12 @@ nav ul ul ul {
     top:0;
 }
 
-		
+/* To flash changed values set class animateOnChange on element */
+.change {
+  background-color: green;
+}
+.change-remove-active {
+    /*background-color: white;*/
+    transition: all 2.0s;
+}
+

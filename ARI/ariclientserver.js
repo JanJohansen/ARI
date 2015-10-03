@@ -2,17 +2,25 @@
 
 var AriClientServer = module.exports.AriClientServer = function (options) {
     var self = this;
+    this._pendingCallbacks = {};
     this._server = options.ariServer;
     this._ws = options.websocket;
     this.name = "";
-    this.functions = {};
-    this.modules = {};
+    this._functions = {};
+    this._subscriptions = {};
+    
+    //this._server.clients.push(this);   // Put into list of connected clients.
 
     this._ws.on("message", function (message) {
-        // !!! Use "self" since "this" changes meaning when called from other owner of calling function in javascript!!!
+        // !!! USE "SELF" !!!
         
         try { var msg = JSON.parse(message); }        
-        catch (e) { console.log("Error: Illegal JSON in message! - Ignoring..."); return; }
+        catch (e) {
+            console.log("Error: Illegal JSON in message! - Ignoring...");
+            websocket.close(1002, "Protocol error.");
+            handleClientDisconnect();
+            return;
+        }
         
         if ("req" in msg) {
             // Request message.
@@ -28,10 +36,10 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
                     res.res = msg.req;
                     res.err = err;
                     res.result = result;
-                    self._ws.send(JSON.stringify(res));
+                    self._ws.send(JSON.stringify(res, self.jsonReplacer));
                 });
             } else {
-                console.log("Error: Trying to call unknows webcall: ", functionName);
+                console.log("Error: Trying to call unknown webcall: ", functionName);
             }
         } else if ("res" in msg) {
             // Response message.
@@ -42,54 +50,89 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
             msg.callback(msg.err, msg.result);
         } else {
             // Notofication message.
-
+            var cmd = msg.cmd;
+            if (!cmd) { console.log("Error: Missing comand in telegram! - Ignoring..."); return; };
+            
+            var functionName = "_webnotify_" + cmd;
+            if (functionName in self) {
+                // Requested notification function name exists in this object. Call it...
+                self[functionName](msg.pars);
+            }
         }
     });
 
     this._ws.on("close", function () { 
         // !!! USE SELF
-        // Destroy this???
-        // TODO: Mark as offline???
+        self.handleClientDisconnect();
         console.log("Client disconnected: ", self._givenName);
     });
 };
 
-AriClientServer.prototype._webcall_REGISTERMEMBER = function (pars, callback) {
-    this[pars.path] = pars;
+AriClientServer.prototype.jsonReplacer = function (key, value) {
+    //console.log("-- ", key, ",", value);
+    if (key == undefined) return value;
+    if (key.indexOf('_') == 0) return undefined;    // Don's show hidden members.
+    return value;
+}
 
+AriClientServer.prototype.handleClientDisconnect = function () {
+    console.log("Client disconnected.");
+    if (this._server.clientsModel.hasOwnProperty(this.name)) {
+        this._server.clientsModel[this.name].online = false;
+        this._server.clientsModel[this.name].__clientServer = null;
+    }
+}
 
-    /*
-     * client.subs.Relay1
-     * client.pubs.temp1
-     * 
-     * client.vals.Relay1 = 1
-     * client.vals.temp1 = 23
-     * client.rpcs.DoStuff1(...)
-     *      
-     * client.Relay1.value = 1
-     * client.Relay1.description = "State of relay 1. Set to change state."
-     * client.temp1 = 23
-     * client.DoStuff(...)
-     * */
-};
+// Send msg to client
+AriClientServer.prototype._wsSend = function (msg) {
+    this._ws.send(msg);
+}
 
+// Call method on client...
+AriClientServer.prototype._call = function (command, parameters, callback) {
+    // TODO: Intercept for local rpc-functions (if we are "serverserver" as opposed to clientserver!)
+    
+    // Send msg.
+    var msg = {};
+    msg.req = this._nextReqId++;
+    msg.cmd = command;
+    msg.pars = parameters;
+    this._pendingCallbacks[msg.req] = callback;
+    this._wsSend(JSON.stringify(msg));
+}
+
+// Publish value to client...
+AriClientServer.prototype._notify = function (command, parameters) {
+    var msg = {};
+    msg.cmd = command;
+    msg.pars = parameters;
+    this._wsSend(JSON.stringify(msg));
+}
+
+/*****************************************************************************/
 AriClientServer.prototype._webcall_REGISTERCLIENT = function (pars, callback) {
     var clientDefaultName = pars.defaultName;
     if (!clientDefaultName) { console.log("Error: Missing name of client whentrying to register client! - Ignoring..."); return; }
     
-    // Find GivenName based on DefaultName. (add (x) if allready existing!)
-    var clientGivenName = clientDefaultName;
+    // Find "Given" name based on DefaultName. (add (x) if allready existing!)
+    this.name = clientDefaultName;
     var count = 1;
     while (true) {
-        if (!this._server.clients[clientGivenName]) break;
-        clientGivenName = clientDefaultName + "(" + count + ")";
+        if (!this._server.clientsModel[this.name]) break;
+        this.name = clientDefaultName + "(" + count + ")";
         count++;
     }
-    this._server.clients[clientGivenName] = this;
-    this.name = clientGivenName;
     
-    console.log("New device registered.");
-    console.log("Device given name: ", this._givenName);
+    //------------------------------------------------------------------------
+    // Create new "ClientInfo", set name and status. Keep updated from now on!
+    this._server.clientsModel[this.name] = {
+        "name": this.name, 
+        "online": true, 
+        "__clientServer": this,
+        "functions": {}
+    };
+    
+    console.log("New client registered:", this.name);
     
     // Set random key to identify correct client.
     // TODO: Generate random key!
@@ -123,68 +166,58 @@ AriClientServer.prototype._webcall_REREGISTERCLIENT = function (pars, callback) 
     callback(null, {}); // Indicat OK!?
 };
 
+//-----------------------------------------------------------------------------
 AriClientServer.prototype._webcall_REGISTERRPC = function (pars, callback) {
     console.log("RegisterRPC(", pars, ")");
-
-    if (pars.name in this.functions) {
+    
+    if (pars.name in this._server.clientsModel) {
         console.log("Error: Trying to register RPC with existing name:", pars.name);
         callback("Error: Trying to register RPC with existing name:" + pars.name, null);
     } else {
-        this.functions[pars.name] = pars;
-        callback(null, {});
+        this._server.clientsModel[this.name]._functions[pars.name] = pars;
     }
+    callback(null, {});
 }
 
-AriClientServer.prototype._webcall_REGISTERMODULE = function (pars, callback) {
-    console.log("RegisterModule(", pars, ")");
-    
-    if (pars.name.value in this.modules) {
-        var err = "Error: Trying to register module with existing name:" + pars.name.value;
-        console.log(err);
-        callback(err, null);
-    } else {
-        this.modules[pars.name.value] = pars;
-        callback(null, {});
-    }
-}
-
-AriClientServer.prototype._webcall_MODULEUPDATE = function (pars, callback) {
-    console.log("ModuleUpdate(", pars, ")");
-    
-    if (!pars.name.value in this.modules) {
-        var err = "Error: Trying to update unknown module:" + pars.name.value;
-        console.log(err);
-        callback(err, null);
-    } else {
-        //this.modules[pars.name.value];
-        callback(null, {});
-    }
-}
-
-
+// Client wants to call remote (or server local) RPC.
 AriClientServer.prototype._webcall_CALLRPC = function (pars, callback) {
-    var rpcName = msg.name;
+    var rpcName = pars.name;
     if (!rpcName) {
         console.log("Error: Missing name of RPC to call! - Ignoring...");
+        callback("Error: Missing name of RPC to call! - Ignoring...", null);
         return;
     }
     
-    if (!this.functions.hasOwnProperty(rpcName)) {
-        console.log("Error: Name of RPC not previously registered! - Ignoring...");
+    // Find RPC in other connected clients, in offline clients, in server registered rpc's or even in own client! (Ping yourself ;O)
+    var rpcNameParts = rpcName.split(".");
+    // Find client
+    var client = this._server.clientsModel[rpcNameParts[0]];
+    if (client) {
+        // Client found, now find rpc.
+        var rpc = client.functions[rpcNameParts[1]];
+        if (rpc) {
+            if (client.online == false) {
+                callback("Error: Target client for function call is offline.", null);
+                return;
+            } else {
+                client.__clientServer._call("CALLRPC", { "name": rpcName.substring(rpcName.indexOf(".") + 1), "params": pars.params}, function (err, result) { 
+                    callback(err, result);
+                });
+            }
+        }
+        else {
+            callback("Error: Target function call not registered.", null);
+            return;
+        }
+    }
+    else {
+        callback("Error: Target client for function call not registered.", null);
         return;
     }
-    var rpc = this.functions[rpcName];
-    var rpcFunc = rpc.func;
-    
-    var params = msg.params;
-    
-    // Call the local RPC                
-    var result = rpcFunc(params);
-    // send result back.
-    this._ws.send(JSON.stringify({ rid: requestId, "cmd": "RPCRESULT", "result": result }));
 };
 
-AriClientServer.prototype.callRpc = function (name, params, callback) {
+
+/*AriClientServer.prototype.callRpc = function (name, params, callback) {
     // Send command telegram...    
     this._ws.send(JSON.stringify({ rid: this._nextRequestId, cmd: "CALLRPC", name: name, params: params }));
     
@@ -193,3 +226,36 @@ AriClientServer.prototype.callRpc = function (name, params, callback) {
     
     this._nextRequestId++;
 };
+*/
+
+//-----------------------------------------------------------------------------
+AriClientServer.prototype._webcall_SUBSCRIBE = function (pars, callback) {
+    console.log("subscribe(", pars, ")");
+    
+    var name = pars.name;
+    if (!name) { callback("Error: No name parameter specified!", null); return; }
+    
+    this._subscriptions[name] = {}; // Just indicate that there is a subscription to topic/value.
+    callback(null, {});
+}
+
+AriClientServer.prototype._webcall_UNSUBSCRIBE = function (pars, callback) {
+    console.log("unsubscribe(", pars, ")");
+    
+    var name = pars.name;
+    if (!name) { callback("Error: No name parameter specified!", null); return; }
+    
+    delete this._subscriptions[name];
+    callback(null, {});
+}
+
+AriClientServer.prototype._webnotify_PUBLISH = function (pars) {
+    console.log("publish(", pars, ")");
+    
+    var valueName = pars.name;
+    if (!valueName) {
+        console.log("Error: Missing name of RPC to call! - Ignoring...");
+        return;
+    }
+    this._server.publish(valueName, pars.value);
+}

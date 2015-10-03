@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      #body {  
+        font-family: Arial;
+      }
+    </style> 
+  <title>ARI - Automation Routing Infrastructure</title>
+  </head>
+  <body id="body">
+    <h1> ARI - Automation Routing Infrastructure</h1>
+    <h2> Project description:</h2>
+    <p> ARI is the backbone for an automation system targetting primarily home
+      automation.</p>
+    <p> ARI defines  communication protocols, semantics and
+      structures to allow for creating "automation systems".</p>
+    <p>  </p>
+    <h2> Server side structure:</h2>
+    <ul>
+      <li><strong>Clients:</strong> Connect to the ARI server, and represent "an
+        endpoint" connection to the server. A client can have none or more
+        <ul>
+          <li><strong>Modules:</strong> A module is owned by a client and is a
+            software part (of the client) that can:
+            <ul>
+              <li>Subscribe</li>
+              <li>Publish</li>
+              <li>Register callback and </li>
+              <li>Call callback</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li><strong>Users</strong> are registered/logged in with an authentication
+        mechanism. Users can have none or more
+        <ul>
+          <li><strong>Roles</strong> to define access rights to
+            <ul>
+              <li>Devices</li>
+              <li>Plugins</li>
+              <li>Views</li>
+              <li>TBD?</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li><strong>Plugins</strong> can be instantiated into
+        <ul>
+          <li><strong>Apps</strong>, able to subscribe, publish, register and
+            call callbacks. In addition, Apps can have one or more
+            <ul>
+              <li><strong>Views</strong>, defining a front end / user interface
+                for the App. Views are html web pages served to browsers by the
+                server.</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <h3> Examples:</h3>
+    <h4> Client:</h4>
+    <p> A client could be a "LightSwitch" device that can turn on/off lights.</p>
+    <p> The "LightSwitch" could have one "sofware module" (called "Output")
+      handling the output switch.</p>
+    <p> The "software module of the LightSwitch Client" could subscribe to a
+      message topic of "LightSwitch.Output".</p>
+    <p> When another client publishes a value of 1 or 0 (or maybe On or Off) to
+      the topic "LightSwitch.Output", the light switch could turn on or off.</p>
+    <code>
+      <pre>clients: [
+    {
+        id: 0,
+        name:"LightSwitch",
+        modules: [
+            {
+                id: 0,
+                name: "Output",
+            }
+        ]
+    }
+]
+            </pre>
+    </code>
+    <h3>Client logs logging</h3>
+    <p> For debugging purposes it could be beneficial to be able to see a log as
+      done by the client module.client module.</p>
+    <pre>Publish("Client.Module.!log", "Logentry");</pre>
+    <pre> </pre>
+  </body>
+</html>

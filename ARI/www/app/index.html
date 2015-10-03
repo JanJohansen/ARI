@@ -8,25 +8,30 @@
         <title>ARI - Automation Routing Infrastructure</title>
 
         <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
-        <!-- Custom CSS -->
-        <!-- Local CSS -->
-        <link rel="stylesheet" href="css/ari.css">
+        <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.css">
 
         <link rel="stylesheet" href="node_modules/jquery-ui/themes/dark-hive/jquery.ui.theme.css">
 
-        <script src="bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="node_modules/jquery/dist/jquery.js"></script>
         <script src="node_modules/jquery-ui/jquery-ui.js"></script>
 
-        <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
-        <script src="bower_components/angular/angular.js"></script>
-        <script src="bower_components/angular-route/angular-route.js"></script>
+        <script src="node_modules/bootstrap/dist/js/bootstrap.js"></script>
+
+        <script src="node_modules/angular/angular.js"></script>
+        <script src="node_modules/angular-animate/angular-animate.js"></script>
+        <script src="node_modules/angular-route/angular-route.js"></script>
+        
         <script src="script.min.js"></script>
 
         <script src="node_modules/jquery-ui/jquery-ui.js"></script>
         
+        <!-- Load local ngModules... -->
         <script src="app.js"></script>
-        <script src="makeDraggable.js"></script>
+        <script src="ariclient.js"></script>
+        <script src="ngAriClient.js"></script>
+
+        <!-- Local CSS -->
+        <link rel="stylesheet" href="css/ari.css">
 
         <style>
             #draggable {

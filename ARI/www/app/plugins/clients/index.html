@@ -12,8 +12,22 @@
             </tr>
         </thead>
         <tr ng-repeat="client in clients | filter:clientquery">
-            <td>{{client.name}}</td>
-            <td>{{client.connected}}</td>
+            <td><button ng-click="clientSelected(client.name)">{{client.name}}</button></td>
+            <td>{{client.online}}</td>
         </tr>
     </table>
+
+    <p>{{clientInfo}}</p>
+    <h1>ClientInfo:{{clientInfo.name}}</h1>
+
+    <h2>Values:</h2>
+    <ul ng-repeat="(key, value) in clientInfo.values" >
+        <li class="repeated-item">{{key}} = <span animate-on-change='value'>{{value}}</span></li>
+    </ul>
+
+    <h2>Functions:</h2>
+    <ul ng-repeat="(key, value) in clientInfo.functions">
+        <li>{{key}}(...)</li>
+    </ul>
+
 </div>

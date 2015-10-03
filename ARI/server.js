@@ -11,6 +11,7 @@ var port = 3000;
 
 app.use("/", express.static('www/app'));
 
+// REST API *******************************************************************
 // GET userlist.
 app.get('/api/users', function (req, res) {
     var users = [{
@@ -27,7 +28,11 @@ app.get('/api/users', function (req, res) {
     res.json(users);
 });
 
+// Set up Ari server...
+var Ari = require('./ari.js').Ari;
+var ari = new Ari({ websocketServer: wss });
 
+// WebSocket ******************************************************************
 // For debug only - write received messages!
 wss.on('connection', function connection(ws) {
     ws.on('message', function incoming(message) {
@@ -35,6 +40,7 @@ wss.on('connection', function connection(ws) {
     });
 });
 
+// HTTP Server ****************************************************************
 //server.on('request', app);
 server.on('request', function (req, res, next) {
     //console.log(req.url);
@@ -43,11 +49,3 @@ server.on('request', function (req, res, next) {
 server.listen(port, function () { console.log('Listening on ' + server.address().port) });
 
 
-// Set up Ari server...
-var Ari = require('./ari.js').Ari;
-var ari = new Ari({ websocketServer: wss });
-/*
-ari.callRpc("testRpc", ["Hey", "Dude"], function (result) { 
-    consol.log("Result of RPC:", result);
-});
-*/

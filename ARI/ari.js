@@ -77,14 +77,16 @@ RPC store?
 		
 */
 
-/*
- * root structure:
- * root.clients // contains all clients by unique givenName.
- * root.clients.testclient.functions.testRpc1
- * root.clients.testclient.functions.testVal1
+/* URI Structure = ClientName.ModuleName.RPC-/MSG-name
  * 
- * root.clients.MusicPlayer.functions.Play(
- * root.clients.MusicPlayer.values.url = "localhost:3000/files/music/music.mp3"
+ * 
+ * testclient.functions.testRpc1
+ * testclient.functions.testVal1
+ * 
+ * RPI(2).MusicPlayer.functions.Play
+ * RPI(2).MusicPlayer.functions.Play.description = Call this function without parameters to start playing current set URL, or include URL to play.
+ * RPI(2).MusicPlayer.variables.url = "localhost:3000/files/music/music.mp3"
+ * RPI(2).MusicPlayer.variables.url.description = URL of music to play. Ex. "localhost:3000/files/music/music.mp3"
  * 
  * root.clients.FileServer.functions.listFiles(path);
  * 
@@ -98,26 +100,27 @@ RPC store?
 // ARI (Automation Routing Infrastructure)
 
 var AriClientServer = require("./ariclientserver.js").AriClientServer;
+var AriServerServer = require("./ariserverserver.js").AriServerServer;
 
 var Ari = module.exports.Ari = function (options) {
     var self = this;
     this._wss = options.websocketServer;
-
-    // Connected clients indexed by the given clientName.
-    this.clients = {};
+    this.clientsModel = {};
     
-    this._nextRequestId = 1;
-    
+    // Persisted client information indexed by client.givenName. Contains infor about connection state, etc...
+    // ari: represents the server API, etc.
+    var serverServer = new AriServerServer({ "ariServer": this, "name": "ari" });   
+        
     this._wss.on('connection', function connection(ws) {
         // Use "SELF!
+        // Create AriClientServer to handle serving of this client.
         var clientServer = new AriClientServer({ ariServer: self, websocket: ws });
     });
 
     // DEBUG
-    Object.observe(this.clients, function (changes) {
+    Object.observe(this.clientsModel, function (changes) {
         changes.forEach(function (change) {
-            console.log("--Observed _clients:", change.type, change.name);
-            
+            console.log("--Observed _clientsModel:", change.type, change.name);
             if (change.type == "add") {
                 Object.observe(change.object[change.name].functions, function (changes) {
                     changes.forEach(function (change) {
@@ -129,6 +132,7 @@ var Ari = module.exports.Ari = function (options) {
     });
 };
 
+// ServerServer could thoretically call functions on clients!
 Ari.prototype.callRpc = function (name, params, callback) {
     // Find client...
     var clientName = name.split(".");
@@ -137,4 +141,34 @@ Ari.prototype.callRpc = function (name, params, callback) {
             ariClient.callRpc(name, params, callback);
         }
     }
+}
+
+// ServerServer could very well provide/publish values to clients!
+Ari.prototype.publish = function (name, value) {
+    // Find client...
+    var clientName = name.split(".")[0];
+    for (var key in this.clientsModel) {
+        var client = this.clientsModel[key];
+        if (client) {
+            if (client.online == true) {
+                var cs = client.__clientServer;
+                if (cs) {
+                    for (var subName in cs._subscriptions) {
+                        if (this.matches(subName, name))
+                            cs._notify("PUBLISH", { "name": name , "value": value});
+                    }
+                }
+            }
+        }
+    }
+}
+
+Ari.prototype.matches = function(strA, strB)
+{
+    var aPos = strA.indexOf('*');
+    if (aPos >= 0) {
+        var aStr = strA.substring(0, aPos);
+        if (aStr == strB.substring(0, aPos)) return true;
+    }
+    return false;
 }

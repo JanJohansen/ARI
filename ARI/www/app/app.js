@@ -1,7 +1,7 @@
 'use strict';
 
 // Declare app level module which depends on views, and components
-var ariModule = angular.module('ari', ['ngRoute'/*, 'ari.main'*/]);
+var ariModule = angular.module('ari', ['ngRoute', 'ngAnimate']);
 
 ariModule.controller('ariMainController', ['$scope', '$http', function ($scope, $http) {
     $http.get('api/users').success(function (data) {
@@ -9,6 +9,15 @@ ariModule.controller('ariMainController', ['$scope', '$http', function ($scope, 
     });
 }]);
 
+ariModule.directive('animateOnChange', function ($animate, $timeout) {
+    return function (scope, elem, attr) {
+        scope.$watch(attr.animateOnChange, function (newVal, oldVal) {
+            $animate.addClass(elem, "change").then(function () {
+                $timeout(function () { $animate.removeClass(elem, "change") });
+            });
+        })
+    }
+})
 
 ariModule.config(function ($controllerProvider, $compileProvider, $filterProvider, $provide) {
     ariModule.register = {

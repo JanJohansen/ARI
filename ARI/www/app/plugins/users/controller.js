@@ -10,6 +10,4 @@ ariModule.register.controller('usersController', function ($scope, $http) {
     $http.get('api/users').success(function (data) {
         $scope.users = data;
     });
-       
-    $scope.orderProp = 'age';
 });
