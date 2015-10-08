@@ -1,18 +1,16 @@
 'use strict';
 
 var ariModule = angular.module('ari');
-console.log("calling client/controller.");
-
 ariModule.register.controller('clientsController', ['$scope', 'AriConnection', 
     function ($scope, AriConnection) {
         console.log("clients.html loaded");
         
         $scope.clientInfo = {};
         
-        var ari = new AriConnection();
-        ari.connect("Clients", function (err, result) {
-            if (err) { console.log("ERROR: Could not connect vi WebSocket!"); return; }
-            
+        var ari = new AriConnection({ "name": "Guest" });
+        
+        ari.onconnect = function (result) {
+            var clientName = result.name;
             console.log("Client connected as \"" + ari.name + "\"");
             
             // Get list of clients.
@@ -44,7 +42,7 @@ ariModule.register.controller('clientsController', ['$scope', 'AriConnection',
                     });
                 });
             }
-        });
+        };
     }
 ]);
 

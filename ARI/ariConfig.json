@@ -1,0 +1,4 @@
+﻿{
+	"JWTSecret": "ariSecret",
+	"autoAuthenticateClients":  "true"
+}

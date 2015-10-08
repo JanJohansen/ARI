@@ -98,14 +98,42 @@ RPC store?
 
 
 // ARI (Automation Routing Infrastructure)
-
+//var SortedObjectArray = require("./sorted-object-array");
 var AriClientServer = require("./ariclientserver.js").AriClientServer;
 var AriServerServer = require("./ariserverserver.js").AriServerServer;
+var fs = require('fs');
+
+// Load configuration from file.
+var configFile = __dirname + "\\ariConfig.json";
+var stateFile = __dirname + "\\ariState.json";
 
 var Ari = module.exports.Ari = function (options) {
     var self = this;
     this._wss = options.websocketServer;
     this.clientsModel = {};
+    this.pendingClients = {};       // new SortedObjectArray('name');   // List of clients awaiting approval
+    this.JWTSecret = 'AriSecret';   // TODO: Load from config file!
+    
+    // Load config from file...    
+    try {
+        var config = JSON.parse(fs.readFileSync(configFile, 'utf8', { "flags": "w+" })); 
+    } catch (e) {
+        var config = null;
+    };
+    if (config) {
+        this.JWTSecret = config.JWTSecret || 'AriSecret';   // TODO: Load from config file!
+    }
+   
+    // Load state from file.
+    try {
+        var state = JSON.parse(fs.readFileSync(stateFile, 'utf8', { "flags": "w+" }));
+    } catch (e) { 
+        var state = null;
+    };
+    if (state) {
+        this.clientsModel = state.clients || {};
+        // Users....
+    }
     
     // Persisted client information indexed by client.givenName. Contains infor about connection state, etc...
     // ari: represents the server API, etc.
@@ -165,10 +193,25 @@ Ari.prototype.publish = function (name, value) {
 
 Ari.prototype.matches = function(strA, strB)
 {
+    if (strA == strB) return true;
     var aPos = strA.indexOf('*');
     if (aPos >= 0) {
         var aStr = strA.substring(0, aPos);
         if (aStr == strB.substring(0, aPos)) return true;
     }
     return false;
+}
+
+
+Ari.prototype.shutDown = function () {
+    // Store state...
+    var state = { "clients": this.clientsModel , "users": {} };
+    fs.writeFileSync(stateFile, JSON.stringify(state, this.jsonReplacer, '\t'));
+}
+
+Ari.prototype.jsonReplacer = function (key, value) {
+    //console.log("-- ", key, ",", value);
+    if (key == undefined) return value;
+    if (key.indexOf('__') == 0) return undefined;    // Don's show hidden non-usable members indicated by double underscore __.
+    return value;
 }

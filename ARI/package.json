@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "express": "^4.13.3",
+    "jsonfile": "^2.2.2",
+    "jwt-simple": "^0.3.1",
     "ws": "^0.8.0"
   }
 }

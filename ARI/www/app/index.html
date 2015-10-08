@@ -8,12 +8,14 @@
         <title>ARI - Automation Routing Infrastructure</title>
 
         <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.css">
-
-        <link rel="stylesheet" href="node_modules/jquery-ui/themes/dark-hive/jquery.ui.theme.css">
-
+        <link href="node_modules/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+        <link href="css/bootstrap-theme.min.css" rel="stylesheet" />
+        <!--<link href="css/cyborg_bootstrap.min.css" rel="stylesheet" />-->
+        <!--<link rel="stylesheet" href="node_modules/jquery-ui/themes/dark-hive/jquery.ui.theme.css">-->
+        
         <script src="node_modules/jquery/dist/jquery.js"></script>
         <script src="node_modules/jquery-ui/jquery-ui.js"></script>
+        <script src="scripts/jquery.ui.touch-punch.min.js"></script>
 
         <script src="node_modules/bootstrap/dist/js/bootstrap.js"></script>
 
@@ -23,8 +25,6 @@
         
         <script src="script.min.js"></script>
 
-        <script src="node_modules/jquery-ui/jquery-ui.js"></script>
-        
         <!-- Load local ngModules... -->
         <script src="app.js"></script>
         <script src="ariclient.js"></script>
@@ -35,13 +35,7 @@
 
         <style>
             #draggable {
-                padding: 0.5em;
                 position: absolute;
-                border-radius: 20px;
-                border-style: solid;
-                border-width: 1px;
-                border-color:gray;
-                background-color: black;
             }
 
             label {
@@ -54,36 +48,39 @@
 
             #menu {
                 display: none; /* default hide the menu */
+                text-align:left;
             }
             
             #menu-toggle:checked + #menu {
                 display: block; /* Show menu if "invisible checkbox" is checked */
-                background-color: black;
+                -moz-box-shadow: 5px 5px 5px #888; 
+                -webkit-box-shadow: 5px 5px 5px #888; 
+                box-shadow: 5px 5px 20px -5px #555;
             }
         </style>
     </head>
     <body>
 
-        <div id="draggable" >
+        <div id="draggable" class="TopMost">
             <label for="menu-toggle" style="margin:0;"><span style="font-size:2em;" class="glyphicon glyphicon-menu-hamburger fa-5x"></span></label>
-            <input type="checkbox" id="menu-toggle" />
-            <ul id="menu">
-                <li>
-                    <a id="fs-toggle" class="btn btn-default" onclick="tgglFS()">
-                        <span class="glyphicon glyphicon-fullscreen"></span>
-                    </a>
-                </li>
-                <li><a href="#plugins/users">Users</a></li>
-                <li><a href="#plugins/clients">Clients</a></li>
-                <li><a href="#plugins">Plugins</a></li>
-                <li><a href="#plugins/clock">TEST!</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
+            <input id="menu-toggle" type="checkbox"/>
+
+            <div id="menu">
+                <div class="btn-group-vertical" role="group">
+                    <button id="fs-toggle" onclick="tgglFS()" type="button" class="btn btn-default"><a href="#plugins/users"><span class="glyphicon glyphicon-fullscreen"></span></a></button>
+                    <button type="button" class="btn btn-default" style="text-align:left"><a href="#plugins/users"><span class="glyphicon glyphicon-user"></span> Users <span class="badge">7</span></a></button>
+                    <button type="button" class="btn btn-default" style="text-align:left"><a href="#plugins/clients"><span class="glyphicon glyphicon-link"></span> Clients <span class="badge">21</span></a></button>
+                    <button type="button" class="btn btn-default" style="text-align:left"><a href="#plugins/logs"><span class="glyphicon glyphicon-align-left"></span> Logs</a></button>
+                    <button type="button" class="btn btn-default" style="text-align:left"><a href="#plugins/plugins"><span class="glyphicon glyphicon-plus"></span> Plugins <span class="badge">9</span></a></button>
+                    <button type="button" class="btn btn-default" style="text-align:left"><a href="#plugins/sttings"><span class="glyphicon glyphicon-cog"></span> Settings</a></button>
+                    <button type="button" class="btn btn-default" style="text-align:left"><a href="#plugins/clock"><span class="glyphicon glyphicon-hourglass"></span> Clock</a></button>
+                </div>
+            </div>
         </div>
 
-        <div ng-view></div>
-
+        <div id="ngView">
+            <div ng-view ></div>
+        </div>
 
         <script>
             // Make app fullscreen!
@@ -94,8 +91,28 @@
 
             $(function () {
                 $("#draggable").draggable({ containment: "parent" });
-            });
 
+                $("#menu-toggle").change(function () {
+                    // Blurrr background of page when menu is active...
+/*                    if (this.checked) {
+                        $("#ngView").css({
+                            'filter': 'blur(5px)',
+                            '-webkit-filter': 'blur(5px)',
+                            '-moz-filter': 'blur(5px)',
+                            '-o-filter': 'blur(5px)',
+                            '-ms-filter': 'blur(5px)'
+                        });
+                    } else {
+                        $("#ngView").css({
+                            'filter': '',
+                            '-webkit-filter': '',
+                            '-moz-filter': '',
+                            '-o-filter': '',
+                            '-ms-filter': ''
+                        });
+                    }*/
+                });
+            });
         </script>
     </body>
 </html>

@@ -7,6 +7,14 @@ if (typeof window === 'undefined') {
 else {
 }
 
+
+function transferOpts(origOpts, newOpts){
+    if (newOpts == null) return;
+    for (var key in newOpts) {
+        if (key.indexOf("_") != 0) origOpts[key] = newOpts[key];    // Copy all but "private" members.
+    }
+}
+
 function AriClient(options) {
     // private
     var self = this;
@@ -14,42 +22,67 @@ function AriClient(options) {
     this._nextReqId = 0;
     this._pendingCallbacks = {};
     this._functions = {};
-    this._models = {};
-    this._pendingMsgs = [];
-    this._clientConfig.defaultName = "Anonymous";
-    this._url = "ws://localhost:3000/socket/";
-    this._subscriptions = {};
+//    this._models = {};
+    this._pendingMsgs = [];     // Buffer for messages that should have been sent while offline.
+    this._subscriptions = {};   // Contains callbacks for subsriptions
     this._ws = null;
     
-    if (typeof window !== 'undefined') this._url = "ws://" + window.location.host;
-    if (options)
-    {
-        this._clientConfig.defaultName = options.defaultName;
-        this._url = options.url;
+    // Set defaults  
+    this.name = "Anonymous";
+    this.url = "ws://localhost:3000/socket/";
+
+    if (typeof window !== 'undefined') { // Config for browser
+        this.url = "ws://" + window.location.host;
     }
     
-    //public
-    //this.publicThing = 0;
+    // Override defaults if set specifically.
+    transferOpts(this, options);
     
     this._connect();   // This connects or reconnects to a server.
 }
+
+AriClient.prototype.onconnect = null;   // User function to handle subscription, registration etc. on connection.
+AriClient.prototype.onerror = null;   // User function to handle errors!
+
+/*
+* For documentation:
+* If client requests or presents a "clientToken", the server will persist it's registered functions and values.
+* Initial connection from clients without a clientToken can request a token for later reconnection.
+* This means that clients that don't register function or values on the server (like a browser client only displaying state)
+* will onlly temporarily show up in the list of clients.
+ * 
+ * ← CONNECT({ name: "defaultName" })
+ * → err, result: { name: "givenName"}
+ * Client is not authenticated and can act as "Anonymous External" or "Anonymous Local" user, based on origin IP.
+ * On http request, client could be redircted to login page.
+ * 
+ * ← REQCLIENTTOKEN({name: "givenName"})
+ * → err, result: {clientToken: "clientToken"}
+ * Server will list client in "pending client authorizations" list.
+ * ??? A user must now allow the client for inclusion?
+ * (Client is now authenticated and persists the session changes.)
+ * ...
+*/
 
 AriClient.prototype._connect = function () {
     var self = this;
     var reconnectInterval = 2000;
 
-    // TODO: Load local configuration to identify as "previously logged in instance of view" - if exists...
-    // Then try to re-register this client to continue "session" = "get session configuration"...
-    
-    // Create our websocket object with the address to the websocket
-    // TODO: Set default WS URL if run in NodeJS to localhost?
-    //var ws = new WebSocket("ws://localhost:8000/socket/");
-    
     // Open socket!
-    this._ws = new WebSocket(this._url);
+    this._ws = new WebSocket(this.url);
     
     this._ws.onopen = function () {
-        // !!! Use "self" since "this" changes context when called from other owner of calling function in javascript!!!
+        // USE SELF!
+        
+        // Always register or authorize this client
+        self.clientConnect({"name": self.name, "clientToken": self.clientToken}, function (err, result) {
+            if (err) {
+                if (self.onerror) self.onerror(err);
+                return;
+            }
+            // Call connect function of user.
+            if (self.onconnect) self.onconnect(result);
+        });
         
         // Send if we have stored msg's...
         for (var i = 0; i < self._pendingMsgs.length; i++) {
@@ -59,22 +92,24 @@ AriClient.prototype._connect = function () {
     };
     
     this._ws.onmessage = function (message) {
-        // !!! Use "self" since "this" changes context when called from other owner of calling function in javascript!!!
+        // USE SELF!
         self._handleMessage(message);
     };
 
     this._ws.onerror = function () {
         console.log('Socket error... Will try to reconnect...');
-        self._ws.terminate();
+        self._ws.close();
         self._ws = null;
         setTimeout(self._connect.bind(self), reconnectInterval);
+        if (self.onerror) self.onerror();
     };
 
-    this._wsclose = function () {
+    this._ws.onclose = function () {
         console.log('Socket closed... Will try to reconnect...');
-        self._ws.terminate();
+        self._ws.close();
         self._ws = null;
         setTimeout(self._connect.bind(self), reconnectInterval);
+        if (self.onclose) self.onclose();
     };
 };
 
@@ -114,7 +149,7 @@ AriClient.prototype._notify = function (command, parameters) {
 
 // Handle incomming messages from server.
 AriClient.prototype._handleMessage = function (message) {
-    console.log("WsMessage.data:", message.data);
+    console.log("-->", message.data);
     
     try { var msg = JSON.parse(message.data); }        
         catch (e) { console.log("Error: Illegal JSON in message! - Ignoring..."); return; }
@@ -142,7 +177,11 @@ AriClient.prototype._handleMessage = function (message) {
         // Get stored callback from calling function.
         msg.callback = this._pendingCallbacks[msg.res];
         delete this._pendingCallbacks[msg.res];
-        msg.callback(msg.err, msg.result);
+        try {
+            msg.callback(msg.err, msg.result);
+        } catch (e) {
+            console.log("!!!!!!!!!!!!!!", e);
+        }
     } else {
         // Notofication message.
         var cmd = msg.cmd;
@@ -157,6 +196,7 @@ AriClient.prototype._handleMessage = function (message) {
 };
 
 AriClient.prototype._matches = function (strA, strB) {
+    if (strA == strB) return true;
     var aPos = strA.indexOf('*');
     if (aPos >= 0) {
         var aStr = strA.substring(0, aPos);
@@ -167,30 +207,28 @@ AriClient.prototype._matches = function (strA, strB) {
 
 
 /*****************************************************************************/
-AriClient.prototype.connect = function (defaultName, callback) {
-    this.registerClient(defaultName, function (err, result) { 
-        callback(err, result);
-    });
-}
-
 //RegisterClient...
-AriClient.prototype.registerClient = function (clientName, callback) {
+AriClient.prototype.clientConnect = function (options, callback) {
     var self = this;
-    this._call("REGISTERCLIENT", { defaultName: clientName }, function (err, result) {
-        if (err) { console.log("Error when trying to regiser client:", err); };
+    this._call("CONNECT", options, function (err, result) {
+        if (err) {
+            if(self.onerror) self.onerror(err);
+            callback(err, null);
+            return;
+        }
         
         console.log("registerClient result:", result);
-        self.name = result.givenName;
+        self.name = result.name;
         callback(err, result);
     });
 };
 
-AriClient.prototype.reRegisterClient = function (clientName, secret, callback) {
+AriClient.prototype.requestClientToken = function (callback) {
     var self = this;
-    this._call("REREGISTERCLIENT", { "name": clientName, "secret": secret }, function (err, result) {
-        if (err) { console.log("Error when trying to re-regiser client:", err); };
-        console.log("re-registerClient result:", result);
-        self.name = name;
+    this._call("REQCLIENTTOKEN", { "clientToken": self._clientToken }, function (err, result) {
+//        if (err) { console.log("Error when trying to re-connect client:", err); };
+//        console.log("re-connectClient result:", result);
+//        self.name = result.givenName;
         callback(err, result);
     });
 };
@@ -280,58 +318,6 @@ AriClient.prototype._webcall_CALLRPC = function (msg, callback) {
     // send result back.  
     if (callback === "function") callback(null, result);    //indicate OK
 }
-
-// Module...
-/*AriClient.prototype.registerModule = function (model, callback) {
-    var self = this;
-    
-    if (this._models[model.name]) throw ("Trying to register xxx with existing name.");
-    this._models[model.name] = model;
-    
-    var pars = { "name": model.name };
-    for (var member in model) {
-        if (member.indexOf("_") == 0) continue; // Skip members marked as private using the "_" underscore!
-        pars[member] = {};
-        if ("_ariAttributes" in model) {
-            if (member in model._ariAttributes) {
-                pars[member] = model._ariAttributes[member];
-            }
-        }
-        pars[member].type = typeof model[member];
-        pars[member].value = model[member];
-    }
-    
-    // Observer registered module.
-    Object.observe(model, function (changes) {
-        console.log("MODEL CHANGED!");
-        // Send update of model to server.
-        for (var change in changes) {
-            pars = {};
-            pars.name = changes[change].name;
-            if (pars.name.indexOf("_") == 0) continue;   // exclude "hidden" members.
-            
-            pars.type = changes[change].type;
-            if (pars.type == "add") {
-                // Check if description is available.
-            }
-            if (pars.type == "update") {
-                pars.value = model[changes[change].name];
-            }
-            
-            self._call("MODULEUPDATE", pars, function (err, result) {
-                if (err) { console.log("Error:", err); return; }
-            });
-        }
-    });
-    
-    // Send registration to server!
-    this._call("REGISTERMODULE", pars, function (err, result) {
-        if (err) { console.log("Error:", err); return; }
-        console.log("Value:", pars.name, "registered.");
-        callback(err, result);
-    });
-};
-*/
 
 //*****************************************************************************
 // EventListener implementation...

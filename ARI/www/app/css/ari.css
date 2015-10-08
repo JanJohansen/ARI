@@ -1,13 +1,22 @@
-﻿/*body, div, h1, h2, h3, h4, h5, h6, p, ul, ol, li, dl, dt, dd, img, form, fieldset, input, textarea, blockquote {
-	margin: 0; 
-    padding: 0; 
-    border: 0;
+﻿/*Bootstrap overrides. */
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3 {
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
 
-body {
-	font-family: Arial, sans-serif; font-size: 18px; line-height: 24px;
+
+/* TopMost for navigation floating draggable menu! */
+.TopMost{
+    z-index: 99999;
 }
-    */
+
+
+/* Navigation menu CSS */
 nav {
 	text-align: left;
 }

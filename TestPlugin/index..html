@@ -1,0 +1,52 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>jQuery UI Draggable - Default functionality</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="node_modules/jquery-ui/themes/dark-hive/jquery.ui.theme.css" >
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/jquery-ui/jquery-ui.js"></script>
+    <!--<link rel="stylesheet" href="/resources/demos/style.css">-->
+    <style>
+        #draggable {
+            padding: 0.5em;
+            position: absolute;
+            border-radius: 20px;
+        }
+        label {
+            cursor: pointer;
+        }
+        #menu-toggle {
+            display: none; /* hide the checkbox */
+        }
+        #menu {
+            display: none; /* default hide the menu */
+        }
+        #menu-toggle:checked + #menu {
+            display: block; /* Show menu if "invisible checkbox" is checked */
+        }       
+    </style>
+    <script>
+  $(function() {
+    $( "#draggable" ).draggable();
+  });
+    </script>
+</head>
+<body>
+    <div id="draggable" class="ui-widget-content">
+        <label for="menu-toggle"><span class="glyphicon glyphicon-menu-hamburger fa-5x"></span></label>
+        <input type="checkbox" id="menu-toggle" />
+        <ul id="menu">
+            <li><a href="#">First link</a></li>
+            <li><a href="#">Second link</a></li>
+            <li><a href="#">Third link</a></li>
+        </ul>
+    </div>
+
+
+</body>
+</html>

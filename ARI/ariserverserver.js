@@ -19,7 +19,7 @@ var AriServerServer = module.exports.AriServerServer = function (options) {
             this._server.clientsModel[this.name].functions[fname] = {"name": fname};
         }
     }
-
+    
     this.provideValues();
 }
 
@@ -68,6 +68,10 @@ AriServerServer.prototype._webcall_getClientInfo = function (parameters, callbac
 // Server provided values. ****************************************************
 AriServerServer.prototype.provideValues = function () {
     var self = this;
+    
+    this.serverStarted = new Date().toISOString();
+    self._server.publish("ari.serverStart", process.memoryUsage());
+
     setInterval(function () {
         self._server.publish("ari.time", new Date().toISOString());
     }, 1000);

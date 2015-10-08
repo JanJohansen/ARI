@@ -1,0 +1,53 @@
+﻿{
+	"clientSecret": "AriSecret",
+	"userSecret": "AriUserSecret",
+	"users": [
+		{
+			"name": "admin",
+			"roles": "admin",
+			"password": "1234"
+		},
+		{
+			"name": "guest",
+			"roles": "guest",
+			"password": ""
+		},
+		{
+			"name": "client",
+			"roles": "client",
+			"password": "clientSecret"
+		}
+	],
+	"profiles": [
+		{
+			"name": "admin",
+			"permissions": {
+				"subscribe": [ "*" ],
+				"register": [ "*" ],
+				"set": [ "*" ],
+				"call": [ "*" ],
+				"authorise": [ "*" ]
+			}
+		},
+		{
+			"name": "guest",
+			"permissions": {
+				"subscribe": [ "ari.time" ],
+				"register": [ ],
+				"set": [ ],
+				"call": [ ],
+				"authorise": [ ]
+			}
+		}
+		{
+			"name": "guest",
+			"permissions": {
+				"subscribe": [ "*" ],
+				"register": [ "*" ],
+				"set": [ "*" ],
+				"call": [ "*" ],
+				"authorise": [ ]
+			}
+		}
+	]
+}

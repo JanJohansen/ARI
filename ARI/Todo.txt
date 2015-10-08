@@ -1,0 +1,13 @@
+﻿DONE: Implement client re-connect on connection loss
+
+//*****************************************************************************
+
+Prevent any any client action before registering
+Implement reRegistering
+	Store reconnect info in browser - somewhere!
+Update AriMenu ui
+Implement logging framework.
+	W. possibillity to wathc in browser client.
+Implement Authorization + Users and Roles
+
+

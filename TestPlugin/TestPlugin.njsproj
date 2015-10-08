@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <Name>TestPlugin</Name>
+    <RootNamespace>TestPlugin</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>e8c221a3-304c-4681-9997-4705102f0f57</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>app.js</StartupFile>
+    <StartWebBrowser>False</StartWebBrowser>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
+    <ProjectView>ShowAllFiles</ProjectView>
+    <StartWebBrowser>false</StartWebBrowser>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="app.js" />
+    <Compile Include="node_modules\bootstrap\dist\js\bootstrap.js" />
+    <Compile Include="node_modules\bootstrap\dist\js\bootstrap.min.js" />
+    <Compile Include="node_modules\bootstrap\dist\js\npm.js" />
+    <Compile Include="node_modules\jquery-ui\draggable.js" />
+    <Compile Include="node_modules\jquery-ui\jquery-ui.js" />
+    <Compile Include="node_modules\jquery\dist\jquery.js" />
+    <Compile Include="node_modules\jquery\dist\jquery.min.js" />
+    <Content Include="index..html" />
+    <Content Include="node_modules\bootstrap\dist\css\bootstrap-theme.css" />
+    <Content Include="node_modules\bootstrap\dist\css\bootstrap-theme.css.map" />
+    <Content Include="node_modules\bootstrap\dist\css\bootstrap-theme.min.css" />
+    <Content Include="node_modules\bootstrap\dist\css\bootstrap.css" />
+    <Content Include="node_modules\bootstrap\dist\css\bootstrap.css.map" />
+    <Content Include="node_modules\bootstrap\dist\css\bootstrap.min.css" />
+    <Content Include="node_modules\bootstrap\dist\fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="node_modules\bootstrap\dist\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="node_modules\bootstrap\dist\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="node_modules\bootstrap\dist\fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="node_modules\bootstrap\dist\fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\animated-overlay.gif" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-bg_flat_30_cccccc_40x100.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-bg_flat_50_5c5c5c_40x100.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-bg_glass_40_ffc73d_1x400.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-bg_highlight-hard_20_0972a5_1x100.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-bg_highlight-soft_33_003147_1x100.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-bg_highlight-soft_35_222222_1x100.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-bg_highlight-soft_44_444444_1x100.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-bg_highlight-soft_80_eeeeee_1x100.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-bg_loop_25_000000_21x21.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-icons_222222_256x240.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-icons_4b8e0b_256x240.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-icons_a83300_256x240.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-icons_cccccc_256x240.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\images\ui-icons_ffffff_256x240.png" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\jquery-ui.css" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\jquery-ui.min.css" />
+    <Content Include="node_modules\jquery-ui\themes\dark-hive\jquery.ui.theme.css" />
+    <Content Include="node_modules\jquery\dist\jquery.min.map" />
+    <Content Include="package.json" />
+    <Content Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="node_modules\" />
+    <Folder Include="node_modules\bootstrap\" />
+    <Folder Include="node_modules\bootstrap\dist\" />
+    <Folder Include="node_modules\bootstrap\dist\css\" />
+    <Folder Include="node_modules\bootstrap\dist\fonts\" />
+    <Folder Include="node_modules\bootstrap\dist\js\" />
+    <Folder Include="node_modules\jquery-ui\" />
+    <Folder Include="node_modules\jquery-ui\themes\" />
+    <Folder Include="node_modules\jquery-ui\themes\dark-hive\" />
+    <Folder Include="node_modules\jquery-ui\themes\dark-hive\images\" />
+    <Folder Include="node_modules\jquery\" />
+    <Folder Include="node_modules\jquery\dist\" />
+  </ItemGroup>
+  <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
+  <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsTools.targets" />
+</Project>

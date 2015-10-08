@@ -7,6 +7,8 @@
     <RootNamespace>ARI</RootNamespace>
     <LaunchUrl>http://localhost</LaunchUrl>
     <DebuggerPort>5858</DebuggerPort>
+    <NodeExeArguments>
+    </NodeExeArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -36,6 +38,7 @@
     <Compile Include="ariclientserver.js" />
     <Compile Include="ariserverserver.js" />
     <Compile Include="server.js" />
+    <Compile Include="sorted-object-array.js" />
     <Compile Include="www\app\app.js" />
     <Compile Include="www\app\ariclient.js" />
     <Compile Include="www\app\ngAriClient.js" />
@@ -58,13 +61,20 @@
     <Compile Include="www\app\routeResolver.js" />
     <Compile Include="www\app\script.js" />
     <Compile Include="www\app\script.min.js" />
+    <Compile Include="www\app\scripts\jquery.ui.touch-punch.js" />
+    <Compile Include="www\app\scripts\jquery.ui.touch-punch.min.js" />
+    <Content Include="ariConfig.json" />
+    <Content Include="config.json" />
+    <Content Include="nodemon.json" />
     <Content Include="package.json" />
     <Content Include="documentation\readme.html" />
     <Content Include="README.md" />
-    <Content Include="www\.bowerrc" />
+    <Content Include="Todo.txt" />
     <Content Include="www\.jshintrc" />
     <Content Include="www\app\app.css" />
     <Content Include="www\app\css\ari.css" />
+    <Content Include="www\app\css\bootstrap-theme.min.css" />
+    <Content Include="www\app\css\cyborg_bootstrap.min.css" />
     <Content Include="www\app\css\simple-sidebar.css" />
     <Content Include="www\app\index-async.html" />
     <Content Include="www\app\index.html" />
@@ -110,6 +120,7 @@
     <Folder Include="www\app\plugins\clients\" />
     <Folder Include="www\app\plugins\clock\" />
     <Folder Include="www\app\plugins\users\" />
+    <Folder Include="www\app\scripts\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

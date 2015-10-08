@@ -1,33 +1,73 @@
-<div class="panel panel-default" ng-controller="clientsController">
-    <div class="panel-heading">
-        Clients:
-        <input ng-model="clientquery">
+<div class="container-fluid" ng-controller="clientsController">
+    <div class="row">
+        <div class="col-xs-12 col-sm-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Clients:
+                    <input ng-model="clientquery">
+                </div>
+                <!-- Table -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name:</th>
+                            <th>Online:</th>
+                        </tr>
+                    </thead>
+                    <tr ng-repeat="client in clients | filter:clientquery">
+                        <td><button ng-click="clientSelected(client.name)">{{client.name}}</button></td>
+                        <td>{{client.online}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-8">
+            <span><h1 style="display:inline">{{clientInfo.name}}</h1></span> (ClientInfo)
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Values:</h3>
+                </div>
+                <!-- Table -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name:</th>
+                            <th>Value:</th>
+                        </tr>
+                    </thead>
+                    <tr ng-repeat="(key, value) in clientInfo.values">
+                        <td>{{key}}</td>
+                        <td><span animate-on-change='value'>{{value}}</span></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Functions:</h3>
+                </div>
+                <!-- Table -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name:</th>
+                            <th>Description:</th>
+                        </tr>
+                    </thead>
+                    <tr ng-repeat="(key, value) in clientInfo.functions">
+                        <td>{{key}}</td>
+                        <td>{{key.description}}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Raw:</h3>
+                </div>
+                <pre>{{clientInfo | json}}</pre>
+            </div>
+        </div>
     </div>
-    <!-- Table -->
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name:</th>
-                <th>Connected:</th>
-            </tr>
-        </thead>
-        <tr ng-repeat="client in clients | filter:clientquery">
-            <td><button ng-click="clientSelected(client.name)">{{client.name}}</button></td>
-            <td>{{client.online}}</td>
-        </tr>
-    </table>
-
-    <p>{{clientInfo}}</p>
-    <h1>ClientInfo:{{clientInfo.name}}</h1>
-
-    <h2>Values:</h2>
-    <ul ng-repeat="(key, value) in clientInfo.values" >
-        <li class="repeated-item">{{key}} = <span animate-on-change='value'>{{value}}</span></li>
-    </ul>
-
-    <h2>Functions:</h2>
-    <ul ng-repeat="(key, value) in clientInfo.functions">
-        <li>{{key}}(...)</li>
-    </ul>
-
 </div>

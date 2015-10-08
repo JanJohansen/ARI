@@ -1,5 +1,7 @@
 ﻿"use strict";
 
+var jwt = require('jwt-simple');
+
 var AriClientServer = module.exports.AriClientServer = function (options) {
     var self = this;
     this._pendingCallbacks = {};
@@ -8,12 +10,16 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
     this.name = "";
     this._functions = {};
     this._subscriptions = {};
+    this.clientModel = null;    // This will be set upon authentification.
     
     //this._server.clients.push(this);   // Put into list of connected clients.
 
     this._ws.on("message", function (message) {
         // !!! USE "SELF" !!!
         
+        // DEBUG!
+        console.log('-->', message);
+
         try { var msg = JSON.parse(message); }        
         catch (e) {
             console.log("Error: Illegal JSON in message! - Ignoring...");
@@ -77,9 +83,17 @@ AriClientServer.prototype.jsonReplacer = function (key, value) {
 
 AriClientServer.prototype.handleClientDisconnect = function () {
     console.log("Client disconnected.");
-    if (this._server.clientsModel.hasOwnProperty(this.name)) {
-        this._server.clientsModel[this.name].online = false;
-        this._server.clientsModel[this.name].__clientServer = null;
+    if (!this.clientModel) return;  // Probably logged without calling connect!
+    if (this.clientModel._role == "guest") {
+        if (!this.clientModel.pendingAuthorization) {   // If authorization is  pending we still need to persist client data!
+            // remove client (e.g. don't persist!)
+            delete this._server.clientsModel[this.name];
+        }
+    }
+    else {
+        // persist, but mark as offline!
+        this.clientModel.online = flase;
+        this.clientModel.__clientServer = null;
     }
 }
 
@@ -110,60 +124,77 @@ AriClientServer.prototype._notify = function (command, parameters) {
 }
 
 /*****************************************************************************/
-AriClientServer.prototype._webcall_REGISTERCLIENT = function (pars, callback) {
-    var clientDefaultName = pars.defaultName;
-    if (!clientDefaultName) { console.log("Error: Missing name of client whentrying to register client! - Ignoring..."); return; }
+AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
+    if (!pars.name) { console.log("Error: Missing name of client whentrying to register client! - Ignoring..."); return; }
     
-    // Find "Given" name based on DefaultName. (add (x) if allready existing!)
-    this.name = clientDefaultName;
-    var count = 1;
-    while (true) {
-        if (!this._server.clientsModel[this.name]) break;
-        this.name = clientDefaultName + "(" + count + ")";
-        count++;
+    var clientToken = pars.clientToken;
+    if (clientToken) {
+        // Try to decode token.
+        try { var payload = jwt.decode(clientToken, this._server.JWTSecret); }
+        catch (e) { };
+        if (!payload) {
+            callback("Error: Invalid token!", null);
+            return;
+        } else {
+            this.name = payload.clientName;
+            // Link this client to clientModel indicating an authenticated client.
+            this.clientModel = this._server.clientsModel[this.name];
+            if (this.clientModel) {
+                // check date match. (This allows to invalidate tokens based on date and not just on clientName.!!!)
+                if (this.clientModel.created != payload.created) {
+                    this.clientModel = null;    // De-Authenticate!!!
+                    console.log("Error: Authentication failed! Ivalid creation date!", payload);
+                    callback("Error: Authentication failed! Ivalid creation date!", null);
+                    return;
+                } else {
+                    // Authentication OK and client model linked.
+                    console.log("authentication success:", payload);
+                    callback(null, { "name": this.name });
+                    return;
+                }
+            }
+            else {
+                console.log("Error: Token invalid. ClientName not found!", payload);
+                callback("Error: Token invalid. ClientName not found!", null);
+                return;
+            }
+        }
+    } else {
+        // No clientToken given. This could be first time connection.
+        // Find available name based on defaultName. (add (x) if allready existing!)
+        var defaultName = pars.name;
+        this.name = defaultName;
+        var count = 1;
+        while (true) {
+            if (!this._server.clientsModel[this.name]) break;
+            this.name = defaultName + "(" + count + ")";
+            count++;
+        }
+        
+        if (!this.clientModel) {
+            // First time creation if not found. 
+            // Set name and status and keep updated from now on!
+            this.clientModel = {
+                "name": this.name, 
+                "created": new Date().toISOString(),
+                "online": true,
+                "_role": "guest",
+                "__clientServer": this,
+                "functions": {},
+                "values": {}
+            };
+            this._server.clientsModel[this.name] = this.clientModel;
+            console.log("First time authentication success:", payload);
+            callback(null, { "name": this.name });
+        }
     }
-    
-    //------------------------------------------------------------------------
-    // Create new "ClientInfo", set name and status. Keep updated from now on!
-    this._server.clientsModel[this.name] = {
-        "name": this.name, 
-        "online": true, 
-        "__clientServer": this,
-        "functions": {}
-    };
-    
-    console.log("New client registered:", this.name);
-    
-    // Set random key to identify correct client.
-    // TODO: Generate random key!
-    this._reRegisterKey = "secretKey";
-
-    // Call callback even we executed synchronusly :O)
-    callback(null, { "givenName": this.name, "reRegisterKey": this._reRegisterKey });
 };
 
-AriClientServer.prototype._webcall_REREGISTERCLIENT = function (pars, callback) {
-    var clientId = pars.clientId;
-    if (!clientId) { console.log("Error: Missing clientId when trying to re-register client - Ignoring..."); return; }
-    
-    if (clientId in this.clients) {
-        // device found.
-        console.log("Existing device registered.");
-        consolde.log("Client Id: ", clientId);
-        if (this.clients[clientId].name != name) {
-            consolde.log("Name changed from ", this.devices[clientId].name, " to ", name);
-            this.clients[clientId].name = name;
-        }
-        else consolde.log("Device name: ", this.devices[clientId].name);
-    }
-    else {
-        console.log("Error - Given deviceId (", clientId, ") not known!");
-        if (cb) cb("deviceId not found!");
-        return;
-    }
-    
-    // Call callback even we executed synchronusly :O)
-    callback(null, {}); // Indicat OK!?
+AriClientServer.prototype._webcall_REQCLIENTTOKEN = function (pars, callback) {
+    this.clientModel.pendingAuthorization = true;
+    var payload = { "clientName": this.name, "created": this.clientModel.created };
+    var token = jwt.encode(payload, this._server.JWTSecret);
+    callback(null, {"clientToken": token});
 };
 
 //-----------------------------------------------------------------------------

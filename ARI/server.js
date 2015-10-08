@@ -32,14 +32,6 @@ app.get('/api/users', function (req, res) {
 var Ari = require('./ari.js').Ari;
 var ari = new Ari({ websocketServer: wss });
 
-// WebSocket ******************************************************************
-// For debug only - write received messages!
-wss.on('connection', function connection(ws) {
-    ws.on('message', function incoming(message) {
-        console.log('received: %s', message);
-    });
-});
-
 // HTTP Server ****************************************************************
 //server.on('request', app);
 server.on('request', function (req, res, next) {
@@ -49,3 +41,20 @@ server.on('request', function (req, res, next) {
 server.listen(port, function () { console.log('Listening on ' + server.address().port) });
 
 
+// Enable user to properly close down server...
+process.stdin.resume();
+process.stdin.setEncoding("ascii");
+
+process.stdin.on('data', function (text) {
+    console.log('received data:', text);
+    if (text == "q") {
+        handleConsoleQuit();
+    }
+    handleConsoleQuit(); // for now.
+});
+
+function handleConsoleQuit() {
+    ari.shutDown();
+    console.log('Now that process.stdin is paused, there is nothing more to do.');
+    process.exit();
+}
