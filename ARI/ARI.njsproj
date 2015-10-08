@@ -72,6 +72,7 @@
     <Content Include="Todo.txt" />
     <Content Include="www\.jshintrc" />
     <Content Include="www\app\app.css" />
+    <Content Include="www\app\favicon.ico" />
     <Content Include="www\app\css\ari.css" />
     <Content Include="www\app\css\bootstrap-theme.min.css" />
     <Content Include="www\app\css\cyborg_bootstrap.min.css" />
