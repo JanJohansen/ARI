@@ -38,6 +38,7 @@
     <Compile Include="node_modules\jquery-ui\jquery-ui.js" />
     <Compile Include="node_modules\jquery\dist\jquery.js" />
     <Compile Include="node_modules\jquery\dist\jquery.min.js" />
+    <Content Include="ariManifest.json" />
     <Content Include="index..html" />
     <Content Include="node_modules\bootstrap\dist\css\bootstrap-theme.css" />
     <Content Include="node_modules\bootstrap\dist\css\bootstrap-theme.css.map" />

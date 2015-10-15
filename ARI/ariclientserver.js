@@ -10,7 +10,7 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
     this.name = "";
     this._functions = {};
     this._subscriptions = {};
-    this.clientModel = null;    // This will be set upon authentification.
+    this.clientModel = null;    // This will be set upon authentication.
     
     //this._server.clients.push(this);   // Put into list of connected clients.
 
@@ -83,16 +83,16 @@ AriClientServer.prototype.jsonReplacer = function (key, value) {
 
 AriClientServer.prototype.handleClientDisconnect = function () {
     console.log("Client disconnected.");
-    if (!this.clientModel) return;  // Probably logged without calling connect!
-    if (this.clientModel._role == "guest") {
+    if (!this.clientModel) return;  // Probably left before calling connect!
+    if ((Object.keys(this.clientModel.values).length === 0) || (Object.keys(this.clientModel.functions).length === 0)) {
         if (!this.clientModel.pendingAuthorization) {   // If authorization is  pending we still need to persist client data!
             // remove client (e.g. don't persist!)
             delete this._server.clientsModel[this.name];
         }
     }
     else {
-        // persist, but mark as offline!
-        this.clientModel.online = flase;
+        // persist, and mark as offline!
+        this.clientModel.online = false;
         this.clientModel.__clientServer = null;
     }
 }
@@ -126,75 +126,109 @@ AriClientServer.prototype._notify = function (command, parameters) {
 /*****************************************************************************/
 AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
     if (!pars.name) { console.log("Error: Missing name of client whentrying to register client! - Ignoring..."); return; }
-    
-    var clientToken = pars.clientToken;
-    if (clientToken) {
+    var clientName = pars.name;
+
+    var authToken = pars.authToken;
+    if (authToken) {
         // Try to decode token.
-        try { var payload = jwt.decode(clientToken, this._server.JWTSecret); }
+        try { var token = jwt.decode(authToken, this._server.JWTSecret); }
         catch (e) { };
-        if (!payload) {
-            callback("Error: Invalid token!", null);
+        if (!token) {
+            callback("Error: Invalid authToken!", null);
             return;
         } else {
-            this.name = payload.clientName;
-            // Link this client to clientModel indicating an authenticated client.
-            this.clientModel = this._server.clientsModel[this.name];
+            // Authentication OK
+            console.log("authentication success:", token);
+            var user = token.name;
+            
+            // Link this client to clientModel.
+            if(clientName != user) var clientModelName = user + "/" + clientName;
+            else var clientModelName = user;
+            this.name = clientModelName;
+
+            this.clientModel = this._server.clientsModel[clientModelName];
             if (this.clientModel) {
-                // check date match. (This allows to invalidate tokens based on date and not just on clientName.!!!)
-                if (this.clientModel.created != payload.created) {
-                    this.clientModel = null;    // De-Authenticate!!!
-                    console.log("Error: Authentication failed! Ivalid creation date!", payload);
-                    callback("Error: Authentication failed! Ivalid creation date!", null);
-                    return;
-                } else {
-                    // Authentication OK and client model linked.
-                    console.log("authentication success:", payload);
-                    callback(null, { "name": this.name });
-                    return;
-                }
-            }
-            else {
-                console.log("Error: Token invalid. ClientName not found!", payload);
-                callback("Error: Token invalid. ClientName not found!", null);
+                // clientModel found.
+                this.clientModel.online = true;
+                callback(null, { "name": clientName });
+                return;
+            } else {
+                // clientModel not found. Create it.
+                this.clientModel = {
+                    "name": this.name, 
+                    "created": new Date().toISOString(),
+                    "online": true,
+                    "ip": this._ws._socket.remoteAddress,
+                    "__clientServer": this,
+                    "functions": {},
+                    "values": {}
+                };
+                
+                this._server.clientsModel[clientModelName] = this.clientModel;
+                
+                callback(null, { "name": clientName });
                 return;
             }
         }
     } else {
-        // No clientToken given. This could be first time connection.
-        // Find available name based on defaultName. (add (x) if allready existing!)
-        var defaultName = pars.name;
-        this.name = defaultName;
-        var count = 1;
-        while (true) {
-            if (!this._server.clientsModel[this.name]) break;
-            this.name = defaultName + "(" + count + ")";
-            count++;
-        }
-        
-        if (!this.clientModel) {
-            // First time creation if not found. 
-            // Set name and status and keep updated from now on!
-            this.clientModel = {
-                "name": this.name, 
-                "created": new Date().toISOString(),
-                "online": true,
-                "_role": "guest",
-                "__clientServer": this,
-                "functions": {},
-                "values": {}
-            };
-            this._server.clientsModel[this.name] = this.clientModel;
-            console.log("First time authentication success:", payload);
-            callback(null, { "name": this.name });
-        }
+        callback("Error: Invalid authToken!", null);
     }
 };
 
-AriClientServer.prototype._webcall_REQCLIENTTOKEN = function (pars, callback) {
-    this.clientModel.pendingAuthorization = true;
-    var payload = { "clientName": this.name, "created": this.clientModel.created };
-    var token = jwt.encode(payload, this._server.JWTSecret);
-    callback(null, {"clientToken": token});
+AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
+    if (!pars.name) { callback("Error: Missing name parameter when requesting authToken.", null); return; }
+    if (!pars.role && !pars.password) { callback("Error: Missing parameter when requesting authToken.", null); return; }
+    
+    var name = pars.name;    
+    var role = pars.role;
+    var password = pars.password;
+    
+    if (password) {
+        // Request is for existing user in system. Find user...
+        if (name in this._server.usersModel) {
+            // Check password.
+            if (this._server.usersModel[name].password == password) {
+                // Reply with authToken and possibly new Name.
+                payload = { "name": name, "role": this._server.usersModel[name].role, "created": this._server.usersModel[name].created };
+                var token = jwt.encode(payload, this._server.JWTSecret);
+                callback(null, { "name": name, "authToken": token });
+            } else {
+                callback("Error: Login or password incorrect!", null);
+                return;
+            }
+        } else {
+            callback("Error: Login or password incorrect!", null);
+            return;
+        }
+    } else {
+        // Register device or controller.
+        var allowPairing = true; // TODO: Get this from server!
+        if (!allowPairing) { callback("Error: Requesting authToken not allowed at this time.", null); return; }
+        if (pars.role != "device" && pars.role != "controller") {
+            callback("Error: Unknown role when requesting authToken.", null);
+            return;
+        }
+        
+        // Find available user name.
+        var newName = name;
+        var count = 1;
+        while (true) {
+            if (!this._server.usersModel[newName]) break;
+            newName = name + "(" + count + ")";
+            count++;
+        }
+        
+        // Create new user.
+        this._server.usersModel[newName] = {};
+        this._server.usersModel[newName].name = newName;
+        this._server.usersModel[newName].created = new Date().toISOString();
+        this._server.usersModel[newName].role= role;
+        
+        // Reply with authToken and possibly new Name.
+        var payload = { "name": newName, "role": pars.role, "created": new Date().toISOString() };
+        var token = jwt.encode(payload, this._server.JWTSecret);
+        callback(null, {"name": newName, "authToken": token });
+    }
 };
 
 //-----------------------------------------------------------------------------

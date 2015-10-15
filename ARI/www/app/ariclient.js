@@ -3,10 +3,10 @@
 if (typeof window === 'undefined') {
     // We're in NodeJS
     var WebSocket = require('ws');
+    exports.AriClient = AriClient;
 }
 else {
 }
-
 
 function transferOpts(origOpts, newOpts){
     if (newOpts == null) return;
@@ -15,100 +15,120 @@ function transferOpts(origOpts, newOpts){
     }
 }
 
-function AriClient(options) {
+function AriClient(clientName) {
     // private
     var self = this;
-    this._clientConfig = {};
-    this._nextReqId = 0;
-    this._pendingCallbacks = {};
-    this._functions = {};
-//    this._models = {};
+    this._nextReqId = 0;        // Id to use for identifying requests and corresponding response callbacks.
+    this._pendingCallbacks = {};// Callbacks for pending server requests.
+    this._functions = {};       // registered callbacks.
     this._pendingMsgs = [];     // Buffer for messages that should have been sent while offline.
     this._subscriptions = {};   // Contains callbacks for subsriptions
-    this._ws = null;
+    this._ws = null;            // WebSocket connecting to server.
+    this.reconnectInterval = 2000; // Interval (in mS) to wait before retrying to connect on unexpected disconnection or error. 0 = no retry!
+    this.authToken = null;
     
-    // Set defaults  
-    this.name = "Anonymous";
-    this.url = "ws://localhost:3000/socket/";
-
+    this.name = clientName;
+    
     if (typeof window !== 'undefined') { // Config for browser
         this.url = "ws://" + window.location.host;
+    } else {
+        this.url = "ws://localhost:3000/socket/";
     }
     
     // Override defaults if set specifically.
-    transferOpts(this, options);
+    //    transferOpts(this, options);
     
-    this._connect();   // This connects or reconnects to a server.
+    //this._connect();   // This connects or reconnects to a server.
 }
 
 AriClient.prototype.onconnect = null;   // User function to handle subscription, registration etc. on connection.
 AriClient.prototype.onerror = null;   // User function to handle errors!
 
-/*
-* For documentation:
-* If client requests or presents a "clientToken", the server will persist it's registered functions and values.
-* Initial connection from clients without a clientToken can request a token for later reconnection.
-* This means that clients that don't register function or values on the server (like a browser client only displaying state)
-* will onlly temporarily show up in the list of clients.
- * 
- * ← CONNECT({ name: "defaultName" })
- * → err, result: { name: "givenName"}
- * Client is not authenticated and can act as "Anonymous External" or "Anonymous Local" user, based on origin IP.
- * On http request, client could be redircted to login page.
- * 
- * ← REQCLIENTTOKEN({name: "givenName"})
- * → err, result: {clientToken: "clientToken"}
- * Server will list client in "pending client authorizations" list.
- * ??? A user must now allow the client for inclusion?
- * (Client is now authenticated and persists the session changes.)
- * ...
-*/
+AriClient.prototype.close = function () {
+    this.reconnectInterval = 0;    // No reconnect!
+    this._ws.close();
+    this._ws = null;
+}
 
 AriClient.prototype._connect = function () {
     var self = this;
-    var reconnectInterval = 2000;
 
     // Open socket!
-    this._ws = new WebSocket(this.url);
-    
+    if (!this._ws) {
+        console.log("Creating WSocket!");
+        this._ws = new WebSocket(this.url);
+    }
     this._ws.onopen = function () {
-        // USE SELF!
-        
-        // Always register or authorize this client
-        self.clientConnect({"name": self.name, "clientToken": self.clientToken}, function (err, result) {
-            if (err) {
-                if (self.onerror) self.onerror(err);
-                return;
+        if (!self.authToken) {
+            if (self.role) {
+                // No authToken, so we need to request it.
+                self._call("REQAUTHTOKEN", { "name": self.name, "role": self.role }, function (err, result) {
+                    if (err) { console.log("Error:", err); return; }
+                    self.name = result.name;
+                    self.authToken = result.authToken;
+                    
+                    // reconnect, now with authToken
+                    self._ws.close();
+                    self._ws = null;
+                });
+            } else if (self.userName && self.userPassword) {
+                // No authToken, so we need to request it.
+                self._call("REQAUTHTOKEN", { "name": self.userName, "password": self.userPassword }, function (err, result) {
+                    if (err) { console.log("Error:", err); return; };
+                    self.name = result.name;
+                    self.authToken = result.authToken;
+                    
+                    // reconnect, not with authToken
+                    self._ws.close();
+                    self._ws = null;
+                });
             }
-            // Call connect function of user.
-            if (self.onconnect) self.onconnect(result);
-        });
-        
-        // Send if we have stored msg's...
-        for (var i = 0; i < self._pendingMsgs.length; i++) {
-            self._ws.send(self._pendingMsgs[i]);
         }
-        self._pendingMsgs = [];
+        
+        if (self.authToken) {
+            // We have authToken, so connect "normally".
+            
+            self._call("CONNECT", { "name": self.name, "authToken": self.authToken }, function (err, result) {
+                if (err) {
+                    if (self.onerror) self.onerror(err);
+                    return;
+                }
+                
+                console.log("registerClient result:", result);
+                self.name = result.name;
+                
+                // Send if we have stored msg's...
+                for (var i = 0; i < self._pendingMsgs.length; i++) {
+                    self._ws.send(self._pendingMsgs[i]);
+                }
+                self._pendingMsgs = [];
+                
+                if (self.onconnect) self.onconnect(result);
+            });
+        }
     };
     
     this._ws.onmessage = function (message) {
-        // USE SELF!
         self._handleMessage(message);
     };
 
     this._ws.onerror = function () {
         console.log('Socket error... Will try to reconnect...');
-        self._ws.close();
-        self._ws = null;
-        setTimeout(self._connect.bind(self), reconnectInterval);
+        if (self._ws) {
+            self._ws.close();
+            self._ws = null;
+        }
+        if(self.reconnectInterval > 0) setTimeout(self._connect.bind(self), self.reconnectInterval);
         if (self.onerror) self.onerror();
     };
 
     this._ws.onclose = function () {
         console.log('Socket closed... Will try to reconnect...');
-        self._ws.close();
-        self._ws = null;
-        setTimeout(self._connect.bind(self), reconnectInterval);
+        if (self._ws) {
+            self._ws.close();
+            self._ws = null;
+        }
+        if (self.reconnectInterval > 0) setTimeout(self._connect.bind(self), self.reconnectInterval);
         if (self.onclose) self.onclose();
     };
 };
@@ -207,23 +227,25 @@ AriClient.prototype._matches = function (strA, strB) {
 
 
 /*****************************************************************************/
-//RegisterClient...
-AriClient.prototype.clientConnect = function (options, callback) {
-    var self = this;
-    this._call("CONNECT", options, function (err, result) {
-        if (err) {
-            if(self.onerror) self.onerror(err);
-            callback(err, null);
-            return;
-        }
-        
-        console.log("registerClient result:", result);
-        self.name = result.name;
-        callback(err, result);
-    });
+AriClient.prototype.connect = function (authToken) {
+    this.authToken = authToken;
+    this._connect();    
 };
 
-AriClient.prototype.requestClientToken = function (callback) {
+AriClient.prototype.connectUser = function (userName, userPassword) {
+    this.userName = userName;
+    this.userPassword = userPassword;
+    this.authToken = null;
+    this._connect();
+};
+
+AriClient.prototype.connectDevice = function (role) {
+    this.role = role == "controller" ? "controller" : "device";
+    this.authToken = null;
+    this._connect();
+};
+
+/*AriClient.prototype.requestClientToken = function (callback) {
     var self = this;
     this._call("REQCLIENTTOKEN", { "clientToken": self._clientToken }, function (err, result) {
 //        if (err) { console.log("Error when trying to re-connect client:", err); };
@@ -232,6 +254,7 @@ AriClient.prototype.requestClientToken = function (callback) {
         callback(err, result);
     });
 };
+*/
 
 // PUB/SUB --------------------------------------------------------------------
 AriClient.prototype.publish = function (name, value, callback) {
@@ -342,11 +365,3 @@ AriClient.prototype._trigger = function (event , args) {
     }
 };
 */
-
-if (typeof window === 'undefined') {
-    // We're in NodeJS
-    var WebSocket = require('ws');
-    exports.AriClient = AriClient;
-}
-else {
-}

@@ -1,0 +1,44 @@
+﻿{
+	"icon": "someIcon.ico",
+	"name": "GW433",
+	"version": "0.0.1",
+	"description": "...",
+	"homepage": "?",
+	"gitUrl": "https:github.com/JanJohansen/ARI/plugins",
+	"plugins": [
+		{
+			"name": "GW433",
+			"version": "0.0.1",
+			"icon": "file.ico",
+			"description": "USB connected gateway to communicate with 433MHz devices like thermometers and outlet switches.",
+			"info": { },
+			"nodeMain": "app.js"
+		}
+	],
+	"views": [
+		{
+			"name": "Admin",
+			"version": "0.0.1",
+			"icon": "adminIcon.ico",
+			"description": "Admin view for GW433.",
+			"mainPage": "admin.html",
+			"minTargetRole": "admin"
+		},
+		{
+			"name": "Status",
+			"version": "0.0.1",
+			"icon": "statusIcon.ico",
+			"description": "Status view for GW433.",
+			"mainPage": "status.html",
+			"minTargetRole": "user"
+		},
+		{
+			"name": "Debug",
+			"version": "0.0.1",
+			"icon": "debugIcon.ico",
+			"description": "Debug view for GW433.",
+			"mainPage": "debug.html",
+			"minTargetRole": "admin"
+		}
+	]
+}

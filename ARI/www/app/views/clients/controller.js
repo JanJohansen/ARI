@@ -1,13 +1,13 @@
 'use strict';
 
 var ariModule = angular.module('ari');
-ariModule.register.controller('clientsController', ['$scope', 'AriConnection', 
-    function ($scope, AriConnection) {
+ariModule.register.controller('clientsController', ['$scope', 'AriClient', "AriUser",
+    function ($scope, AriClient, AriUser) {
         console.log("clients.html loaded");
         
         $scope.clientInfo = {};
         
-        var ari = new AriConnection({ "name": "Guest" });
+        var ari = AriClient.create("ari_clients");
         
         ari.onconnect = function (result) {
             var clientName = result.name;
@@ -43,6 +43,12 @@ ariModule.register.controller('clientsController', ['$scope', 'AriConnection',
                 });
             }
         };
+        
+        $scope.$on('$destroy', function () {
+            if ($scope.clientInfo.name) ari.unsubscribe($scope.clientInfo.name + ".*");
+            if (ari) ari.close();
+            ari = null;
+        });
     }
 ]);
 

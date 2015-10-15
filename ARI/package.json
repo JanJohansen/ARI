@@ -8,6 +8,7 @@
     "email": ""
   },
   "dependencies": {
+    "body-parser": "^1.14.1",
     "express": "^4.13.3",
     "jsonfile": "^2.2.2",
     "jwt-simple": "^0.3.1",

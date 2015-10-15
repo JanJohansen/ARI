@@ -43,6 +43,19 @@ AriServerServer.prototype._call = function (command, parameters, callback) {
     }
 }
 
+// Server provided values. ****************************************************
+AriServerServer.prototype.provideValues = function () {
+    var self = this;
+    
+    this.serverStarted = new Date().toISOString();
+    self._server.publish("ari.serverStart", process.memoryUsage());
+
+    setInterval(function () {
+        self._server.publish("ari.time", new Date().toISOString());
+    }, 1000);
+}
+
+//*****************************************************************************
 // Server provided functions. *************************************************
 
 //-----------------------------------------------------------------------------
@@ -65,15 +78,4 @@ AriServerServer.prototype._webcall_getClientInfo = function (parameters, callbac
     callback(null, client);
 }
 
-// Server provided values. ****************************************************
-AriServerServer.prototype.provideValues = function () {
-    var self = this;
-    
-    this.serverStarted = new Date().toISOString();
-    self._server.publish("ari.serverStart", process.memoryUsage());
-
-    setInterval(function () {
-        self._server.publish("ari.time", new Date().toISOString());
-    }, 1000);
-}
 

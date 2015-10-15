@@ -1,38 +1,26 @@
 ﻿var AriClient = require("../ARI/www/app/ariclient.js").AriClient;
 var serialport = require("serialport");
 var SerialPort = serialport.SerialPort; // localize object constructor 
-var jsonfile = require('jsonfile');
-
-// Define defaults.
-var config = {
-    name: "GW433",
-    clientToken: null
-};
-
-// Load configuration from file.
-var configFile = __dirname + "\\ariClientConfig.json";
-try {
-    var config = jsonfile.readFileSync(configFile);
-} catch (e) { 
-};
+var ConfigStore = require("../ARI/configStore.js");
 
 var serialPort = null;
 
-var ari = new AriClient({ "name": config.name, "clientToken": config.clientToken });
+// Load state.
+var stateStore = new ConfigStore(__dirname, "GW433_state");
+var state = stateStore.load();
 
-ari.onconnect = function (result){
-    // Request clientToken and store in configuration file.
-    if (!config.clientToken) {
-        ari.requestClientToken(function (err, result) {
-            if (err) {
-            }
-            else {
-                config.clientToken = result.clientToken;
-                jsonfile.writeFile(configFile, config, { spaces: 4 });
-            }
-        });
+var ari = new AriClient("GW433");
+
+if (!state.authToken) ari.connectDevice("controller");
+else ari.connect(state.authToken);
+
+ari.onconnect = function (result) {
+    if (!state.authToken) {
+        // First time we get an authToken, save it!
+        state.authToken = ari.authToken;
+        stateStore.save();
     }
-    
+
     clientName = result.name;
     
     console.log("Client connected as \"" + ari.name + "\"");

@@ -1,8 +1,8 @@
 'use strict';
 
 var ariModule = angular.module('ari');
-ariModule.register.controller('clockController', ["$scope", "$interval", 'AriConnection', 
-    function ($scope, $interval, AriConnection) {
+ariModule.register.controller('clockController', ["$scope", "$interval", 'AriClient',
+    function ($scope, $interval, AriClient) {
         
         //helper.
         function addZero(x) {
@@ -13,7 +13,7 @@ ariModule.register.controller('clockController', ["$scope", "$interval", 'AriCon
             }
         }
         
-        var ari = new AriConnection({ "name": "Guest" });
+        var ari = AriClient.create("ari_Clock");
         
         ari.onconnect = function (result) {
             var clientName = result.name;
@@ -27,6 +27,11 @@ ariModule.register.controller('clockController', ["$scope", "$interval", 'AriCon
                 $scope.$apply(); // Apply async changes.
             });
         };
+        
+        $scope.$on('$destroy', function () {
+            ari.unsubscribe("ari.time");
+            if (ari) ari.close();
+        });
     /*    
         // Create timer.
         var timer = $interval(function () {
