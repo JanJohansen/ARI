@@ -38,7 +38,7 @@
                     </thead>
                     <tr ng-repeat="(key, value) in clientInfo.values">
                         <td>{{key}}</td>
-                        <td><span animate-on-change='value'>{{value}}</span></td>
+                        <td><span animate-on-change='value.value'>{{value.value}}</span></td>
                     </tr>
                 </table>
             </div>
@@ -57,7 +57,7 @@
                     </thead>
                     <tr ng-repeat="(key, value) in clientInfo.functions">
                         <td>{{key}}</td>
-                        <td>{{key.description}}</td>
+                        <td>{{value.description}}</td>
                     </tr>
                 </table>
             </div>

@@ -14,21 +14,66 @@ var ari = new AriClient("GW433");
 if (!state.authToken) ari.connectDevice("controller");
 else ari.connect(state.authToken);
 
+var config = {
+    "protocols": {
+        "WT450": {
+            "H10S2T": { alias: "Garage.temperature" },
+            "H10S2H": { alias: "Garage.humidity" },
+            "H14S2T": { alias: "Depot.temperature" },
+            "H14S2H": { alias: "Depot.humidity" },
+            "H15S3T": { alias: "Studio.temperature" },
+            "H15S3H": { alias: "Studio.humidity" },
+            "H3S3T": { alias: "Livingroom.temperature" },
+            "H3S3H": { alias: "Livingroom.humidity" }
+        },
+        "PT2262": {
+            "0000000000B2125A": {
+                "alias": "New_Pir_In_Office.motion"
+            }
+        }
+    }
+};
+
+var WT450LastVals = {};
+var PT2262Timers = {};
+
 ari.onconnect = function (result) {
     if (!state.authToken) {
         // First time we get an authToken, save it!
         state.authToken = ari.authToken;
         stateStore.save();
     }
-
-    clientName = result.name;
     
+    WT450LastVals = {};
+    PT2262Timers = {};
+    
+    clientName = result.name;   // Store name in case we got a new one (with (x) at the end!)
     console.log("Client connected as \"" + ari.name + "\"");
     
+    // handle subscriptions.
     ari.subscribe(clientName + ".*", function (path, value) {
         console.log("->", path, "=", value);
     });
-
+    
+    // register functions.
+    ari.registerRpc("getConfig", { description: "Get configuration data for UI." }, function (pars, callback) {
+        callback(null, config);
+    });
+    
+    ari.registerRpc("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
+        config = pars.config;
+        callback(null, {}); // Indicate OK.
+    });
+    
+    // Register values.
+    for (key in config.protocols.WT450) {
+        ari.registerValue(config.protocols.WT450[key].alias, null);
+    }
+    for (key in config.protocols.PT2262) {
+        ari.registerValue(config.protocols.PT2262[key].alias, null);
+    }
+    
+    // Handle receiver on serial port.
     serialPort = new SerialPort("COM6", {
         baudrate: 115200,
         parser: serialport.parsers.readline("\n")
@@ -74,43 +119,54 @@ ari.onconnect = function (result) {
             temperature = temperature * 10;
             temperature = temperature / 10;
             
+            // Convert to strings.
             temperature = temperature.toFixed(1);   // Only show 1 decimal!
+            humidity = humidity.toString();
             
-            var WT450s = {
-                "102": {
-                    name: "Garage",
-                },
-                "142": {
-                    name: "Depot",
-                },
-                "153": {
-                    name: "Studio",
-                },
-                "33": {
-                    name: "Livingroom",
+            // Debug!
+            var name = "H" + house.toString() + "S" + station.toString();
+            
+            // Find transmitter if defined...
+            var transmitter = config.protocols.WT450[name + "T"];
+            if (transmitter) {
+                // Send if value changed.
+                console.log("IS same?", name + "T", WT450LastVals[name + "T"]);
+                if (WT450LastVals[name + "T"] != temperature) ari.publish(transmitter.alias, temperature);
+                WT450LastVals[name + "T"] = temperature; // Store latest value.
+            }
+            else console.log("-> @" + new Date().toISOString(), name + ".temperature =", temperature);
+            
+            if (humidity <= 100) {
+                transmitter = config.protocols.WT450[name + "H"];
+                if (transmitter) {
+                    // Send if value changed.
+                    if (WT450LastVals[name + "H"] != humidity) ari.publish(transmitter.alias, humidity);
+                    WT450LastVals[name + "H"] = humidity; // Store latest value.
                 }
-            };
-            
-            var wt = WT450s[house.toString() + station.toString()];
-            if (wt) {
-                console.log("-> @" + new Date().toISOString(), "433gw." + wt.name + ".temperature =", temperature);
-                ari.publish(clientName + "." + wt.name +".temperature", temperature);
+                else console.log("-> @" + new Date().toISOString(), name + ".humidity =", humidity);
+            }
+        }
+        else if (tlg.prt == 1) {
+            // For now ignoring bits and delay
+            // Match received to find alias.            
+            var transmitter = config.protocols.PT2262[tlg.val];
+            if (transmitter) {
+                console.log("-> @", new Date().toISOString(), "GW433." + transmitter.alias);
                 
-                console.log("-> @" + new Date().toISOString(), "433gw." + wt.name + ".humidity =", humidity);
-                ari.publish(clientName + "." + wt.name + ".humidity", humidity);
-            }
-            else {
-                console.log("house:", house, ",station:", station, ", humidity:", humidity, ", temperature:", temperature);
-                ari.publish(clientName + ".H" + house + "S" + station + ".temperature", temperature);
-                // Some sensors don't report humidity...
-                if (humidity <= 100) ari.publish(clientName + "H" + house + ".S" + station + ".humidity", humidity);
-            }
+                // Set timer to send alias = 0 after 100 mSec
+                if (!PT2262Timers[transmitter.alias]) ari.publish(transmitter.alias, "1");
+                else clearTimeout(PT2262Timers[transmitter.alias]);
+                PT2262Timers[transmitter.alias] = setTimeout(pt2262Timeout, 100, transmitter.alias);
+
+            } else console.log("-> @", new Date().toISOString(), "GW433 Data:" + data.toString());
         }
-        else {
-            console.log("@", new Date().toISOString(), "433gw Data:" + data.toString());
-            ari.publish(clientName + ".PT2262." + data.toString(), "1");
-        }
+        else console.log("Unknown protocol ID received from GW433!!!", data);
     }
+}
+
+var pt2262Timeout = function (alias){
+    ari.publish(alias, "0");
+    delete PT2262Timers[alias];
 }
 
 ari.onerror = function (result) {
@@ -120,7 +176,7 @@ ari.onerror = function (result) {
     }
 }
 
-ari.ondisconnect = function (result) {
+ari.onclose = function (result) {
     if (serialPort) {
         if (serialPort.isOpen()) serialPort.close();
         serialPort = null;

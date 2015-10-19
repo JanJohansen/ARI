@@ -86,7 +86,7 @@ app.post('/api/users/login', function (req, res) {
 });
 
 
-app.use("/", express.static('www/app'));    // Serve static files.
+app.use("/", express.static(__dirname + "/www/app"));    // Serve static files. (Note: Don't use relative path since it is relative to CWD (Current Working Dir!") Yaiks!
 
 
 //*****************************************************************************

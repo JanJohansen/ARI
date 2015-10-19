@@ -28,10 +28,12 @@ ConfigStore.prototype.load = function () {
     return this.config;
 }
 
-ConfigStore.prototype.save = function (configObject){
+ConfigStore.prototype.save = function (configObject, prettify){
     if (configObject) var config = configObject;
     else var config = this.config;
-    fs.writeFileSync(this.path + "/" + this.fileName + ".json", JSON.stringify(config, this.jsonReplacer, '\t'));
+    if (prettify) prettify = '\t';
+    else prettify = null;
+    fs.writeFileSync(this.path + "/" + this.fileName + ".json", JSON.stringify(config, this.jsonReplacer, prettify));
 }
 
 ConfigStore.prototype.jsonReplacer = function (key, value) {

@@ -1,4 +1,5 @@
 ﻿/*Bootstrap overrides. */
+/*Header margins too big*/
 h1,
 .h1,
 h2,
@@ -7,6 +8,11 @@ h3,
 .h3 {
   margin-top: 0px;
   margin-bottom: 0px;
+}
+
+/*Table elemnt margins too big.*/
+.table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td{
+    padding: 2px;
 }
 
 

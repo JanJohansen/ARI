@@ -1,0 +1,81 @@
+<div id="flexcontainer" ng-controller="floorController">
+
+    <link href="style.css" rel="stylesheet" />
+
+    <style>
+        #flexcontainer {
+            display: flex;
+            flex-direction: column;
+            background-color: lightblue;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 1px;
+        }
+
+        #content {
+            flex: 1 1 auto;
+            min-height: 1px;
+            position: relative;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 1px;
+            /*background-image: url("views/floor/Floorplan.png");
+            background-size: contain;
+            background-repeat:no-repeat;*/
+        }
+
+        /*#floorplan{
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+        }*/
+        .abs {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 1px;
+        }
+
+        .floorplan{
+            /*zoom:5;*/
+            max-width: 100%;
+            max-height: 100%;
+            min-height: 1px;
+        }
+        .onFloorplan{
+            position:absolute;
+        }
+    </style>
+    <ari-value name="ari.time" value="time" ></ari-value>
+    <ari-value name="GW433.Garage.temperature" value="GTemp" ></ari-value>
+    <ari-value name="GW433.Livingroom.temperature" value="LTemp"></ari-value>
+
+    <h1>{{time}}</h1>
+    <div id="content">
+        <div id="relPlace" class="abs">
+            <img id="fp" class="floorplan abs" src="views/floor/Floorplan.png" />
+            <h2 class="onFloorplan" style="top:100%; left:90%" animate-on-change='GTemp'>{{GTemp}}&degC</h2>
+            <h2 class="onFloorplan" style="top:10%; left:10%" animate-on-change='LTemp'>{{LTemp}}&degC</h2>
+        </div>
+    </div>
+    <h1>{{time}}</h1>
+
+    <script>
+        console.log("Boh!");
+/*        $(window).resize(function () {
+            // BEWARE: using zoom on fp will reduce height with zoom factor!!!???
+            var fp = $('#fp');
+            var el = $('#relPlace');
+            el.css("height", fp.height());
+            el.css("width", fp.width());
+            console.log("resized:", fp.width(), fp.height());
+        });*/
+    </script>
+
+</div>

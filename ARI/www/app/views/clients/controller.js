@@ -33,11 +33,14 @@ ariModule.register.controller('clientsController', ['$scope', 'AriClient', "AriU
                     $scope.clientInfo = result;//JSON.stringify(result, null, 4);
                     $scope.$apply();    // make sure nGular treats the update!
                     
-                    $scope.clientInfo.values = {};
+                    if(!$scope.clientInfo.values) $scope.clientInfo.values = {};
                     //var lscope = $scope;
                     ari.subscribe(clientName + ".*", function (path, value) {
                         console.log("->", path, "=", value);
-                        $scope.clientInfo.values[path] = value;
+                        // Remove client name from valuename since we will show it as a "child" of the client.
+                        path = path.substring(path.indexOf(".") + 1);
+                        if (!$scope.clientInfo.values[path]) $scope.clientInfo.values[path] = {};
+                        $scope.clientInfo.values[path].value = value;
                         $scope.$apply();
                     });
                 });

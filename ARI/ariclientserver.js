@@ -8,7 +8,6 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
     this._server = options.ariServer;
     this._ws = options.websocket;
     this.name = "";
-    this._functions = {};
     this._subscriptions = {};
     this.clientModel = null;    // This will be set upon authentication.
     
@@ -235,12 +234,7 @@ AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
 AriClientServer.prototype._webcall_REGISTERRPC = function (pars, callback) {
     console.log("RegisterRPC(", pars, ")");
     
-    if (pars.name in this._server.clientsModel) {
-        console.log("Error: Trying to register RPC with existing name:", pars.name);
-        callback("Error: Trying to register RPC with existing name:" + pars.name, null);
-    } else {
-        this._server.clientsModel[this.name]._functions[pars.name] = pars;
-    }
+    this.clientModel.functions[pars.name] = pars;
     callback(null, {});
 }
 
@@ -294,6 +288,23 @@ AriClientServer.prototype._webcall_CALLRPC = function (pars, callback) {
 */
 
 //-----------------------------------------------------------------------------
+AriClientServer.prototype._webcall_REGISTERVALUE = function (pars, callback) {
+    console.log("RegisterValue(", pars, ")");
+    
+    if (!pars.name) { callback("Error: Trying to register value without specifying name:", null); return;}
+    
+    // Merge optionals into value model.    
+    if (pars.optionals) {
+        for (var key in pars.optionals) {
+            if (!this.clientModel.values[pars.name]) this.clientModel.values[pars.name] = {};   // Create if not existing!
+            this.clientModel.values[pars.name][key] = pars.optionals[key];
+        }
+    }
+    
+    this.clientModel.values[pars.name].name = pars.name;
+    callback(null, {});
+}
+
 AriClientServer.prototype._webcall_SUBSCRIBE = function (pars, callback) {
     console.log("subscribe(", pars, ")");
     
@@ -301,8 +312,35 @@ AriClientServer.prototype._webcall_SUBSCRIBE = function (pars, callback) {
     if (!name) { callback("Error: No name parameter specified!", null); return; }
     
     this._subscriptions[name] = {}; // Just indicate that there is a subscription to topic/value.
-    callback(null, {});
+    
+    callback(null, {}); // Send reply before sending latest values!!!
+    
+    // Send last values of subscribed values.
+    for (var key in this._server.clientsModel) {
+        var client = this._server.clientsModel[key];
+        if (client.values) {
+            for (var valName in client.values) {
+                if (this.matches(name, client.name + "." + valName)) {
+                    var clientValueModel = client.values[valName];
+                    if (clientValueModel.last) {
+                        this._notify("PUBLISH", { "name": client.name + "." + valName , "value": clientValueModel.last });
+                    }
+                }
+            }
+        }
+    }
 }
+
+AriClientServer.prototype.matches = function (strA, strB) {
+    if (strA == strB) return true;
+    var aPos = strA.indexOf('*');
+    if (aPos >= 0) {
+        var aStr = strA.substring(0, aPos);
+        if (aStr == strB.substring(0, aPos)) return true;
+    }
+    return false;
+}
+
 
 AriClientServer.prototype._webcall_UNSUBSCRIBE = function (pars, callback) {
     console.log("unsubscribe(", pars, ")");
@@ -319,8 +357,8 @@ AriClientServer.prototype._webnotify_PUBLISH = function (pars) {
     
     var valueName = pars.name;
     if (!valueName) {
-        console.log("Error: Missing name of RPC to call! - Ignoring...");
+        console.log("Error: Missing name of value to publish! - Ignoring...");
         return;
     }
-    this._server.publish(valueName, pars.value);
+    this._server.publish(this.name + "." + valueName, pars.value);
 }

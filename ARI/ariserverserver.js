@@ -50,9 +50,26 @@ AriServerServer.prototype.provideValues = function () {
     this.serverStarted = new Date().toISOString();
     self._server.publish("ari.serverStart", process.memoryUsage());
 
-    setInterval(function () {
-        self._server.publish("ari.time", new Date().toISOString());
-    }, 1000);
+    this.provideTime(0); // Starts providing time.
+}
+
+// Provide time when milliseconds == 0,
+AriServerServer.prototype.provideTime = function (interval) {
+    var self = this;
+    setTimeout(function () {
+        var date = new Date();
+        var ms = date.getMilliseconds();
+        /*if(ms > 500) self.provideTime(2000 - ms);
+        else self.provideTime(1000 - ms);*/
+        self.provideTime(1000 - ms);
+        
+        // This function might run two times if ms ~999, so only report time when ms<500.
+        if (ms < 500) {
+            date.setMilliseconds(0);    // Just show 000 since we should be very close and not drifting!
+            self._server.publish("ari.time", date.toISOString());
+        }
+
+    }, interval);
 }
 
 //*****************************************************************************
@@ -66,16 +83,21 @@ AriServerServer.prototype._webcall_listClients = function (parameters, callback)
         var client = this._server.clientsModel[key];
         result.push({"name": client.name, "online": client.online});
     }
-
     callback(null, result);
 }
 
 // Return entire model of client.
 AriServerServer.prototype._webcall_getClientInfo = function (parameters, callback) {
     var client = this._server.clientsModel[parameters.clientName];
-    
-
     callback(null, client);
 }
 
+// ...
+AriServerServer.prototype._webcall_getLoggingConfig = function (parameters, callback) {
+    callback(null, { "loggingConfig": this._server.loggingConfig });
+}
 
+AriServerServer.prototype._webcall_setLoggingConfig = function (parameters, callback) {
+    this._server.loggingConfig = parameters.loggingConfig;
+    callback(null, {});
+}

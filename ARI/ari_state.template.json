@@ -1,11 +1,5 @@
 {
 	"clients": {
-		"ari": {
-			"name": "ari",
-			"online": true,
-			"functions": { },
-			"values": { }
-		}
 	},
 	"users": {
 		"admin": {

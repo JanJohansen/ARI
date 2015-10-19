@@ -44,12 +44,6 @@ function AriClient(clientName) {
 AriClient.prototype.onconnect = null;   // User function to handle subscription, registration etc. on connection.
 AriClient.prototype.onerror = null;   // User function to handle errors!
 
-AriClient.prototype.close = function () {
-    this.reconnectInterval = 0;    // No reconnect!
-    this._ws.close();
-    this._ws = null;
-}
-
 AriClient.prototype._connect = function () {
     var self = this;
 
@@ -155,7 +149,10 @@ AriClient.prototype._call = function (command, parameters, callback) {
     msg.req = this._nextReqId++;
     msg.cmd = command;
     msg.pars = parameters;
-    this._pendingCallbacks[msg.req] = callback;
+    if (callback) {
+        // if callback is provided, store it to be called when response is received.
+        this._pendingCallbacks[msg.req] = callback;
+    }
     this._wsSend(JSON.stringify(msg));
 }
 
@@ -196,11 +193,15 @@ AriClient.prototype._handleMessage = function (message) {
         var responseId = msg.res;
         // Get stored callback from calling function.
         msg.callback = this._pendingCallbacks[msg.res];
-        delete this._pendingCallbacks[msg.res];
-        try {
-            msg.callback(msg.err, msg.result);
-        } catch (e) {
-            console.log("!!!!!!!!!!!!!!", e);
+        if (msg.callback) {
+            delete this._pendingCallbacks[msg.res];
+            //try {
+                msg.callback(msg.err, msg.result);
+            /*} catch (e) {
+                console.log("Uncaught exception in callback for _call!", e);
+            }*/
+        } else {
+            // No callback provided...
         }
     } else {
         // Notofication message.
@@ -227,11 +228,16 @@ AriClient.prototype._matches = function (strA, strB) {
 
 
 /*****************************************************************************/
+// connect, disconnect --------------------------------------------------------
+
+// Normal connect with authToken.
 AriClient.prototype.connect = function (authToken) {
     this.authToken = authToken;
     this._connect();    
 };
 
+// First time connect if only user and password is known. 
+// authToken will be available if successfully loggend in.
 AriClient.prototype.connectUser = function (userName, userPassword) {
     this.userName = userName;
     this.userPassword = userPassword;
@@ -239,24 +245,32 @@ AriClient.prototype.connectUser = function (userName, userPassword) {
     this._connect();
 };
 
+// First time connect if its a device/controller.
+// authToken will be available if successfully loggend in after admin has manually approved device.
 AriClient.prototype.connectDevice = function (role) {
     this.role = role == "controller" ? "controller" : "device";
     this.authToken = null;
     this._connect();
 };
 
-/*AriClient.prototype.requestClientToken = function (callback) {
-    var self = this;
-    this._call("REQCLIENTTOKEN", { "clientToken": self._clientToken }, function (err, result) {
-//        if (err) { console.log("Error when trying to re-connect client:", err); };
-//        console.log("re-connectClient result:", result);
-//        self.name = result.givenName;
-        callback(err, result);
-    });
-};
-*/
+// Close connection to server.
+AriClient.prototype.close = function () {
+    this.reconnectInterval = 0;    // No reconnect!
+    this._ws.close();
+    this._ws = null;
+}
 
-// PUB/SUB --------------------------------------------------------------------
+
+/*****************************************************************************/
+// Values, PUB/SUB ------------------------------------------------------------
+AriClient.prototype.registerValue = function (name, optionals, callback) {
+    var self = this;
+    this._call("REGISTERVALUE", { "name": name , "optionals": optionals}, function (err, result) {
+        if (err) { console.log("Error:", err); if (callback) callback(err, null); return; }
+        if (callback) callback(null, result);
+    });
+}
+
 AriClient.prototype.publish = function (name, value, callback) {
     this._notify("PUBLISH", { "name": name, "value": value });
 }
@@ -264,7 +278,7 @@ AriClient.prototype.publish = function (name, value, callback) {
 AriClient.prototype.subscribe = function (name, callback) {
     var self = this;
     this._call("SUBSCRIBE", { "name": name }, function (err, result) {
-        if (err) { console.log("Error:", err); callback(err, null); return;}
+        if (err) { console.log("Error:", err); if(callback) callback(err, null); return;}
         self._subscriptions[name] = { "callback": callback };
     });
 }
@@ -272,20 +286,22 @@ AriClient.prototype.subscribe = function (name, callback) {
 AriClient.prototype.unsubscribe = function (name, callback) {
     var self = this;
     this._call("UNSUBSCRIBE", { "name": name }, function (err, result) {
-        if (err) { console.log("Error:", err); callback(err, null); return; }
+        if (err) { console.log("Error:", err); if(callback) callback(err, null); return; }
         delete self._subscriptions[name];
-        if (callback) callback(null, null);
+        if (callback) callback(null, result);
     });
 }
 
+/*****************************************************************************/
 // RPC ------------------------------------------------------------------------
 // RegisterRpc...
-AriClient.prototype.registerRpc = function (rpcName, rpcFunction) {
-    if (this._functions[rpcName]) throw ("Trying to register RPC with existing name.");
+AriClient.prototype.registerRpc = function (rpcName, optionals, rpcFunction) {
     this._functions[rpcName] = { "func": rpcFunction };
     
     // Send registration to server!
-    this._call("REGISTERRPC", { name: rpcName }, function (err, result) {
+    var info = optionals || {};
+    info.name = rpcName;
+    this._call("REGISTERRPC", info, function (err, result) {
         if (err) { console.log("Error:", err); return; }
         console.log("RPC", rpcName, "registered.");
     });
@@ -337,9 +353,10 @@ AriClient.prototype._webcall_CALLRPC = function (msg, callback) {
     var params = msg.params;
     
     // Call the local RPC                
-    var result = rpcFunc(params);
-    // send result back.  
-    if (callback === "function") callback(null, result);    //indicate OK
+    var result = rpcFunc(params, function (err, result) {
+        // send result back.  
+        callback(err, result);
+    });
 }
 
 //*****************************************************************************
