@@ -5,6 +5,7 @@
 var AriClientServer = require("./ariclientserver.js").AriClientServer;
 var AriServerServer = require("./ariserverserver.js").AriServerServer;
 var ConfigStore = require("./configStore.js");
+var fs = require('fs');
 
 var Ari = module.exports.Ari = function (options) {
     var self = this;
@@ -28,12 +29,13 @@ var Ari = module.exports.Ari = function (options) {
     
     // DEBUG!!!!
     this.loggingConfig = {
-        "values": { "GW433.*": {} },
-        "saveInterval": "10"
+        "values": { "*": {} },
+        "saveInterval": "10",
+        "logFilePath": "www/app/logs/"
     };
     
     // Save log every at intervals
-    setInterval(this.saveLog, this.loggingConfig.saveInterval * 60 * 1000);
+    setInterval(this.saveLog.bind(this), this.loggingConfig.saveInterval * 60 * 1000);
 
     // Persisted client information indexed by client.givenName. Contains infor about connection state, etc...
     // ari: represents the server API, etc.
@@ -81,18 +83,11 @@ Ari.prototype.publish = function (name, value) {
         var loggingConfig = this.loggingConfig.values[key];
         if (this.matches(key, name)) {
             if (!this.logs[name]) this.logs[name] = []; // Create if not exists.
-            var ds = (new Date()).toISOString().replace(/[^0-9]/g, "");
+            //var ds = (new Date()).toISOString().replace(/[^0-9]/g, "");
+            var ds = (new Date().getTime());
             this.logs[name].push({ "t": ds, "v": value });
         }
     }
-
-    var loggingConfig = this.loggingConfig.values[name];
-    if (loggingConfig) {
-        // For now, if it's present in loggingConfig, we log values...
-        if (!this.logs[name]) this.logs[name] = []; // Create if not exists.
-        this.logs[name].push({ "time": new Date().toISOString(), "value": value });
-    }
-    
 
     var clientName = name.split(".")[0];
     
@@ -148,12 +143,25 @@ Ari.prototype.shutDown = function () {
     };
     this.stateStore.save(state);
 
-    this.saveLog();
+    this.saveLog(true);
 }
 
-Ari.prototype.saveLog = function(){
+// Store logs for individual values in individual files named "valueName-date" with a timestam and a avalue separated by comma.
+Ari.prototype.saveLog = function(synchronous) {
     var d = new Date();
-    var fileName = "ari_logs_" + (new Date()).toISOString().replace(/[^0-9]/g, "");
-    var logStore = new ConfigStore(__dirname, fileName);
-    logStore.save({ "logs": this.logs }, false);
+    var dateString = (new Date()).toISOString().replace(/[^0-9]/g, "").substring(0,8);
+
+    for (var key in this.logs) {
+        var fileName = __dirname + "/" + this.loggingConfig.logFilePath + key + "_" + dateString + ".log"; // e.g. "./logs/ari.time_20151001.log"
+        var log = this.logs[key];   // Get reference to log...
+        delete this.logs[key];// = [];        // Assign new empty array - this prevents race condition.
+        
+        var data = [];
+        for (var i = 0; i < log.length; i++) {
+            data[i] = JSON.stringify(log[i].t) + "," + JSON.stringify(log[i].v);
+        }
+        data = data.join("\n") + "\n";
+        if(synchronous) fs.appendFileSync(fileName, data);
+        else fs.appendFile(fileName, data, function () { console.log("Log file written:", fileName) });
+    }
 }

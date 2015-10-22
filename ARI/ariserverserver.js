@@ -1,5 +1,7 @@
 ﻿"use strict";
 
+var fs = require('fs');
+
 var AriServerServer = module.exports.AriServerServer = function (options) {
     this._server = options.ariServer;
     this.name = options.name || "ari";
@@ -48,7 +50,7 @@ AriServerServer.prototype.provideValues = function () {
     var self = this;
     
     this.serverStarted = new Date().toISOString();
-    self._server.publish("ari.serverStart", process.memoryUsage());
+    self._server.publish("ari.serverStart", "Start!");
 
     this.provideTime(0); // Starts providing time.
 }
@@ -65,7 +67,7 @@ AriServerServer.prototype.provideTime = function (interval) {
         
         // This function might run two times if ms ~999, so only report time when ms<500.
         if (ms < 500) {
-            date.setMilliseconds(0);    // Just show 000 since we should be very close and not drifting!
+            //date.setMilliseconds(0);    // Just show 000 since we should be very close and not drifting!
             self._server.publish("ari.time", date.toISOString());
         }
 
@@ -92,7 +94,8 @@ AriServerServer.prototype._webcall_getClientInfo = function (parameters, callbac
     callback(null, client);
 }
 
-// ...
+//-----------------------------------------------------------------------------
+// Return array of clients.
 AriServerServer.prototype._webcall_getLoggingConfig = function (parameters, callback) {
     callback(null, { "loggingConfig": this._server.loggingConfig });
 }
@@ -101,3 +104,32 @@ AriServerServer.prototype._webcall_setLoggingConfig = function (parameters, call
     this._server.loggingConfig = parameters.loggingConfig;
     callback(null, {});
 }
+
+AriServerServer.prototype._webcall_listLogs = function (parameters, callback) {
+    
+    var logsPath = __dirname + "/" + this._server.loggingConfig.logFilePath;
+     //+ key + "_" + dateString + ".log"; // e.g. "./logs/ari.time_20151001.log"
+    var logs = [];
+    fs.readdir(logsPath, function (err, files) {
+        files.forEach(function (file) {
+            logs.push(file);
+        });
+        callback(null, logs);
+    });
+}
+
+AriServerServer.prototype._webcall_getLog = function (parameters, callback) {
+    
+    // TODO: implement time limits for getting logs, and combine multiple files into one reply!
+    
+    if (!parameters.name) { callback("Error: Missing name!", null); return; }
+
+    var logsPath = __dirname + "/" + this._server.loggingConfig.logFilePath;
+    var fileName = parameters.name;// + "_" + dateString + ".log"; // e.g. "./logs/ari.time_20151001.log"
+    fs.readFile(logsPath + "/" + fileName, "utf8", function (err, data) {
+        //if (err) throw err;
+        callback(null, data);
+    });    
+    
+}
+

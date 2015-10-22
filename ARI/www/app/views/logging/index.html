@@ -1,0 +1,62 @@
+<div class="container-fluid" ng-controller="loggingController">
+    <div class="row">
+        <div class="col-xs-12 col-sm-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Logs:
+                    <input ng-model="logFilter">
+                </div>
+                <!-- Table -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name:</th>
+                        </tr>
+                    </thead>
+                    <tr ng-repeat="log in logs | filter:logFilter">
+                        <td><button ng-click="logSelected(log)">{{log}}</button></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>{{logName}}</h3>
+                </div>
+                <!-- Table 
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Time:</th>
+                            <th>Value:</th>
+                        </tr>
+                    </thead>
+                    <tr ng-repeat="logEntry in data">
+                        <td>{{::logEntry.time}}</td>
+                        <td>{{::logEntry.value}}</td>
+                    </tr>
+                </table>-->
+            </div>
+            <div class="panel panel-default" >
+                <div class="panel-heading">
+                    <h3>Graph</h3>
+                </div>
+                <div style="display: block; height:600px;">
+                    <style>
+                        .axis path {
+                            fill: none;
+                            stroke: #777;
+                            shape-rendering: crispEdges;
+                        }
+                        .axis text {
+                            font-family: Lato;
+                            font-size: 13px;
+                        }
+                    </style>
+                    <d3-lines style="display: block;height:100%;" data="data"></d3-lines>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

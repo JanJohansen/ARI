@@ -45,6 +45,7 @@
     <Compile Include="www\app\ngAriValue.js" />
     <Compile Include="www\app\ngD3.js" />
     <Compile Include="www\app\ngHBarChart.js" />
+    <Compile Include="www\app\ngLineChart.js" />
     <Compile Include="www\app\ngUser.js" />
     <Compile Include="www\app\ngAriClient.js" />
     <Compile Include="www\app\node_modules\angular-animate\angular-animate.js" />
@@ -64,6 +65,7 @@
     <Compile Include="www\app\views\clients\controller.js" />
     <Compile Include="www\app\views\clock\controller.js" />
     <Compile Include="www\app\views\floor\controller.js" />
+    <Compile Include="www\app\views\logging\controller.js" />
     <Compile Include="www\app\views\login\controller.js" />
     <Compile Include="www\app\views\users\controller.js" />
     <Compile Include="www\app\routeResolver.js" />
@@ -105,6 +107,7 @@
     <Content Include="www\app\views\floor\g3356.png" />
     <Content Include="www\app\views\floor\index.html" />
     <Content Include="www\app\views\floor\style.css" />
+    <Content Include="www\app\views\logging\index.html" />
     <Content Include="www\app\views\login\index.html" />
     <Content Include="www\app\views\users\index.html" />
     <Content Include="www\package.json" />
@@ -116,6 +119,7 @@
     <Folder Include="www\" />
     <Folder Include="www\app\" />
     <Folder Include="www\app\css\" />
+    <Folder Include="www\app\logs\" />
     <Folder Include="www\app\node_modules\" />
     <Folder Include="www\app\node_modules\angular-animate\" />
     <Folder Include="www\app\node_modules\angular-route\" />
@@ -133,6 +137,7 @@
     <Folder Include="www\app\views\clients\" />
     <Folder Include="www\app\views\clock\" />
     <Folder Include="www\app\views\floor\" />
+    <Folder Include="www\app\views\logging\" />
     <Folder Include="www\app\views\login\" />
     <Folder Include="www\app\views\users\" />
     <Folder Include="www\app\scripts\" />

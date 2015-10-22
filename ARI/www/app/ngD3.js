@@ -1,5 +1,5 @@
-﻿var app = angular.module('d3', []);
-app.factory('d3Service', ['$document', '$q', '$rootScope',
+﻿var app = angular.module('ari', []);
+app.factory('d3', ['$document', '$q', '$rootScope',
     function ($document, $q, $rootScope) {
         var d = $q.defer();
         function onScriptLoad() {

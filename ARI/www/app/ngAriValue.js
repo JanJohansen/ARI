@@ -1,13 +1,6 @@
 ﻿
 var app = angular.module('ari');
-app/*.controller('Controller', ['$scope', function ($scope) {
-        $scope.name = "ari.?";
-        $scope.val = "42";
-        
-        console.log("DEBG!");
-
-    }])
-*/.directive('ariValue', ["$interval", "AriClient",
+app.directive('ariValue', ["$interval", "AriClient",
     function ($interval, AriClient) {
         console.log("registering ari-value directive.");
         // get singleton connection.
@@ -16,7 +9,6 @@ app/*.controller('Controller', ['$scope', function ($scope) {
         return {
             restrict: 'E',
             link: function (scope, element, attrs) {
-                
                 console.log("link:attrs =", attrs);
                 ari.subscribe(attrs.name, function (path, value) {
                     scope.$parent[attrs.value] = value;

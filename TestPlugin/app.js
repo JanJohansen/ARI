@@ -44,9 +44,6 @@ ari.onconnect = function (result) {
         stateStore.save();
     }
     
-    WT450LastVals = {};
-    PT2262Timers = {};
-    
     clientName = result.name;   // Store name in case we got a new one (with (x) at the end!)
     console.log("Client connected as \"" + ari.name + "\"");
     
@@ -83,7 +80,7 @@ ari.onconnect = function (result) {
         console.log('open');
         
         serialPort.on('data', function (data) {
-            //console.log('433GW: ' + data);
+            console.log('433GW: ' + data);
             handle433Tlg(data);
 
         });
@@ -120,8 +117,8 @@ ari.onconnect = function (result) {
             temperature = temperature / 10;
             
             // Convert to strings.
-            temperature = temperature.toFixed(1);   // Only show 1 decimal!
-            humidity = humidity.toString();
+            temperature = parseFloat(temperature.toFixed(1));   // Only show 1 decimal!
+            humidity = humidity;
             
             // Debug!
             var name = "H" + house.toString() + "S" + station.toString();
