@@ -84,7 +84,7 @@ Ari.prototype.publish = function (name, value) {
         if (this.matches(key, name)) {
             if (!this.logs[name]) this.logs[name] = []; // Create if not exists.
             //var ds = (new Date()).toISOString().replace(/[^0-9]/g, "");
-            var ds = (new Date().getTime());
+            var ds = new Date().getTime();
             this.logs[name].push({ "t": ds, "v": value });
         }
     }
@@ -149,10 +149,11 @@ Ari.prototype.shutDown = function () {
 // Store logs for individual values in individual files named "valueName-date" with a timestam and a avalue separated by comma.
 Ari.prototype.saveLog = function(synchronous) {
     var d = new Date();
-    var dateString = (new Date()).toISOString().replace(/[^0-9]/g, "").substring(0,8);
+    //var dateString = (new Date()).toISOString().replace(/[^0-9]/g, "").substring(0,8);  // Daily file...
 
     for (var key in this.logs) {
-        var fileName = __dirname + "/" + this.loggingConfig.logFilePath + key + "_" + dateString + ".log"; // e.g. "./logs/ari.time_20151001.log"
+        //var fileName = __dirname + "/" + this.loggingConfig.logFilePath + key + "_" + dateString + ".log"; // e.g. "./logs/ari.time_20151001.log"
+        var fileName = __dirname + "/" + this.loggingConfig.logFilePath + key + ".log";
         var log = this.logs[key];   // Get reference to log...
         delete this.logs[key];// = [];        // Assign new empty array - this prevents race condition.
         

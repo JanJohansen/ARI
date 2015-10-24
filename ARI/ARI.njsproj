@@ -116,6 +116,8 @@
   <ItemGroup>
     <Folder Include="documentation\" />
     <Folder Include="node_modules\" />
+    <Folder Include="plugins\" />
+    <Folder Include="plugins\GW433\" />
     <Folder Include="www\" />
     <Folder Include="www\app\" />
     <Folder Include="www\app\css\" />

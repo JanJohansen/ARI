@@ -3,7 +3,18 @@ var serialport = require("serialport");
 var SerialPort = serialport.SerialPort; // localize object constructor 
 var ConfigStore = require("../ARI/configStore.js");
 
-var serialPort = null;
+//var serialPort = null;
+
+// For debug - and later configuration!
+serialport.list(function (err, ports) {
+    console.log("Serial ports:");
+    ports.forEach(function (port) {
+        console.log(port.comName, "-", port.manufacturer, "(" + port.pnpId + ")");
+    });
+});
+
+// TODO: Select serial port based on pnpId to be able to use same HW when connected to different UDB port.
+// TODO: Implement set/getConfig with "latest available" + configgured pnpId!
 
 // Load state.
 var stateStore = new ConfigStore(__dirname, "GW433_state");

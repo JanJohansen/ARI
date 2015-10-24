@@ -275,18 +275,6 @@ AriClientServer.prototype._webcall_CALLRPC = function (pars, callback) {
     }
 };
 
-
-/*AriClientServer.prototype.callRpc = function (name, params, callback) {
-    // Send command telegram...    
-    this._ws.send(JSON.stringify({ rid: this._nextRequestId, cmd: "CALLRPC", name: name, params: params }));
-    
-    // Store callback for returning results.
-    this._pendingRpcs[this._nextRequestId].cb = callback;
-    
-    this._nextRequestId++;
-};
-*/
-
 //-----------------------------------------------------------------------------
 AriClientServer.prototype._webcall_REGISTERVALUE = function (pars, callback) {
     console.log("RegisterValue(", pars, ")");
