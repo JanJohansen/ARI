@@ -38,6 +38,7 @@
     <Compile Include="ariclientserver.js" />
     <Compile Include="ariserverserver.js" />
     <Compile Include="configStore.js" />
+    <Compile Include="plugins\SysInfo\sysInfo.js" />
     <Compile Include="server.js" />
     <Compile Include="sorted-object-array.js" />
     <Compile Include="www\app\app.js" />
@@ -79,6 +80,7 @@
     <Content Include="nodemon.json" />
     <Content Include="package.json" />
     <Content Include="documentation\readme.html" />
+    <Content Include="plugins\SysInfo\ariManifetst.json" />
     <Content Include="README.md" />
     <Content Include="Todo.txt" />
     <Content Include="www\app\app.css" />
@@ -118,6 +120,7 @@
     <Folder Include="node_modules\" />
     <Folder Include="plugins\" />
     <Folder Include="plugins\GW433\" />
+    <Folder Include="plugins\SysInfo\" />
     <Folder Include="www\" />
     <Folder Include="www\app\" />
     <Folder Include="www\app\css\" />

@@ -150,7 +150,7 @@ Ari.prototype.shutDown = function () {
 // TODO: Convert this to an async function!
 Ari.prototype.saveLog = function(synchronous) {
     // Make sure there is a log folder.!
-    fs.mkdirSync(__dirname + "/" + this.loggingConfig.logFilePath);
+    try { fs.mkdirSync(__dirname + "/" + this.loggingConfig.logFilePath); } catch (e) { };  // Ignore exception (dir already exists!)
         
     //var d = new Date();
     //var dateString = (new Date()).toISOString().replace(/[^0-9]/g, "").substring(0,8);  // Daily file...
