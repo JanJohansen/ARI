@@ -147,8 +147,12 @@ Ari.prototype.shutDown = function () {
 }
 
 // Store logs for individual values in individual files named "valueName-date" with a timestam and a avalue separated by comma.
+// TODO: Convert this to an async function!
 Ari.prototype.saveLog = function(synchronous) {
-    var d = new Date();
+    // Make sure there is a log folder.!
+    fs.mkdirSync(__dirname + "/" + this.loggingConfig.logFilePath);
+        
+    //var d = new Date();
     //var dateString = (new Date()).toISOString().replace(/[^0-9]/g, "").substring(0,8);  // Daily file...
 
     for (var key in this.logs) {

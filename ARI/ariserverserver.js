@@ -111,6 +111,8 @@ AriServerServer.prototype._webcall_listLogs = function (parameters, callback) {
      //+ key + "_" + dateString + ".log"; // e.g. "./logs/ari.time_20151001.log"
     var logs = [];
     fs.readdir(logsPath, function (err, files) {
+        if (err) { callback(err, null); return; }
+
         files.forEach(function (file) {
             logs.push(file);
         });
