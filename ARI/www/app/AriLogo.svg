@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="106.01053mm"
+   height="105.59031mm"
+   viewBox="0 0 375.62786 374.13889"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="AriLogo.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="284.46883"
+     inkscape:cy="79.53738"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="2560"
+     inkscape:window-height="1417"
+     inkscape:window-x="1912"
+     inkscape:window-y="1072"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0.27684768,-1.0154184)">
+    <g
+       id="g4231"
+       style="opacity:1"
+       transform="translate(-185.71429,-102.14286)">
+      <g
+         transform="matrix(0.73365037,0,0,0.80623864,185.43759,103.15848)"
+         id="g3363">
+        <path
+           sodipodi:nodetypes="cccscccccssscccccccsssccsccssscc"
+           style="fill:#000000"
+           inkscape:connector-curvature="0"
+           d="M 26.5,236.097 255.996,37.194 485.507,236.096 c 3.031,2.625 6.781,3.906 10.484,3.906 4.484,0 8.938,-1.891 12.094,-5.5 5.796,-6.687 5.062,-16.78 -1.594,-22.593 L 266.495,3.914 c -6.016,-5.219 -14.937,-5.219 -20.952,0 l -85.545,74.108 0,-30.015 c 0,-17.663 -14.328,-31.999 -32,-31.999 -17.655,0 -31.999,14.336 -31.999,31.999 l 0,85.467 -90.483,78.436 c -6.656,5.781 -7.406,15.906 -1.609,22.593 5.828,6.656 15.905,7.391 22.593,1.594 z m 233.22256,227.80091 28.86124,0.15662 31.4102,-0.0635 95.998,0 c 17.672,0 32,-14.344 32,-32 l 0,-156.808 c 0,-9.625 -4.281,-18.664 -11.703,-24.742 L 276.292,119.271 c -5.891,-4.836 -13.094,-7.266 -20.296,-7.266 -7.203,0 -14.391,2.43 -20.281,7.266 L 75.718,250.44 c -7.422,6.047 -11.719,15.117 -11.719,24.742 l 0,156.809 c 0,17.656 14.344,32 32,32 l 95.998,0 z"
+           id="path3365" />
+      </g>
+      <path
+         style="fill:#ffffff;fill-opacity:1"
+         inkscape:connector-curvature="0"
+         d="m 298.05252,314.95084 q 0.92267,-7.06543 10.14935,-15.82655 12.30225,-11.5873 27.68007,-18.65273 20.2987,-8.76113 40.90497,-8.76113 21.52894,0.28262 40.90497,8.76113 16.30048,7.63066 27.68006,18.65273 10.14936,10.45682 10.14936,15.82655 -0.92267,7.06543 -10.14936,15.82655 -12.30225,11.5873 -27.68006,18.65273 -20.29871,8.76113 -40.90497,8.76113 -21.52894,-0.28262 -40.90497,-8.76113 -16.30048,-7.63066 -27.68007,-18.65273 -10.14935,-10.45683 -10.14935,-15.82655 z m 41.52008,0 q 0,13.56562 10.91833,23.03322 10.91832,9.4676 26.29613,9.4676 15.37782,0 26.29614,-9.4676 10.91832,-9.4676 10.91832,-23.03322 0,-13.56562 -10.91832,-23.03322 -10.91832,-9.4676 -26.29614,-9.4676 -15.37781,0 -26.29613,9.4676 -10.91833,9.4676 -10.91833,23.03322 z m 13.53248,-0.14138 q 0,-8.6199 6.92009,-14.69609 6.9201,-6.07619 16.76189,-6.07619 9.84181,0 16.7619,6.07619 6.92009,6.07619 6.92009,14.69609 0,8.61989 -6.92009,14.83733 -6.92009,6.21742 -16.7619,6.21756 -9.84179,1.5e-4 -16.76189,-6.21756 -6.92009,-6.21773 -6.92009,-14.83733 z"
+         id="path3377" />
+    </g>
+  </g>
+</svg>
