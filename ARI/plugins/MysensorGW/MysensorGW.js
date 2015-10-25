@@ -9,9 +9,11 @@ var serialPort = null;
 // For debug - and later configuration!
 SerialPortModule.list(function (err, ports) {
     console.log("Serial ports:");
-    ports.forEach(function (port) {
-        console.log(port.comName, "-", port.manufacturer, "(" + port.pnpId + ")");
-    });
+    if (ports) {
+        ports.forEach(function (port) {
+            console.log(port.comName, "-", port.manufacturer, "(" + port.pnpId + ")");
+        });
+    } else console.log("NONE!");
 });
 
 // TODO: Select serial port based on pnpId to be able to use same HW when connected to different UDB port.

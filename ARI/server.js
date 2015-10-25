@@ -142,7 +142,7 @@ fs.readdir(pluginsPath, function (err, files) {
                                     });
                 
                                     pluginProcess.on('close', function (code) {
-                                        console.log(plugin.name + " exit!:", data.toString());
+                                        console.log(plugin.name + " exit!:", code.toString());
                                         // TODO: Implement restart plugin n times before reporting error?
                                     });
                                 }
