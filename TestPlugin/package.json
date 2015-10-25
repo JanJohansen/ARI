@@ -12,7 +12,7 @@
     "jquery": "^2.1.4",
     "jquery-ui": "^1.10.5",
     "jsonfile": "^2.2.2",
-    "serialport": "^1.7.4",
+    "serialport": "^2.0.2",
     "ws": "^0.8.0"
   }
 }

@@ -281,15 +281,15 @@ AriClientServer.prototype._webcall_REGISTERVALUE = function (pars, callback) {
     
     if (!pars.name) { callback("Error: Trying to register value without specifying name:", null); return;}
     
+    if (!this.clientModel.values[pars.name]) this.clientModel.values[pars.name] = {};   // Create if not existing!
+    this.clientModel.values[pars.name].name = pars.name;
+
     // Merge optionals into value model.    
     if (pars.optionals) {
         for (var key in pars.optionals) {
-            if (!this.clientModel.values[pars.name]) this.clientModel.values[pars.name] = {};   // Create if not existing!
             this.clientModel.values[pars.name][key] = pars.optionals[key];
         }
     }
-    
-    this.clientModel.values[pars.name].name = pars.name;
     callback(null, {});
 }
 

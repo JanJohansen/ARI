@@ -1,0 +1,31 @@
+{
+	"packageInfo": {
+		"icon": "someIcon.ico",
+		"name": "MysensorGW",
+		"version": "0.0.1",
+		"description": "Mysensors network interface.",
+		"homepage": "?",
+		"gitUrl": "..."
+	},
+	"plugins": [
+		{
+			"name": "MysensorGW",
+			"version": "0.0.1",
+			"icon": "file.ico",
+			"description": "Plugin to interface to Mysensors network..",
+			"info": { },
+			"nodeMain": "MysensorGW.js"
+		}
+	],
+	"views": [
+		{
+			"name": "settings",
+			"version": "0.0.1",
+			"icon": "settings.ico",
+			"description": "Settings view for MysensorGW plugin.",
+			"ngView": "views/settings.html",
+			"ngController": "views/settings.js", 
+			"minDefaultTargetRole": "admin"
+		}
+	]
+}

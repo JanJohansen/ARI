@@ -1,12 +1,11 @@
 ﻿var AriClient = require("../ARI/www/app/ariclient.js").AriClient;
-var serialport = require("serialport");
-var SerialPort = serialport.SerialPort; // localize object constructor 
+var SerialPortModule = require("serialport");
+var SerialPort = SerialPortModule.SerialPort; // localize object constructor 
 var ConfigStore = require("../ARI/configStore.js");
 
-//var serialPort = null;
 
 // For debug - and later configuration!
-serialport.list(function (err, ports) {
+SerialPortModule.list(function (err, ports) {
     console.log("Serial ports:");
     ports.forEach(function (port) {
         console.log(port.comName, "-", port.manufacturer, "(" + port.pnpId + ")");
@@ -47,6 +46,7 @@ var config = {
 
 var WT450LastVals = {};
 var PT2262Timers = {};
+var serialPort = null;
 
 ari.onconnect = function (result) {
     if (!state.authToken) {
@@ -84,7 +84,7 @@ ari.onconnect = function (result) {
     // Handle receiver on serial port.
     serialPort = new SerialPort("COM6", {
         baudrate: 115200,
-        parser: serialport.parsers.readline("\n")
+        parser: SerialPortModule.parsers.readline("\n")
     });
     
     serialPort.on("open", function () {
@@ -177,7 +177,7 @@ var pt2262Timeout = function (alias){
     delete PT2262Timers[alias];
 }
 
-ari.onerror = function (result) {
+ari.onerror = function (err) {
     if (serialPort) {
         if (serialPort.isOpen()) serialPort.close();
         serialPort = null;
