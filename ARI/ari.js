@@ -77,7 +77,7 @@ Ari.prototype.callRpc = function (name, params, callback) {
 Ari.prototype.publish = function (name, value) {
     
     // This would be a good place to log values...
-    console.log("PUB:", name, "=", value);
+    //console.log("PUB:", name, "=", value);
     
     for (var key in this.loggingConfig.values) {
         var loggingConfig = this.loggingConfig.values[key];

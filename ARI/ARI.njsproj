@@ -80,7 +80,7 @@
     <Content Include="nodemon.json" />
     <Content Include="package.json" />
     <Content Include="documentation\readme.html" />
-    <Content Include="plugins\SysInfo\ariManifetst.json" />
+    <Content Include="plugins\SysInfo\ariManifest.json" />
     <Content Include="README.md" />
     <Content Include="Todo.txt" />
     <Content Include="www\app\app.css" />
@@ -119,8 +119,8 @@
     <Folder Include="documentation\" />
     <Folder Include="node_modules\" />
     <Folder Include="plugins\" />
-    <Folder Include="plugins\GW433\" />
     <Folder Include="plugins\SysInfo\" />
+    <Folder Include="plugins\SysInfo\views\" />
     <Folder Include="www\" />
     <Folder Include="www\app\" />
     <Folder Include="www\app\css\" />

@@ -341,7 +341,7 @@ AriClientServer.prototype._webcall_UNSUBSCRIBE = function (pars, callback) {
 }
 
 AriClientServer.prototype._webnotify_PUBLISH = function (pars) {
-    console.log("publish(", pars, ")");
+    //console.log("publish(", pars, ")");
     
     var valueName = pars.name;
     if (!valueName) {

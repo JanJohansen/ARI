@@ -1,0 +1,31 @@
+{
+	"packageInfo": {
+		"icon": "someIcon.ico",
+		"name": "sysInfo",
+		"version": "0.0.1",
+		"description": "...",
+		"homepage": "?",
+		"gitUrl": "https:github.com/JanJohansen/ARI/plugins/sysInfo"
+	},
+	"plugins": [
+		{
+			"name": "sysInfo",
+			"version": "0.0.1",
+			"icon": "file.ico",
+			"description": "Plugin delivering system level information like CPU load, free memmory etc.",
+			"info": { },
+			"nodeMain": "sysInfo.js"
+		}
+	],
+	"views": [
+		{
+			"name": "sttings",
+			"version": "0.0.1",
+			"icon": "settings.ico",
+			"description": "Settings view for sysInfo plugin.",
+			"ngView": "admin.html",
+			"ngController": "admin.js", 
+			"minDefaultTargetRole": "user"
+		}
+	]
+}

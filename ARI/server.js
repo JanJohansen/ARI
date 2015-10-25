@@ -9,6 +9,8 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser')
 var jwt = require('jwt-simple');
+var fs = require("fs");
+var cp = require('child_process');
 
 //*****************************************************************************
 // Set up Ari server...
@@ -50,7 +52,7 @@ app.use(function (req, res, next) {
         next();
     } else {
         // Allow for now!
-        //if thereis no token check if targeturl route is allowed without it.
+        //if there is no token check if targeturl route is allowed without it.
         //console.log("Checking if allowed without authentication?", req.url);
         //res.redirect("#/views/login");
         next();
@@ -107,3 +109,48 @@ function handleConsoleQuit() {
     ari.shutDown();
     process.exit();
 }
+
+
+// Start installed plugins.
+var pluginsPath = __dirname + "/plugins";
+fs.readdir(pluginsPath, function (err, files) {
+    if (err) { return; }
+   
+    files.forEach(function (dir) {
+        fs.stat(pluginsPath + "/" + dir, function (error, stat) {
+            if (stat && stat.isDirectory()) {
+                // We found sub-dir of plugins dir.
+                // Read manifest.
+                fs.readFile(pluginsPath + "/" + dir + "/" + "ariManifest.json", function (err, data) {
+                    try { var manifest = JSON.parse(data) } catch (e) { console.log(e); return; }
+                    if (manifest) {
+                        if (manifest.plugins) {
+                            for (var id in manifest.plugins) {
+                                var plugin = manifest.plugins[id];
+                                if (plugin.name && plugin.nodeMain) {
+                                    console.log("Starting plugin:", plugin.name);
+                                    
+                                    // Child will use parent's stdios
+                                    var pluginProcess = cp.spawn("node", [plugin.nodeMain], { "cwd": pluginsPath + "/" + plugin.name });
+                
+                                    pluginProcess.stdout.on('data', function (data) {
+                                        console.log("/" + plugin.name + ":", data.toString());
+                                    });
+                
+                                    pluginProcess.stderr.on('data', function (data) {
+                                        console.log(plugin.name + " ERROR:", data.toString());
+                                    });
+                
+                                    pluginProcess.on('close', function (code) {
+                                        console.log(plugin.name + " exit!:", data.toString());
+                                        // TODO: Implement restart plugin n times before reporting error?
+                                    });
+                                }
+                            }
+                        }
+                    }
+                });
+            } // else its a file or error...
+        });
+    });
+});
