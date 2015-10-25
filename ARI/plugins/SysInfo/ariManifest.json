@@ -1,7 +1,7 @@
 {
 	"packageInfo": {
 		"icon": "someIcon.ico",
-		"name": "sysInfo",
+		"name": "SysInfo",
 		"version": "0.0.1",
 		"description": "...",
 		"homepage": "?",
@@ -24,7 +24,7 @@
 			"icon": "settings.ico",
 			"description": "Settings view for sysInfo plugin.",
 			"ngView": "admin.html",
-			"ngController": "admin.js", 
+			"ngController": "admin.js",
 			"minDefaultTargetRole": "user"
 		}
 	]
