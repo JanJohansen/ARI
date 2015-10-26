@@ -77,7 +77,7 @@
     <Compile Include="www\app\scripts\jquery.ui.touch-punch.js" />
     <Compile Include="www\app\scripts\jquery.ui.touch-punch.min.js" />
     <Content Include="ari_config.json" />
-    <Content Include="ari_state.template.json" />
+    <Content Include="ari_state.default.json" />
     <Content Include="config.json" />
     <Content Include="nodemon.json" />
     <Content Include="package.json" />
