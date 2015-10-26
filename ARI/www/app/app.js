@@ -73,7 +73,7 @@ ariModule.config(['$routeProvider',
             templateUrl: 'views/clients.html',
             controller: 'clientsController'
         })
-        // Dynamic view loading from "views" foler @ runtime.
+        // Dynamic view loading from "views" folder @ runtime.
         .when('/views/:view', {
             templateUrl: function (rd) {
                 return 'views/' + rd.view + '/index.html';
@@ -85,6 +85,29 @@ ariModule.config(['$routeProvider',
                     
                     var dependencies = [
                         'views/' + $route.current.params.view + '/controller.js'
+                    ];
+                    
+                    $script(dependencies, function () {
+                        $rootScope.$apply(function () {
+                            deferred.resolve();
+                        });
+                    });
+                    
+                    return deferred.promise;
+                }
+            }
+        })
+        .when('/plugins/:plugin/:view', {
+            templateUrl: function (rd) {
+                return "plugins/" + rd.plugin + "/" + rd.view + ".html";
+            },
+            resolve: {
+                load: function ($q, $route, $rootScope) {
+                    
+                    var deferred = $q.defer();
+                    
+                    var dependencies = [
+                        "plugins/" + $route.current.params.plugin + "/" + $route.current.params.view + '.js'
                     ];
                     
                     $script(dependencies, function () {

@@ -16,12 +16,12 @@ ConfigStore.prototype.load = function () {
     } catch (e) {
         // File not found. Check if teplate file exists.
         try {
-            var str = fs.readFileSync(this.path + "/" + this.fileName + ".template.json", 'utf8', { "flags": "r" })
+            var str = fs.readFileSync(this.path + "/" + this.fileName + ".default.json", 'utf8', { "flags": "r" })
             this.config = JSON.parse(str);
             console.log("Cerating new config file based on template!");
             this.save(); // Save copy of template config.
         } catch (e) {
-            // No template file either!
+            // No template file either - or error in template file!!!
             this.config = {};
         }
     };

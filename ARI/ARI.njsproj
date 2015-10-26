@@ -38,7 +38,8 @@
     <Compile Include="ariclientserver.js" />
     <Compile Include="ariserverserver.js" />
     <Compile Include="configStore.js" />
-    <Compile Include="plugins\MysensorGW\MysensorGW.js" />
+    <Compile Include="plugins\MysensorsGW\MysensorsGW.js" />
+    <Compile Include="plugins\MysensorsGW\www\settings.js" />
     <Compile Include="plugins\SysInfo\sysInfo.js" />
     <Compile Include="server.js" />
     <Compile Include="sorted-object-array.js" />
@@ -81,8 +82,10 @@
     <Content Include="nodemon.json" />
     <Content Include="package.json" />
     <Content Include="documentation\readme.html" />
-    <Content Include="plugins\MysensorGW\ariManifest.json" />
-    <Content Include="plugins\MysensorGW\package.json" />
+    <Content Include="plugins\MysensorsGW\ariManifest.json" />
+    <Content Include="plugins\MysensorsGW\config.default.json" />
+    <Content Include="plugins\MysensorsGW\package.json" />
+    <Content Include="plugins\MysensorsGW\www\settings.html" />
     <Content Include="plugins\SysInfo\ariManifest.json" />
     <Content Include="README.md" />
     <Content Include="Todo.txt" />
@@ -122,8 +125,8 @@
     <Folder Include="documentation\" />
     <Folder Include="node_modules\" />
     <Folder Include="plugins\" />
-    <Folder Include="plugins\MysensorGW\" />
-    <Folder Include="plugins\MysensorGW\views\" />
+    <Folder Include="plugins\MysensorsGW\" />
+    <Folder Include="plugins\MysensorsGW\www\" />
     <Folder Include="plugins\SysInfo\" />
     <Folder Include="plugins\SysInfo\views\" />
     <Folder Include="www\" />

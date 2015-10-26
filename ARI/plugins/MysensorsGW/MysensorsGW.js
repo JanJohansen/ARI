@@ -6,16 +6,6 @@ var SerialPort = SerialPortModule.SerialPort; // localize object constructor
 
 var serialPort = null;
 
-// For debug - and later configuration!
-SerialPortModule.list(function (err, ports) {
-    console.log("Serial ports:");
-    if (ports) {
-        ports.forEach(function (port) {
-            console.log(port.comName, "-", port.manufacturer, "(" + port.pnpId + ")");
-        });
-    } else console.log("NONE!");
-});
-
 // TODO: Select serial port based on pnpId to be able to use same HW when connected to different UDB port.
 // TODO: Implement set/getConfig with "latest available" + configgured pnpId!
 
@@ -23,42 +13,15 @@ SerialPortModule.list(function (err, ports) {
 var stateStore = new ConfigStore(__dirname, "state");
 var state = stateStore.load();
 
-var ari = new AriClient("MysensorGW");
+// Load configuration.
+var configStore = new ConfigStore(__dirname, "config");
+var config = configStore.load();
+console.log("Config:", config, __dirname);
+
+// Create ARI client.
+var ari = new AriClient("MysensorsGW");
 if (!state.authToken) ari.connectDevice("device");
 else ari.connect(state.authToken);
-
-var config = {
-    nodes: {
-        "1": {
-            name: "MultiThing",
-            sensors: {
-                "0": {
-                    name: "Temperature",
-                },
-                "1": {
-                    name: "Humidity",
-                },
-                "2": {
-                    name: "Motion",
-                }
-            }
-        },
-        "10": {
-            name: "DevThing",
-            sensors: {
-                "0": {
-                    name: "Temperature",
-                },
-                "1": {
-                    name: "Humidity",
-                },
-                "2": {
-                    name: "Motion",
-                }
-            }
-        }
-    }
-};
 
 ari.onconnect = function (result) {
     if (!state.authToken) {
@@ -76,11 +39,35 @@ ari.onconnect = function (result) {
     
     // register functions.
     ari.registerRpc("getConfig", { description: "Get configuration data for UI." }, function (pars, callback) {
-        callback(null, config);
+        
+        var uiconfig = config;
+
+        // Add possble ports for configuration via settings view...
+        SerialPortModule.list(function (err, ports) {
+            console.log("Serial ports:");
+            uiconfig.portOptions = [];
+            if (ports) {
+                ports.forEach(function (port) {
+                    console.log(port.comName, "-", port.manufacturer, "(" + port.pnpId + ")");
+                    //uiconfig.portOptions.push({ "name": port.comName, "manufacturer": port.manufacturer, "pnpId": port.pnpId });
+                    uiconfig.portOptions.push(port.comName);
+                });
+            } else console.log("NONE!");
+            callback(null, uiconfig);
+        });
     });
     
     ari.registerRpc("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
-        config = pars.config;
+        console.log("Storing new configuration.");
+        if (pars.portName != config.portName) {
+            console.log("Selecting new serial port:", pars.portName);
+            openPort(pars.portName);
+        }
+        delete pars.portOptions;
+        config = pars;
+        // Store config.
+        configStore.save();
+
         callback(null, {}); // Indicate OK.
     });
     
@@ -93,27 +80,41 @@ ari.onconnect = function (result) {
         }
     }
     
-    // Serial port comuunication to mysensor gateway.    
-    var serialPort = new SerialPort("COM3", {
-        baudrate: 115200,
-        parser: SerialPortModule.parsers.readline('\n')
-    });
+    // Open serial port and start handling telegrams from GW.    
+    openPort(config.portName);
     
-    serialPort.on("open", function () {
-        console.log('open');
-        
-        serialPort.on('data', function (data) {
-            //        console.log('MSGW: ' + data);
-            handleMSGWTlg(data);
-
-        });
-/*    mySensorGW.write("ls\n", function (err, results) {
+    
+/*    mySensorsGW.write("ls\n", function (err, results) {
         console.log('err ' + err);
         console.log('results ' + results);
     });
 */
-    });
+
     
+    function openPort(name){
+        // Serial port comuunication to mysensor gateway.    
+        if (serialPort) {
+            if (serialPort.isOpen()) serialPort.close();
+            serialPort = null;
+        }
+        try {
+            serialPort = new SerialPort(config.portName, {
+                baudrate: 115200,
+                parser: SerialPortModule.parsers.readline('\n')
+            });
+            
+            serialPort.on("open", function () {
+                serialPort.on('data', function (data) {
+                    //        console.log('MSGW: ' + data);
+                    handleMSGWTlg(data);
+
+                });
+            });
+        } catch (e) {
+            console.log("ERROR: Couldn't open port:", config.portName);
+            console.log("Set port in settings view for plugin.");
+        }
+    }
     
     function handleMSGWTlg(data) {
         var parts = data.split(';');
@@ -128,6 +129,7 @@ ari.onconnect = function (result) {
         };
         
         if (msMsg.nodeId == 0) return;  // Ignore gateway messages for now.
+        if (!config.nodes) config.nodes = {};
         var node = config.nodes[msMsg.nodeId];
         if (node) {
             var sensor = node.sensors[msMsg.sensorId];
