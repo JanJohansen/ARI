@@ -9,6 +9,7 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
     this._ws = options.websocket;
     this.name = "";
     this._subscriptions = {};
+    this._nextReqId = 0;
     this.clientModel = null;    // This will be set upon authentication.
     
     //this._server.clients.push(this);   // Put into list of connected clients.
@@ -149,6 +150,7 @@ AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
             if (this.clientModel) {
                 // clientModel found.
                 this.clientModel.online = true;
+                this.clientModel.__clientServer = this;
                 callback(null, { "name": clientName });
                 return;
             } else {
@@ -255,7 +257,7 @@ AriClientServer.prototype._webcall_CALLRPC = function (pars, callback) {
         // Client found, now find rpc.
         var rpc = client.functions[rpcNameParts[1]];
         if (rpc) {
-            if (client.online == false) {
+            if ((client.online == false) || !client.__clientServer) {
                 callback("Error: Target client for function call is offline.", null);
                 return;
             } else {
@@ -281,15 +283,15 @@ AriClientServer.prototype._webcall_REGISTERVALUE = function (pars, callback) {
     
     if (!pars.name) { callback("Error: Trying to register value without specifying name:", null); return;}
     
+    if (!this.clientModel.values[pars.name]) this.clientModel.values[pars.name] = {};   // Create if not existing!
+    this.clientModel.values[pars.name].name = pars.name;
+
     // Merge optionals into value model.    
     if (pars.optionals) {
         for (var key in pars.optionals) {
-            if (!this.clientModel.values[pars.name]) this.clientModel.values[pars.name] = {};   // Create if not existing!
             this.clientModel.values[pars.name][key] = pars.optionals[key];
         }
     }
-    
-    this.clientModel.values[pars.name].name = pars.name;
     callback(null, {});
 }
 

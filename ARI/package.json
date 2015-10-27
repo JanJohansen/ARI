@@ -12,6 +12,7 @@
     "express": "^4.13.3",
     "jsonfile": "^2.2.2",
     "jwt-simple": "^0.3.1",
+    "serialport": "^2.0.2",
     "ws": "^0.8.0"
   }
 }

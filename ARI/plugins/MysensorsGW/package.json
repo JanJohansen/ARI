@@ -1,0 +1,13 @@
+{
+  "name": "MysensorsGW",
+  "version": "0.0.0",
+  "description": "Mysensor gateway plugin for ARI.",
+  "main": "MysensorsGW.js",
+  "author": {
+    "name": "Jan",
+    "email": ""
+  },
+  "dependencies": {
+    "serialport": "^2.0.2"
+  }
+}

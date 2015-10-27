@@ -1,0 +1,39 @@
+<div class="container-fluid" ng-controller="MysensorsGWSettingsController">
+    <div class="row">
+        <div class="col-xs-12 col-sm-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Mysensor Gateway configuration.</h3>
+                </div>
+                Gateway serial port name:
+                <select ng-model="config.portName" ng-options="portOption for portOption in config.portOptions track by portOption" style="width:100%;" />
+                <br />
+                <br />
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Node Address:</th>
+                            <th>SensuatorId :O)</th>
+                            <th>Name:</th>
+                        </tr>
+                    </thead>
+                    <tr ng-repeat="(key, value) in config.nodes">
+                            <td>{{key}}</td>
+                            <td>-</td>
+                            <td>{{value.name}}</td>
+                    </tr>
+                </table>
+
+            </div>
+            <button ng-click="saveConfig()">Save</button>
+        </div>
+        <div class="col-xs-12 col-sm-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3>Raw:</h3>
+                </div>
+                <textarea rows="50" cols="80">{{config | json}}</textarea>
+            </div>
+        </div>
+    </div>
+</div>

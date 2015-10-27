@@ -179,13 +179,14 @@ AriClient.prototype._handleMessage = function (message) {
         var functionName = "_webcall_" + cmd;
         if (functionName in this) {
             // Requested function name exists in this object. Call it...
+            var self = this;
             this[functionName](msg.pars, function (err, result) {
                 // reply with results...
                 var res = {};
                 res.res = msg.req;
                 res.err = err;
                 res.result = result;
-                this._wsSend(JSON.stringify(res));
+                self._wsSend(JSON.stringify(res));
             });
         }
     } else if ("res" in msg) {

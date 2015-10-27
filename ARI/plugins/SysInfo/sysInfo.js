@@ -56,7 +56,7 @@ ari.onconnect = function (result) {
             totalIdle += cpus[key].times.idle;
         }
         var load = 1 - (totalIdle - lastIdle) / reportInterval / cpus.length;
-        ari.publish("cpuLoad", +load.toFixed(3));   // Round t 3 digits.
+        if (lastIdle > 0) ari.publish("cpuLoad", +load.toFixed(3));   // Round to 3 digits and only send after first period!
         lastIdle = totalIdle;
     }, reportInterval);
 }
