@@ -9,7 +9,7 @@
 	},
 	"plugins": [
 		{
-			"name": "sysInfo",
+			"name": "SysInfo",
 			"version": "0.0.1",
 			"icon": "file.ico",
 			"description": "Plugin delivering system level information like CPU load, free memmory etc.",
