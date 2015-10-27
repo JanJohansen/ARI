@@ -66,7 +66,7 @@ ari.onconnect = function (result) {
         delete pars.portOptions;
         config = pars;
         // Store config.
-        configStore.save();
+        configStore.save(config);
 
         callback(null, {}); // Indicate OK.
     });

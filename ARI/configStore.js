@@ -5,6 +5,7 @@ var fs = require('fs');
 var ConfigStore = module.exports = function (path, fileName) {
     this.path = path;
     this.fileName = fileName;
+    this.config = {};
 }
 
 ConfigStore.prototype.load = function () {
