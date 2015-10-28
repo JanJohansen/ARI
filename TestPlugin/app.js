@@ -6,7 +6,7 @@ var ConfigStore = require("../ARI/configStore.js");
 
 // For debug - and later configuration!
 SerialPortModule.list(function (err, ports) {
-    console.log("Serial ports:");
+    console.log("Available serial ports:");
     ports.forEach(function (port) {
         console.log(port.comName, "-", port.manufacturer, "(" + port.pnpId + ")");
     });
@@ -82,13 +82,20 @@ ari.onconnect = function (result) {
     }
     
     // Handle receiver on serial port.
-    serialPort = new SerialPort("COM6", {
-        baudrate: 115200,
-        parser: SerialPortModule.parsers.readline("\n")
-    });
+    console.log("Opening serial port 'COM6'.");
+    try {
+        serialPort = new SerialPort("COM6", {
+            baudrate: 115200,
+            parser: SerialPortModule.parsers.readline("\n")
+        });
+    } catch (e) {
+        console.log("ERROR when trying to open serialport:", e);
+        if (serialPort) serialPort.close();
+        process.exit(1);
+    }
     
     serialPort.on("open", function () {
-        console.log('open');
+        console.log('Serial port opened.');
         
         serialPort.on('data', function (data) {
             console.log('433GW: ' + data);

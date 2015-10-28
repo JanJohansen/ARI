@@ -118,7 +118,6 @@
     <Content Include="www\app\views\logging\index.html" />
     <Content Include="www\app\views\login\index.html" />
     <Content Include="www\app\views\users\index.html" />
-    <Content Include="www\package.json" />
     <Content Include="www\README.md" />
   </ItemGroup>
   <ItemGroup>
