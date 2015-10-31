@@ -40,6 +40,7 @@
     <Compile Include="configStore.js" />
     <Compile Include="plugins\MysensorsGW\MysensorsGW.js" />
     <Compile Include="plugins\MysensorsGW\www\settings.js" />
+    <Compile Include="plugins\Node-Red\www\config.js" />
     <Compile Include="plugins\SysInfo\sysInfo.js" />
     <Compile Include="server.js" />
     <Compile Include="sorted-object-array.js" />
@@ -86,6 +87,9 @@
     <Content Include="plugins\MysensorsGW\config.default.json" />
     <Content Include="plugins\MysensorsGW\package.json" />
     <Content Include="plugins\MysensorsGW\www\settings.html" />
+    <Content Include="plugins\Node-Red\ariManifest.json" />
+    <Content Include="plugins\Node-Red\package.json" />
+    <Content Include="plugins\Node-Red\www\config.html" />
     <Content Include="plugins\SysInfo\ariManifest.json" />
     <Content Include="README.md" />
     <Content Include="Todo.txt" />
@@ -126,6 +130,8 @@
     <Folder Include="plugins\" />
     <Folder Include="plugins\MysensorsGW\" />
     <Folder Include="plugins\MysensorsGW\www\" />
+    <Folder Include="plugins\Node-Red\" />
+    <Folder Include="plugins\Node-Red\www\" />
     <Folder Include="plugins\SysInfo\" />
     <Folder Include="plugins\SysInfo\views\" />
     <Folder Include="www\" />

@@ -47,7 +47,7 @@
                         // 35 = 30(bar height) + 5(margin between bars)
                         
                         // max can be found dynamically when the data is not static
-                        max = Math.max.apply(Math, _.map(data, ((val)-> val.count)))
+                        //max = Math.max.apply(Math, _.map(data, ((val)-> val.count)))
                         
                         // set the height based on the calculations above
                         svg.attr('height', height);

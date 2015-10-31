@@ -1,0 +1,31 @@
+{
+	"packageInfo": {
+		"icon": "someIcon.ico",
+		"name": "Node-Red",
+		"version": "0.0.1",
+		"description": "Node-Red backend plugin with view showing frontend in Ari system.",
+		"homepage": "?",
+		"gitUrl": "..."
+	},
+	"plugins": [
+		{
+			"name": "Node-Red",
+			"version": "0.0.1",
+			"icon": "file.ico",
+			"description": "Automation configuration backend and frontend.",
+			"info": { },
+			"nodeMain": "node_modules/node-red/red.js"
+		}
+	],
+	"views": [
+		{
+			"name": "Configgure",
+			"version": "0.0.1",
+			"icon": "settings.ico",
+			"description": "Node-Red front end.",
+			"ngView": "www/index.html",
+			"ngController": "www/controller.js", 
+			"minDefaultTargetRole": "admin"
+		}
+	]
+}

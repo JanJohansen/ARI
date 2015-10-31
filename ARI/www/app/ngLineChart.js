@@ -38,7 +38,8 @@ app.directive('d3Lines', [
                 // define render function
                 scope.render = function (data) {
                     
-                    console.log("render d3 - data", data);
+                    console.log("render d3 - data");
+                    var t0 = performance.now();
                     
                     // remove all previous items before render
                     svg.selectAll("*").remove();
@@ -123,6 +124,8 @@ app.directive('d3Lines', [
                             d.active = active;
                         })
                         .text(d.key);*/
+                    var t1 = performance.now();
+                    console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
                 }
             }
         }

@@ -167,6 +167,7 @@ Ari.prototype.saveLog = function(synchronous) {
         }
         data = data.join("\n") + "\n";
         if(synchronous) fs.appendFileSync(fileName, data);
-        else fs.appendFile(fileName, data, function () { console.log("Log file written:", fileName) });
+        else fs.appendFile(fileName, data, function () { });
+        console.log("Log file written:", fileName)
     }
 }

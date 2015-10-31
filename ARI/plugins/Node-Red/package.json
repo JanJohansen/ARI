@@ -1,0 +1,9 @@
+{
+  "name": "Node-Red-as-AriPlugin",
+  "description": "Include Node-Red as controller in 'the Ari project'.",
+  "version": "0.0.1",
+  "devDependencies": {},
+  "dependencies": {
+    "node-red": "^0.11.2"
+  }
+}
