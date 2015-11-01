@@ -26,6 +26,7 @@ function AriClient(clientName) {
     this._ws = null;            // WebSocket connecting to server.
     this.reconnectInterval = 2000; // Interval (in mS) to wait before retrying to connect on unexpected disconnection or error. 0 = no retry!
     this.authToken = null;
+    this.isConnected = false;
     
     this.name = clientName;
     
@@ -85,6 +86,7 @@ AriClient.prototype._connect = function () {
             self._call("CONNECT", { "name": self.name, "authToken": self.authToken }, function (err, result) {
                 if (err) {
                     if (self.onerror) self.onerror(err);
+                    self._trigger("error", err);
                     return;
                 }
                 
@@ -97,7 +99,9 @@ AriClient.prototype._connect = function () {
                 }
                 self._pendingMsgs = [];
                 
+                self.isConnected = true;
                 if (self.onconnect) self.onconnect(result);
+                self._trigger("connect", result);
             });
         }
     };
@@ -112,8 +116,11 @@ AriClient.prototype._connect = function () {
             self._ws.close();
             self._ws = null;
         }
-        if(self.reconnectInterval > 0) setTimeout(self._connect.bind(self), self.reconnectInterval);
+        if (self.reconnectInterval > 0) setTimeout(self._connect.bind(self), self.reconnectInterval);
+        self.isConnected = false;
         if (self.onerror) self.onerror();
+        self._trigger("error", "Websocket error.");
+        self._trigger("disconnect");
     };
 
     this._ws.onclose = function () {
@@ -122,8 +129,11 @@ AriClient.prototype._connect = function () {
             self._ws.close();
             self._ws = null;
         }
+        self.isConnected = false;
         if (self.reconnectInterval > 0) setTimeout(self._connect.bind(self), self.reconnectInterval);
         if (self.onclose) self.onclose();
+        self._trigger("close", "Websocket closed.");
+        self._trigger("disconnect");
     };
 };
 
@@ -166,7 +176,7 @@ AriClient.prototype._notify = function (command, parameters) {
 
 // Handle incomming messages from server.
 AriClient.prototype._handleMessage = function (message) {
-    console.log("-->", message.data);
+    //console.log("-->", message.data);
     
     try { var msg = JSON.parse(message.data); }        
         catch (e) { console.log("Error: Illegal JSON in message! - Ignoring..."); return; }
@@ -272,6 +282,10 @@ AriClient.prototype.registerValue = function (name, optionals, callback) {
     });
 }
 
+AriClient.prototype.setValue = function (name, value, callback) {
+    this._notify("SETVAL", { "name": name, "value": value });
+}
+
 AriClient.prototype.publish = function (name, value, callback) {
     this._notify("PUBLISH", { "name": name, "value": value });
 }
@@ -362,7 +376,6 @@ AriClient.prototype._webcall_CALLRPC = function (msg, callback) {
 
 //*****************************************************************************
 // EventListener implementation...
-/*
 AriClient.prototype.on = function (event, fct) {
     this._events = this._events || {};
     this._events[event] = this._events[event] || [];
@@ -379,7 +392,7 @@ AriClient.prototype._trigger = function (event , args) {
     this._events = this._events || {};
     if (event in this._events === false) return;
     for (var i = 0; i < this._events[event].length; i++) {
+        //console.log("DBG!!!", event, this._events);
         this._events[event][i].apply(this, Array.prototype.slice.call(arguments, 1));
     }
 };
-*/

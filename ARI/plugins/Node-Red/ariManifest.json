@@ -14,7 +14,8 @@
 			"icon": "file.ico",
 			"description": "Automation configuration backend and frontend.",
 			"info": { },
-			"nodeMain": "node_modules/node-red/red.js"
+			"nodeMain": "node_modules/node-red/red.js",
+			"arguments": "-v -s settings.js"
 		}
 	],
 	"views": [

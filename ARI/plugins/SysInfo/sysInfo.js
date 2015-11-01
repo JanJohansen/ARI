@@ -26,7 +26,7 @@ ari.onconnect = function (result) {
     
     // handle subscriptions.
     ari.subscribe(clientName + ".*", function (path, value) {
-        console.log("->", path, "=", value);
+        //console.log("->", path, "=", value);
     });
     
     // register functions.

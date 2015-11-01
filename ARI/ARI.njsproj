@@ -40,6 +40,10 @@
     <Compile Include="configStore.js" />
     <Compile Include="plugins\MysensorsGW\MysensorsGW.js" />
     <Compile Include="plugins\MysensorsGW\www\settings.js" />
+    <Compile Include="plugins\Node-Red\ariNodes\ari-in.js" />
+    <Compile Include="plugins\Node-Red\ariNodes\ari-set.js" />
+    <Compile Include="plugins\Node-Red\ariNodes\AriSingleton.js" />
+    <Compile Include="plugins\Node-Red\settings.js" />
     <Compile Include="plugins\Node-Red\www\config.js" />
     <Compile Include="plugins\SysInfo\sysInfo.js" />
     <Compile Include="server.js" />
@@ -88,6 +92,8 @@
     <Content Include="plugins\MysensorsGW\package.json" />
     <Content Include="plugins\MysensorsGW\www\settings.html" />
     <Content Include="plugins\Node-Red\ariManifest.json" />
+    <Content Include="plugins\Node-Red\ariNodes\ari-in.html" />
+    <Content Include="plugins\Node-Red\ariNodes\ari-set.html" />
     <Content Include="plugins\Node-Red\package.json" />
     <Content Include="plugins\Node-Red\www\config.html" />
     <Content Include="plugins\SysInfo\ariManifest.json" />
@@ -131,6 +137,9 @@
     <Folder Include="plugins\MysensorsGW\" />
     <Folder Include="plugins\MysensorsGW\www\" />
     <Folder Include="plugins\Node-Red\" />
+    <Folder Include="plugins\Node-Red\ariNodes\" />
+    <Folder Include="plugins\Node-Red\node_modules\" />
+    <Folder Include="plugins\Node-Red\node_modules\node-red\" />
     <Folder Include="plugins\Node-Red\www\" />
     <Folder Include="plugins\SysInfo\" />
     <Folder Include="plugins\SysInfo\views\" />

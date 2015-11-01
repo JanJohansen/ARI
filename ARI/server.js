@@ -138,7 +138,9 @@ fs.readdir(pluginsPath, function (err, files) {
                                     console.log("Starting plugin:", plugin.name);
                                     
                                     // Child will use parent's stdios
-                                    var pluginProcess = cp.spawn("node", [plugin.nodeMain], { "cwd": pluginsPath + "/" + plugin.name });
+                                    if (!plugin.arguments) plugin.arguments = "";
+                                    var args = [plugin.nodeMain].concat(plugin.arguments.split(" "));
+                                    var pluginProcess = cp.spawn("node", args, { "cwd": pluginsPath + "/" + plugin.name});
                 
                                     pluginProcess.stdout.on('data', function (data) {
                                         console.log("/" + plugin.name + ":", data.toString());
