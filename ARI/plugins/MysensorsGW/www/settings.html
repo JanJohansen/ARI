@@ -9,6 +9,7 @@
                 <select ng-model="config.portName" ng-options="portOption for portOption in config.portOptions track by portOption" style="width:100%;" />
                 <br />
                 <br />
+                Active Nodes:
                 <table class="table">
                     <thead>
                         <tr>
@@ -18,6 +19,23 @@
                         </tr>
                     </thead>
                     <tr ng-repeat="(key, value) in config.nodes">
+                            <td>{{key}}</td>
+                            <td>-</td>
+                            <td><input type="text" ng-model="value.name"></td>
+                    </tr>
+                </table>
+            </div>
+            Deactive Nodes:
+            <div class="panel panel-default">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Node Address:</th>
+                            <th>SensuatorId :O)</th>
+                            <th>Name:</th>
+                        </tr>
+                    </thead>
+                    <tr ng-repeat="(key, value) in config.NotAdded">
                             <td>{{key}}</td>
                             <td>-</td>
                             <td><input type="text" ng-model="value.name"></td>

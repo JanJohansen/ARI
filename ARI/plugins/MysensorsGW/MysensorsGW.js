@@ -182,7 +182,7 @@ ari.onconnect = function (result) {
                 //sensor is not added to the list
                 var presentation = {};
                 presentation[6] = "Temperature";
-                presentation[7] = "Humdity";
+                presentation[7] = "Humidity";
                 config.NotAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": presentation[msMsg.subType]};
                 //config.NotAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": msMsg.subType};
                 configStore.save(config);
