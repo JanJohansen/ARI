@@ -83,7 +83,6 @@ ari.onconnect = function (result) {
     // Open serial port and start handling telegrams from GW.
     openPort(config.portName);
 
-
 /*    mySensorsGW.write("ls\n", function (err, results) {
         console.log('err ' + err);
         console.log('results ' + results);
@@ -133,6 +132,8 @@ ari.onconnect = function (result) {
             payload: parts[5],
         };
 
+
+
         if (msMsg.nodeId == 0) return;  // Ignore gateway messages for now.
         if (!config.nodes) config.nodes = {};
         var node = config.nodes[msMsg.nodeId];
@@ -142,9 +143,55 @@ ari.onconnect = function (result) {
                 console.log("-> @" + new Date().toISOString(), "MySensor." + node.name + "." + sensor.name, "=", msMsg.payload);
                 ari.publish(node.name + "." + sensor.name, msMsg.payload);
             }
-            else console.log(parts);
+            else {
+              console.log(parts);
+            }
         }
-        else console.log(parts);
+        else {
+          // sensorId 255 is used to provide skecth name and version
+          // with message type 3 and subtype 11 for name and 12 for version
+          if(msMsg.sensorId == 255 && msMsg.messageType == 3 && msMsg.subType == 11)
+          {
+            // lookup nodeId in NotAdded
+            if (!config.NotAdded) config.NotAdded = {};
+            var NotAdded = config.NotAdded[msMsg.nodeId];
+            // if nodeId does not exists add it to the list
+            if (!NotAdded) {
+              // Add new node to the NotAdded list
+              // together with the skechtname
+              var element = {};
+              element[msMsg.nodeId] = {"name": msMsg.payload};
+              config.NotAdded = element;
+              configStore.save(config);
+            }
+          }
+          else if (msMsg.messageType == 0) {
+            // Handle presentation message from node
+            // the node presents the sensors it provides
+            // with messageType set to 0 and the subtype represents
+            // the sensor provided
+            if (!config.NotAdded) config.NotAdded = {};
+            var NotAdded = config.NotAdded[msMsg.nodeId];
+            if (NotAdded) {
+              if(!config.NotAdded[msMsg.nodeId].sensors) {
+                config.NotAdded[msMsg.nodeId].sensors = {};
+              }
+              // Check if sensor is not already added
+              var sensors = NotAdded.sensors[msMsg.sensorId];
+              if (!sensors) {
+                //sensor is not added to the list
+                var presentation = {};
+                presentation[6] = "Temperature";
+                presentation[7] = "Humdity";
+                config.NotAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": presentation[msMsg.subType]};
+                //config.NotAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": msMsg.subType};
+                configStore.save(config);
+                console.log("Sensor added " + msMsg.sensorId);
+              }
+            }
+          }
+          console.log(parts);
+        }
     }
 }
 
