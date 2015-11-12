@@ -16,12 +16,14 @@
                             <th>Node Address:</th>
                             <th>SensuatorId :O)</th>
                             <th>Name:</th>
+                            <th>Deactivate:</th>
                         </tr>
                     </thead>
                     <tr ng-repeat="(key, value) in config.nodes">
                             <td>{{key}}</td>
                             <td>-</td>
                             <td><input type="text" ng-model="value.name"></td>
+                            <td><button ng-click="deActivateNodeId(key)">deactivate</button></td>
                     </tr>
                 </table>
             </div>
@@ -33,12 +35,14 @@
                             <th>Node Address:</th>
                             <th>SensuatorId :O)</th>
                             <th>Name:</th>
+                            <th>Activate:</th>
                         </tr>
                     </thead>
                     <tr ng-repeat="(key, value) in config.NotAdded">
                             <td>{{key}}</td>
                             <td>-</td>
                             <td><input type="text" ng-model="value.name"></td>
+                            <td><button ng-click="activateNodeId(key)">activate</button></td>
                     </tr>
                 </table>
             </div>
