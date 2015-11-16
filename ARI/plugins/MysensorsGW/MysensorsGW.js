@@ -68,6 +68,24 @@ ari.onconnect = function (result) {
         // Store config.
         configStore.save(config);
 
+        // Deregister deactive nodes
+        for (key in config.NotAdded) {
+            var msNode = config.NotAdded[key];
+            for (key2 in msNode.sensors) {
+                var sensor = msNode.sensors[key2];
+                ari.deRegisterValue(msNode.name + "." + sensor.name);
+            }
+        }
+
+        // Register active nodes
+        for (key in config.nodes) {
+            var msNode = config.nodes[key];
+            for (key2 in msNode.sensors) {
+                var sensor = msNode.sensors[key2];
+                ari.registerValue(msNode.name + "." + sensor.name);
+            }
+        }
+
         callback(null, {}); // Indicate OK.
     });
 

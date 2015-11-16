@@ -11,28 +11,28 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
     this._subscriptions = {};
     this._nextReqId = 0;
     this.clientModel = null;    // This will be set upon authentication.
-    
+
     //this._server.clients.push(this);   // Put into list of connected clients.
 
     this._ws.on("message", function (message) {
         // !!! USE "SELF" !!!
-        
+
         // DEBUG!
         console.log('-->', message);
 
-        try { var msg = JSON.parse(message); }        
+        try { var msg = JSON.parse(message); }
         catch (e) {
             console.log("Error: Illegal JSON in message! - Ignoring...");
             websocket.close(1002, "Protocol error.");
             handleClientDisconnect();
             return;
         }
-        
+
         if ("req" in msg) {
             // Request message.
             var cmd = msg.cmd;
             if (!cmd) { console.log("Error: Missing comand in telegram! - Ignoring..."); return; };
-            
+
             var functionName = "_webcall_" + cmd;
             if (functionName in self) {
                 // Requested function name exists in this object. Call it...
@@ -58,7 +58,7 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
             // Notofication message.
             var cmd = msg.cmd;
             if (!cmd) { console.log("Error: Missing comand in telegram! - Ignoring..."); return; };
-            
+
             var functionName = "_webnotify_" + cmd;
             if (functionName in self) {
                 // Requested notification function name exists in this object. Call it...
@@ -67,7 +67,7 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
         }
     });
 
-    this._ws.on("close", function () { 
+    this._ws.on("close", function () {
         // !!! USE SELF
         self.handleClientDisconnect();
         console.log("Client disconnected: ", self._givenName);
@@ -105,7 +105,7 @@ AriClientServer.prototype._wsSend = function (msg) {
 // Call method on client...
 AriClientServer.prototype._call = function (command, parameters, callback) {
     // TODO: Intercept for local rpc-functions (if we are "serverserver" as opposed to clientserver!)
-    
+
     // Send msg.
     var msg = {};
     msg.req = this._nextReqId++;
@@ -140,7 +140,7 @@ AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
             // Authentication OK
             console.log("authentication success:", token);
             var user = token.name;
-            
+
             // Link this client to clientModel.
             if(clientName != user) var clientModelName = user + "/" + clientName;
             else var clientModelName = user;
@@ -156,7 +156,7 @@ AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
             } else {
                 // clientModel not found. Create it.
                 this.clientModel = {
-                    "name": this.name, 
+                    "name": this.name,
                     "created": new Date().toISOString(),
                     "online": true,
                     "ip": this._ws._socket.remoteAddress,
@@ -164,9 +164,9 @@ AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
                     "functions": {},
                     "values": {}
                 };
-                
+
                 this._server.clientsModel[clientModelName] = this.clientModel;
-                
+
                 callback(null, { "name": clientName });
                 return;
             }
@@ -179,11 +179,11 @@ AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
 AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
     if (!pars.name) { callback("Error: Missing name parameter when requesting authToken.", null); return; }
     if (!pars.role && !pars.password) { callback("Error: Missing parameter when requesting authToken.", null); return; }
-    
-    var name = pars.name;    
+
+    var name = pars.name;
     var role = pars.role;
     var password = pars.password;
-    
+
     if (password) {
         // Request is for existing user in system. Find user...
         if (name in this._server.usersModel) {
@@ -209,7 +209,7 @@ AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
             callback("Error: Unknown role when requesting authToken.", null);
             return;
         }
-        
+
         // Find available user name.
         var newName = name;
         var count = 1;
@@ -218,13 +218,13 @@ AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
             newName = name + "(" + count + ")";
             count++;
         }
-        
+
         // Create new user.
         this._server.usersModel[newName] = {};
         this._server.usersModel[newName].name = newName;
         this._server.usersModel[newName].created = new Date().toISOString();
         this._server.usersModel[newName].role= role;
-        
+
         // Reply with authToken and possibly new Name.
         var payload = { "name": newName, "role": pars.role, "created": new Date().toISOString() };
         var token = jwt.encode(payload, this._server.JWTSecret);
@@ -235,7 +235,7 @@ AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
 //-----------------------------------------------------------------------------
 AriClientServer.prototype._webcall_REGISTERRPC = function (pars, callback) {
     console.log("RegisterRPC(", pars, ")");
-    
+
     this.clientModel.functions[pars.name] = pars;
     callback(null, {});
 }
@@ -248,7 +248,7 @@ AriClientServer.prototype._webcall_CALLRPC = function (pars, callback) {
         callback("Error: Missing name of RPC to call! - Ignoring...", null);
         return;
     }
-    
+
     // Find RPC in other connected clients, in offline clients, in server registered rpc's or even in own client! (Ping yourself ;O)
     var rpcNameParts = rpcName.split(".");
     // Find client
@@ -261,7 +261,7 @@ AriClientServer.prototype._webcall_CALLRPC = function (pars, callback) {
                 callback("Error: Target client for function call is offline.", null);
                 return;
             } else {
-                client.__clientServer._call("CALLRPC", { "name": rpcName.substring(rpcName.indexOf(".") + 1), "params": pars.params}, function (err, result) { 
+                client.__clientServer._call("CALLRPC", { "name": rpcName.substring(rpcName.indexOf(".") + 1), "params": pars.params}, function (err, result) {
                     callback(err, result);
                 });
             }
@@ -280,13 +280,13 @@ AriClientServer.prototype._webcall_CALLRPC = function (pars, callback) {
 //-----------------------------------------------------------------------------
 AriClientServer.prototype._webcall_REGISTERVALUE = function (pars, callback) {
     console.log("RegisterValue(", pars, ")");
-    
+
     if (!pars.name) { callback("Error: Trying to register value without specifying name:", null); return;}
-    
-    if (!this.clientModel.values[pars.name]) this.clientModel.values[pars.name] = {};   // Create if not existing!
+
+    if (this.clientModel.values[pars.name]) this.clientModel.values[pars.name] = {};   // Create if not existing!
     this.clientModel.values[pars.name].name = pars.name;
 
-    // Merge optionals into value model.    
+    // Merge optionals into value model.
     if (pars.optionals) {
         for (var key in pars.optionals) {
             this.clientModel.values[pars.name][key] = pars.optionals[key];
@@ -295,16 +295,30 @@ AriClientServer.prototype._webcall_REGISTERVALUE = function (pars, callback) {
     callback(null, {});
 }
 
+AriClientServer.prototype._webcall_DEREGISTERVALUE = function (pars, callback) {
+    console.log("DeRegisterValue(", pars, ")");
+
+    if (!pars.name) { callback("Error: Trying to deregister value without specifying name:", null); return;}
+
+    if (this.clientModel.values[pars.name]) {
+      delete this.clientModel.values[pars.name];   // Delete element in Array
+      //console.log("Element deleted");
+    }
+
+
+    callback(null, {});
+}
+
 AriClientServer.prototype._webcall_SUBSCRIBE = function (pars, callback) {
     console.log("subscribe(", pars, ")");
-    
+
     var name = pars.name;
     if (!name) { callback("Error: No name parameter specified!", null); return; }
-    
+
     this._subscriptions[name] = {}; // Just indicate that there is a subscription to topic/value.
-    
+
     callback(null, {}); // Send reply before sending latest values!!!
-    
+
     // Send last values of subscribed values.
     for (var key in this._server.clientsModel) {
         var client = this._server.clientsModel[key];
@@ -334,17 +348,17 @@ AriClientServer.prototype.matches = function (strA, strB) {
 
 AriClientServer.prototype._webcall_UNSUBSCRIBE = function (pars, callback) {
     console.log("unsubscribe(", pars, ")");
-    
+
     var name = pars.name;
     if (!name) { callback("Error: No name parameter specified!", null); return; }
-    
+
     delete this._subscriptions[name];
     callback(null, {});
 }
 
 AriClientServer.prototype._webnotify_PUBLISH = function (pars) {
     //console.log("publish(", pars, ")");
-    
+
     var valueName = pars.name;
     if (!valueName) {
         console.log("Error: Missing name of value to publish! - Ignoring...");
