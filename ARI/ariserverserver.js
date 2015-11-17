@@ -125,13 +125,23 @@ AriServerServer.prototype._webcall_getLog = function (parameters, callback) {
     // TODO: implement time limits for getting logs, and combine multiple files into one reply!
     
     if (!parameters.name) { callback("Error: Missing name!", null); return; }
+    
+    var startTime = parameters.startTime || 0;
+    var endTime = parameters.endTime || new Date();
+    var minInterval = parameters.minInterval || 0;
+    var interpolation = parameters.interpolation || "mean";
 
     var logsPath = __dirname + "/" + this._server.loggingConfig.logFilePath;
     var fileName = parameters.name;// + "_" + dateString + ".log"; // e.g. "./logs/ari.time_20151001.log"
+    
+    // TODO: Implement limits, doing binary search in for right time stamp.
+
     fs.readFile(logsPath + "/" + fileName, "utf8", function (err, data) {
         //if (err) throw err;
         callback(null, data);
     });    
+
+
     
 }
 

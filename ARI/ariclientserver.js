@@ -352,3 +352,14 @@ AriClientServer.prototype._webnotify_PUBLISH = function (pars) {
     }
     this._server.publish(this.name + "." + valueName, pars.value);
 }
+
+AriClientServer.prototype._webnotify_SET = function (pars) {
+    //console.log("publish(", pars, ")");
+    
+    var valueName = pars.name;
+    if (!valueName) {
+        console.log("Error: Missing name of value to publish! - Ignoring...");
+        return;
+    }
+    this._server.set(this.name + "." + valueName, pars.value);
+}

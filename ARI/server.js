@@ -141,7 +141,8 @@ fs.readdir(pluginsPath, function (err, files) {
                                     if (!plugin.arguments) plugin.arguments = "";
                                     var args = [plugin.nodeMain].concat(plugin.arguments.split(" "));
                                     var pluginProcess = cp.spawn("node", args, { "cwd": pluginsPath + "/" + plugin.name});
-                
+                                    
+                                    //TODO: Implement debug API to allow seing debug messages for each plugin separately.
                                     pluginProcess.stdout.on('data', function (data) {
                                         console.log("/" + plugin.name + ":", data.toString());
                                     });

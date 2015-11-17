@@ -18,8 +18,18 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
                 $scope.$apply();    // make sure nGular treats the update!
             });
             
+            var logRequest = 
+            {
+                "name": "", // Depends on selected logs.
+                "startTime": 0,
+                "endTime": new Date(), 
+                "minInterval": 0, 
+                "interpolation": "mean"
+            };
+
             $scope.logSelected = function (logName) {
-                ari.callRpc("ari.getLog", { "name": logName }, function (err, result) {
+                logRequest.name = logName;
+                ari.callRpc("ari.getLog", logRequest, function (err, result) {
                     if (err) { console.log(err); return; }
                     var entries = result.split("\n");
                     var data = [];
@@ -47,6 +57,19 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
                     $scope.$apply();
                 });*/
                 });
+            }
+            
+            $scope.setPeriod = function (name) {
+                if (name == "today") {
+                    logRequest.startTime = logRequest.endTime = new Date();
+                    logRequest.startTime.setHours(0, 0, 0, 0);
+                    logRequest.endTime.setHours(23, 59, 59, 999);
+                }
+                else if (name == "yesterday") {
+                    logRequest.startTime = logRequest.endTime = new Date() - 24 * 60 * 60 * 1000;
+                    logRequest.startTime.setHours(0, 0, 0, 0);
+                    logRequest.endTime.setHours(23, 59, 59, 999);
+                }
             }
         };
         
