@@ -27,18 +27,18 @@ function AriClient(clientName) {
     this.reconnectInterval = 2000; // Interval (in mS) to wait before retrying to connect on unexpected disconnection or error. 0 = no retry!
     this.authToken = null;
     this.isConnected = false;
-    
+
     this.name = clientName;
-    
+
     if (typeof window !== 'undefined') { // Config for browser
         this.url = "ws://" + window.location.host;
     } else {
         this.url = "ws://localhost:3000/socket/";
     }
-    
+
     // Override defaults if set specifically.
     //    transferOpts(this, options);
-    
+
     //this._connect();   // This connects or reconnects to a server.
 }
 
@@ -61,7 +61,7 @@ AriClient.prototype._connect = function () {
                     if (err) { console.log("Error:", err); return; }
                     self.name = result.name;
                     self.authToken = result.authToken;
-                    
+
                     // reconnect, now with authToken
                     self._ws.close();
                     self._ws = null;
@@ -72,40 +72,40 @@ AriClient.prototype._connect = function () {
                     if (err) { console.log("Error:", err); return; };
                     self.name = result.name;
                     self.authToken = result.authToken;
-                    
+
                     // reconnect, not with authToken
                     self._ws.close();
                     self._ws = null;
                 });
             }
         }
-        
+
         if (self.authToken) {
             // We have authToken, so connect "normally".
-            
+
             self._call("CONNECT", { "name": self.name, "authToken": self.authToken }, function (err, result) {
                 if (err) {
                     if (self.onerror) self.onerror(err);
                     self._trigger("error", err);
                     return;
                 }
-                
+
                 console.log("registerClient result:", result);
                 self.name = result.name;
-                
+
                 // Send if we have stored msg's...
                 for (var i = 0; i < self._pendingMsgs.length; i++) {
                     self._ws.send(self._pendingMsgs[i]);
                 }
                 self._pendingMsgs = [];
-                
+
                 self.isConnected = true;
                 if (self.onconnect) self.onconnect(result);
                 self._trigger("connect", result);
             });
         }
     };
-    
+
     this._ws.onmessage = function (message) {
         self._handleMessage(message);
     };
@@ -177,15 +177,15 @@ AriClient.prototype._notify = function (command, parameters) {
 // Handle incomming messages from server.
 AriClient.prototype._handleMessage = function (message) {
     //console.log("-->", message.data);
-    
-    try { var msg = JSON.parse(message.data); }        
+
+    try { var msg = JSON.parse(message.data); }
         catch (e) { console.log("Error: Illegal JSON in message! - Ignoring..."); return; }
-    
+
     if ("req" in msg) {
         // Request message.
         var cmd = msg.cmd;
         if (!cmd) { console.log("Error: Missing comand in telegram! - Ignoring..."); return; };
-        
+
         var functionName = "_webcall_" + cmd;
         if (functionName in this) {
             // Requested function name exists in this object. Call it...
@@ -218,7 +218,7 @@ AriClient.prototype._handleMessage = function (message) {
         // Notofication message.
         var cmd = msg.cmd;
         if (!cmd) { console.log("Error: Missing comand in telegram! - Ignoring..."); return; };
-        
+
         var functionName = "_webnotify_" + cmd;
         if (functionName in this) {
             // Requested notification function name exists in this object. Call it...
@@ -244,10 +244,10 @@ AriClient.prototype._matches = function (strA, strB) {
 // Normal connect with authToken.
 AriClient.prototype.connect = function (authToken) {
     this.authToken = authToken;
-    this._connect();    
+    this._connect();
 };
 
-// First time connect if only user and password is known. 
+// First time connect if only user and password is known.
 // authToken will be available if successfully loggend in.
 AriClient.prototype.connectUser = function (userName, userPassword) {
     this.userName = userName;
@@ -277,6 +277,14 @@ AriClient.prototype.close = function () {
 AriClient.prototype.registerValue = function (name, optionals, callback) {
     var self = this;
     this._call("REGISTERVALUE", { "name": name , "optionals": optionals}, function (err, result) {
+        if (err) { console.log("Error:", err); if (callback) callback(err, null); return; }
+        if (callback) callback(null, result);
+    });
+}
+
+AriClient.prototype.deRegisterValue = function (name, optionals, callback) {
+    var self = this;
+    this._call("DEREGISTERVALUE", { "name": name , "optionals": optionals}, function (err, result) {
         if (err) { console.log("Error:", err); if (callback) callback(err, null); return; }
         if (callback) callback(null, result);
     });
@@ -312,7 +320,7 @@ AriClient.prototype.unsubscribe = function (name, callback) {
 // RegisterRpc...
 AriClient.prototype.registerRpc = function (rpcName, optionals, rpcFunction) {
     this._functions[rpcName] = { "func": rpcFunction };
-    
+
     // Send registration to server!
     var info = optionals || {};
     info.name = rpcName;
@@ -337,11 +345,11 @@ AriClient.prototype._webnotify_PUBLISH = function (msg) {
     if (!name) {
         return;
     }
-    
+
     for (var subName in this._subscriptions) {
         if (this._matches(subName, name)) {
             var value = msg.value;
-            
+
             // Call the local callback
             this._subscriptions[subName].callback(name, value);
         }
@@ -356,7 +364,7 @@ AriClient.prototype._webcall_CALLRPC = function (msg, callback) {
         callback("Error: Missing name of RPC to call at client!", null);
         return;
     }
-    
+
     if (!this._functions.hasOwnProperty(rpcName)) {
         console.log("Error: Name of RPC not previously registered! - Ignoring...");
         callback("Error: RPC unkknown at client!", null);
@@ -364,12 +372,12 @@ AriClient.prototype._webcall_CALLRPC = function (msg, callback) {
     }
     var rpc = this._functions[rpcName];
     var rpcFunc = rpc.func;
-    
+
     var params = msg.params;
-    
-    // Call the local RPC                
+
+    // Call the local RPC
     var result = rpcFunc(params, function (err, result) {
-        // send result back.  
+        // send result back.
         callback(err, result);
     });
 }

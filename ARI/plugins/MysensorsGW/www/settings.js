@@ -28,17 +28,17 @@ ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriCl
 
             $scope.activateNodeId = function (nodeId)
             {
-              var node = $scope.config.NotAdded[nodeId];
+              var node = $scope.config.notAdded[nodeId];
               $scope.config.nodes[nodeId] = node;
-              $scope.config.NotAdded[nodeId] = null;
-              delete $scope.config.NotAdded[nodeId];
+              $scope.config.notAdded[nodeId] = null;
+              delete $scope.config.notAdded[nodeId];
               $scope.$apply();
             }
 
             $scope.deActivateNodeId = function (nodeId)
             {
               var node = $scope.config.nodes[nodeId];
-              $scope.config.NotAdded[nodeId] = node;
+              $scope.config.notAdded[nodeId] = node;
               $scope.config.nodes[nodeId] = null;
               delete $scope.config.nodes[nodeId];
               $scope.$apply();
