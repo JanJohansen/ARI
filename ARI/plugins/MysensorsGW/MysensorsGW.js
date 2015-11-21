@@ -171,19 +171,21 @@ ari.onconnect = function (result) {
           if(msMsg.sensorId == 255 && msMsg.messageType == 3 && msMsg.subType == 11)
           {
             // lookup nodeId in NotAdded
-            if (!config.NotAdded) config.NotAdded = {};
+            if (!config.NotAdded) {
+              config.NotAdded = {};
+            }
             var NotAdded = config.NotAdded[msMsg.nodeId];
             // if nodeId does not exists add it to the list
             if (!NotAdded) {
               // Add new node to the NotAdded list
               // together with the skechtname
               var element = {};
-              element[msMsg.nodeId] = {"name": msMsg.payload};
-              config.NotAdded = element;
+              element = {"name": msMsg.payload};
+              config.NotAdded[msMsg.nodeId] = element;
               configStore.save(config);
             }
           }
-          else if (msMsg.messageType == 0) {
+          else if (msMsg.sensorId != 255 && msMsg.messageType == 0) {
             // Handle presentation message from node
             // the node presents the sensors it provides
             // with messageType set to 0 and the subtype represents
@@ -199,6 +201,7 @@ ari.onconnect = function (result) {
               if (!sensors) {
                 //sensor is not added to the list
                 var presentation = {};
+                presentation[3] = "Light"
                 presentation[6] = "Temperature";
                 presentation[7] = "Humidity";
                 config.NotAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": presentation[msMsg.subType]};
