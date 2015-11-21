@@ -69,8 +69,8 @@ ari.onconnect = function (result) {
         configStore.save(config);
 
         // Deregister deactive nodes
-        for (key in config.NotAdded) {
-            var msNode = config.NotAdded[key];
+        for (key in config.notAdded) {
+            var msNode = config.notAdded[key];
             for (key2 in msNode.sensors) {
                 var sensor = msNode.sensors[key2];
                 ari.deRegisterValue(msNode.name + "." + sensor.name);
@@ -170,18 +170,18 @@ ari.onconnect = function (result) {
           // with message type 3 and subtype 11 for name and 12 for version
           if(msMsg.sensorId == 255 && msMsg.messageType == 3 && msMsg.subType == 11)
           {
-            // lookup nodeId in NotAdded
-            if (!config.NotAdded) {
-              config.NotAdded = {};
+            // lookup nodeId in notAdded
+            if (!config.notAdded) {
+              config.notAdded = {};
             }
-            var NotAdded = config.NotAdded[msMsg.nodeId];
+            var notAdded = config.notAdded[msMsg.nodeId];
             // if nodeId does not exists add it to the list
-            if (!NotAdded) {
-              // Add new node to the NotAdded list
+            if (!notAdded) {
+              // Add new node to the notAdded list
               // together with the skechtname
               var element = {};
               element = {"name": msMsg.payload};
-              config.NotAdded[msMsg.nodeId] = element;
+              config.notAdded[msMsg.nodeId] = element;
               configStore.save(config);
             }
           }
@@ -190,22 +190,22 @@ ari.onconnect = function (result) {
             // the node presents the sensors it provides
             // with messageType set to 0 and the subtype represents
             // the sensor provided
-            if (!config.NotAdded) config.NotAdded = {};
-            var NotAdded = config.NotAdded[msMsg.nodeId];
-            if (NotAdded) {
-              if(!config.NotAdded[msMsg.nodeId].sensors) {
-                config.NotAdded[msMsg.nodeId].sensors = {};
+            if (!config.notAdded) config.notAdded = {};
+            var notAdded = config.notAdded[msMsg.nodeId];
+            if (notAdded) {
+              if(!config.notAdded[msMsg.nodeId].sensors) {
+                config.notAdded[msMsg.nodeId].sensors = {};
               }
               // Check if sensor is not already added
-              var sensors = NotAdded.sensors[msMsg.sensorId];
+              var sensors = notAdded.sensors[msMsg.sensorId];
               if (!sensors) {
                 //sensor is not added to the list
                 var presentation = {};
                 presentation[3] = "Light"
                 presentation[6] = "Temperature";
                 presentation[7] = "Humidity";
-                config.NotAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": presentation[msMsg.subType]};
-                //config.NotAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": msMsg.subType};
+                config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": presentation[msMsg.subType]};
+                //config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": msMsg.subType};
                 configStore.save(config);
                 console.log("Sensor added " + msMsg.sensorId);
               }

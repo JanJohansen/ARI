@@ -283,7 +283,7 @@ AriClientServer.prototype._webcall_REGISTERVALUE = function (pars, callback) {
 
     if (!pars.name) { callback("Error: Trying to register value without specifying name:", null); return;}
 
-    if (this.clientModel.values[pars.name]) this.clientModel.values[pars.name] = {};   // Create if not existing!
+    if (!this.clientModel.values[pars.name]) this.clientModel.values[pars.name] = {};   // Create if not existing!
     this.clientModel.values[pars.name].name = pars.name;
 
     // Merge optionals into value model.
