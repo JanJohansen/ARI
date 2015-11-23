@@ -61,7 +61,7 @@ app.use(function (req, res, next) {
 
 // GET userlist.
 app.get('/api/users', function (req, res) {
-    if (req.user && (req.user.role == "admin")) res.json(ari.usersModel);
+    if (req.user && (req.user.role == "admin")) res.json(ari.userModels);
     else {
         res.status(401).send("API only allowed for role admin.");
         console.log("Atempt to get user list from:");
@@ -75,10 +75,10 @@ app.post('/api/users/login', function (req, res) {
     var passWord = req.body.password;
     
     // Check authorization.
-    if (userName in ari.usersModel) {
-        if (ari.usersModel[userName].password == passWord) {
-            ari.usersModel[userName].signupDate = new Date().toISOString();
-            var payload = { "name": userName, "role": ari.usersModel[userName].role, "created": ari.usersModel[userName].created };
+    if (userName in ari.userModels) {
+        if (ari.userModels[userName].password == passWord) {
+            ari.userModels[userName].signupDate = new Date().toISOString();
+            var payload = { "name": userName, "role": ari.userModels[userName].role, "created": ari.userModels[userName].created };
             var authToken = jwt.encode(payload, ari.JWTSecret);
             res.json({ "authToken": authToken });
             return;

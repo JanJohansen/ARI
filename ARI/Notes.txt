@@ -1,0 +1,89 @@
+﻿/*****************************************************************************/
+Sequence diagram showing communication calls and command types used.
+For https://www.websequencediagrams.com
+
+title ARI Communication Sequence
+
+participant App
+participant Client
+participant Server
+participant Client2
+participant App2
+
+note right of App: Create clientInfo and sending to server.
+
+App->Client: registerValue("val1", ...
+App->Client: registerFunction("func1", function(){...})
+App->Client: ...
+Client->Server: CLIENTINFO(clientInfo);
+
+App2->Client2: registerValue("val1", val1CBFunc(){...}...
+Client2->Server: CLIENTINFO(clientInfo)
+
+
+note right of App: Dynamically watch or subscribe...
+
+App->Client: watchValue(App2.val1, watchCB(){...}
+Client->Server: WATCH(App2.value);
+
+
+note right of App: Set remote value sequence.
+
+App->Client: setValue(App2.val1, value)
+Client->Server: SETVALUE(App2.val1, value);
+Server->Client2: SETVALUE(val1, value); 
+Client2->App2: val1CBFunc(val1, value); 
+App2->Client2: setValue(val1, value);
+Client2->Server: VALUE(val1, value)
+Server->Client: VALUE(App2.val1, value)
+Client->App: watchCB(App2.val1, value)
+
+
+note right of App: Set local value sequence.
+
+App->Client: setValue(val1, value)
+Client->Server: VALUE(val1, value);
+
+
+/*****************************************************************************/
+
+{
+	"portName": "COM3",
+	"nodes": {
+		"1": {
+			"name": "Energy meter",
+			"version": "1.0",
+			"batteryLevel": "50",
+			"sensuators": {
+				"0": { 
+					"name": "Power", 
+					"values": {
+						"V_WATT": {
+							"name": "Watt",
+							"value": "42"
+						},
+						"V_KWH": {
+							"name": "KWh",
+							"value": "23865432"
+						},
+						"V_VAR1": {
+							"name": "var1",
+							"value": "23865432"
+						}
+					} 
+				},
+				"1":{
+					"name": "Light"
+					"mSType": "S_LIGHT",
+					"values": {
+						"V_STATUS": {
+							"name": "Status",
+							"value": "1"
+						}
+
+					}
+				}
+			}
+		}
+	}
+}

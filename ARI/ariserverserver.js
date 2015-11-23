@@ -6,19 +6,25 @@ var AriServerServer = module.exports.AriServerServer = function (options) {
     this._server = options.ariServer;
     this.name = options.name || "ari";
 
-    this._server.clientsModel[this.name] = {
+    this.clientModel = {
         "name": this.name, 
         "online": true, 
         "__clientServer": this,
+        "values": {
+            "serverStart": { "description": "Time when server started last time." },
+            "time": { "description": "Current server time." }
+        },
         "functions": {}
     };
+    
+    this._server.clientModels[this.name] = this.clientModel;
     
     // register all functions exposed to ari from the server!
     var fIdent = "_webcall_";
     for (var func in this) {
         if (func.substring(0, fIdent.length) == fIdent) {
             var fname = func.substring(fIdent.length);
-            this._server.clientsModel[this.name].functions[fname] = {"name": fname};
+            this.clientModel.functions[fname] = {"name": fname};
         }
     }
     
@@ -26,7 +32,7 @@ var AriServerServer = module.exports.AriServerServer = function (options) {
 }
 
 AriServerServer.prototype._call = function (command, parameters, callback) {
-    if (command == "CALLRPC") {
+    if (command == "CALLFUNCTION") {
         var rpcName = parameters.name;
         if (!rpcName) {
             console.log("Error: Missing name of RPC to call! - Ignoring...");
@@ -50,7 +56,7 @@ AriServerServer.prototype.provideValues = function () {
     var self = this;
     
     this.serverStarted = new Date().toISOString();
-    self._server.publish("ari.serverStart", "Start!");
+    self._server.handleValue("ari.serverStart", this.serverStarted);
 
     this.provideTime(0); // Starts providing time.
 }
@@ -68,7 +74,7 @@ AriServerServer.prototype.provideTime = function (interval) {
         // This function might run two times if ms ~999, so only report time when ms<500.
         if (ms < 500) {
             //date.setMilliseconds(0);    // Just show 000 since we should be very close and not drifting!
-            self._server.publish("ari.time", date.toISOString());
+            self._server.handleValue("ari.time", date.toISOString());
         }
 
     }, interval);
@@ -81,17 +87,18 @@ AriServerServer.prototype.provideTime = function (interval) {
 // Return array of clients.
 AriServerServer.prototype._webcall_listClients = function (parameters, callback) {
     var result = [];
-    for (var key in this._server.clientsModel) {
-        var client = this._server.clientsModel[key];
-        result.push({"name": client.name, "online": client.online});
+    for (var key in this._server.clientModels) {
+        var client = this._server.clientModels[key];
+        result.push({"name": key, "online": client.online});
     }
     callback(null, result);
 }
 
 // Return entire model of client.
 AriServerServer.prototype._webcall_getClientInfo = function (parameters, callback) {
-    var client = this._server.clientsModel[parameters.clientName];
-    callback(null, client);
+    var client = this._server.clientModels[parameters.clientName];
+    if (client) callback(null, client);
+    else callback("Error: Unknown client name!", null);
 }
 
 //-----------------------------------------------------------------------------
