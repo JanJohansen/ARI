@@ -15,14 +15,13 @@ function transferOpts(origOpts, newOpts){
     }
 }
 
-function AriClient(clientName) {
+function AriClient(clientName, clientModelOptionals) {
     // private
     var self = this;
     this._nextReqId = 0;        // Id to use for identifying requests and corresponding response callbacks.
     this._pendingCallbacks = {};// Callbacks for pending server requests.
-    this._functions = {};       // registered callbacks.
+    this._valueWatches = {};    // Watched values. callback= function to be calle don change of value...
     this._pendingMsgs = [];     // Buffer for messages that should have been sent while offline.
-    this._subscriptions = {};   // Contains callbacks for subsriptions
     this._ws = null;            // WebSocket connecting to server.
     this.reconnectInterval = 2000; // Interval (in mS) to wait before retrying to connect on unexpected disconnection or error. 0 = no retry!
     this.authToken = null;
@@ -30,16 +29,19 @@ function AriClient(clientName) {
     
     this.name = clientName;
     
+    // define clientInfo object to send to server and to maintain local state.
+    // Note that members starting with "_" will NOT be sent to server! - So use this to store members with local relevance only.
+    this.clientModel = clientModelOptionals || {};
+    this.clientModel.name = this.name;
+    this.clientModel.functions = {};      // registered functions
+    this.clientModel.values = {};         // registered values
+    this.clientModel.subscriptions = {};  // registered subscriptions with "private" callbacks indicated by "_"...
+    
     if (typeof window !== 'undefined') { // Config for browser
         this.url = "ws://" + window.location.host;
     } else {
         this.url = "ws://localhost:3000/socket/";
     }
-    
-    // Override defaults if set specifically.
-    //    transferOpts(this, options);
-    
-    //this._connect();   // This connects or reconnects to a server.
 }
 
 AriClient.prototype.onconnect = null;   // User function to handle subscription, registration etc. on connection.
@@ -273,64 +275,110 @@ AriClient.prototype.close = function () {
 
 
 /*****************************************************************************/
-// Values, PUB/SUB ------------------------------------------------------------
-AriClient.prototype.registerValue = function (name, optionals, callback) {
-    var self = this;
-    this._call("REGISTERVALUE", { "name": name , "optionals": optionals}, function (err, result) {
-        if (err) { console.log("Error:", err); if (callback) callback(err, null); return; }
-        if (callback) callback(null, result);
-    });
+// clientInfo -----------------------------------------------------------------
+// This function sets a timeout function, so that after 10ms the update is sent.
+// If many updates are made to clientInfo (durgin startup), only one clientInfo update will be sent to the server!
+AriClient.prototype.sendClientInfo = function (){
+
+    if (!AriClient.prototype.sendClientInfo.serverupdatePending) {
+        AriClient.prototype.sendClientInfo.serverupdatePending = true; // "static" member value of member function!
+        
+        var self = this;
+        setTimeout(function () {
+            delete AriClient.prototype.sendClientInfo.serverupdatePending;
+
+            // send clientInfo.
+            self._notify("SETCLIENTINFO", self.clientModel);
+            console.log("clientInfo:", self.clientModel);
+        }, 10);
+    }
 }
 
-AriClient.prototype.setValue = function (name, value, callback) {
-    this._notify("SETVAL", { "name": name, "value": value });
+
+/*****************************************************************************/
+// Values ---------------------------------------------------------------------
+AriClient.prototype.registerValue = function (name, optionals, inputCallback) {
+    this.clientModel.values[name] = optionals || {};
+    this.clientModel.values[name]._callback = inputCallback;
+    this.sendClientInfo();
 }
 
-AriClient.prototype.publish = function (name, value, callback) {
+// Watch remote client value - call function when value change is notified.
+AriClient.prototype.watchValue = function (name, callback) {
+    if (!this.clientModel._watches) this.clientModel._watches = {};
+    this.clientModel._watches[name] = { "_callback": callback };
+    this._notify("WATCHVALUE", { "name": name });
+}
+
+// unWatch value
+AriClient.prototype.unWatchValue = function (name) {
+    delete this.clientModel._watches[name];
+    this._notify("UNWATCHVALUE", { "name": name });
+}
+
+// Function to set local or remote values.
+AriClient.prototype.setValue = function (name, value) {
+    if (this.clientModel.values.hasOwnProperty(name)) {
+        // Local value - store local value and notify server of update.
+        this.clientModel.values[name].value = value;
+        this._notify("VALUE", { "name": name, "value": value });
+    } else {
+        // Not local - possibly remote, so send set request to server.
+        this._notify("SETVALUE", { "name": name, "value": value });
+    }
+}
+
+// Server informs that a watched value has been updated.
+AriClient.prototype._webnotify_VALUE = function (msg) {
+    var name = msg.name;
+    if (!name) return;
+    
+    console.log("VALUE:", name, "=", msg.value);
+
+    var watch = this.clientModel._watches[name];
+    if (watch) {
+        watch._callback(name, msg.value)
+    }
+
+    for (var watch in this.clientModel._watches) {
+        if (this._matches(watch, name)) {
+            this.clientModel._watches[watch]._callback(name, msg.value)
+        }
+    }
+}
+
+
+// Remote client wants to set a local value.
+AriClient.prototype._webnotify_SETVALUE = function (msg) {
+    var name = msg.name;
+    var value = msg.value;
+    if (!name || !value) return;
+    
+    console.log("SETVALUE:", name, "=", value);
+    
+    var v = this.clientModel.values[name];
+    if (v) {
+        if(v._callback) v._callback(name, value)
+    }
+}
+
+
+/*****************************************************************************/
+// PUB/SUB --------------------------------------------------------------------
+AriClient.prototype.subscribe = function (name, callback) {
+    this.clientModel.subscriptions[name] = { "_callback": callback };
+    this.sendClientInfo();
+}
+
+AriClient.prototype.publish = function (name, value) {
     this._notify("PUBLISH", { "name": name, "value": value });
 }
 
-AriClient.prototype.subscribe = function (name, callback) {
-    var self = this;
-    this._call("SUBSCRIBE", { "name": name }, function (err, result) {
-        if (err) { console.log("Error:", err); if(callback) callback(err, null); return;}
-        self._subscriptions[name] = { "callback": callback };
-    });
-}
-
 AriClient.prototype.unsubscribe = function (name, callback) {
-    var self = this;
-    this._call("UNSUBSCRIBE", { "name": name }, function (err, result) {
-        if (err) { console.log("Error:", err); if(callback) callback(err, null); return; }
-        delete self._subscriptions[name];
-        if (callback) callback(null, result);
-    });
+    if (this.clientModel.subscriptions[name]) delete this.clientModel.subscriptions[name];
+    this.sendClientInfo();
 }
 
-/*****************************************************************************/
-// RPC ------------------------------------------------------------------------
-// RegisterRpc...
-AriClient.prototype.registerRpc = function (rpcName, optionals, rpcFunction) {
-    this._functions[rpcName] = { "func": rpcFunction };
-    
-    // Send registration to server!
-    var info = optionals || {};
-    info.name = rpcName;
-    this._call("REGISTERRPC", info, function (err, result) {
-        if (err) { console.log("Error:", err); return; }
-        console.log("RPC", rpcName, "registered.");
-    });
-};
-
-// Call Rpc on remote client...
-AriClient.prototype.callRpc = function (rpcName, params, callback) {
-    // Send registration to server!
-    this._call("CALLRPC", { "name": rpcName, "params": params }, function (err, result) {
-        callback(err, result);
-    });
-};
-
-//****************************************************************************
 // Server published value to client.
 AriClient.prototype._webnotify_PUBLISH = function (msg) {
     var name = msg.name;
@@ -338,18 +386,32 @@ AriClient.prototype._webnotify_PUBLISH = function (msg) {
         return;
     }
     
-    for (var subName in this._subscriptions) {
+    for (var subName in this.clientModel.subscriptions) {
         if (this._matches(subName, name)) {
             var value = msg.value;
             
             // Call the local callback
-            this._subscriptions[subName].callback(name, value);
+            this.clientModel.subscriptions[subName].callback(name, value);
         }
     }
 }
 
+/*****************************************************************************/
+// Register Function that can be called on client...
+AriClient.prototype.registerFunction = function (name, optionals, functionToCall) {
+    this.clientModel.functions[name] = { "func": functionToCall };
+    this.sendClientInfo();
+};
+
+// Call function on remote client...
+AriClient.prototype.callFunction = function (rpcName, params, callback) {
+    this._call("CALLFUNCTION", { "name": rpcName, "params": params }, function (err, result) {
+        callback(err, result);
+    });
+};
+
 // Server calls RPC on this client...
-AriClient.prototype._webcall_CALLRPC = function (msg, callback) {
+AriClient.prototype._webcall_CALLFUNCTION = function (msg, callback) {
     var rpcName = msg.name;
     if (!rpcName) {
         console.log("Error: Missing name of RPC to call! - Ignoring...");
@@ -357,12 +419,12 @@ AriClient.prototype._webcall_CALLRPC = function (msg, callback) {
         return;
     }
     
-    if (!this._functions.hasOwnProperty(rpcName)) {
+    if (!this.clientModel.functions.hasOwnProperty(rpcName)) {
         console.log("Error: Name of RPC not previously registered! - Ignoring...");
         callback("Error: RPC unkknown at client!", null);
         return;
     }
-    var rpc = this._functions[rpcName];
+    var rpc = this.clientModel.functions[rpcName];
     var rpcFunc = rpc.func;
     
     var params = msg.params;
@@ -373,6 +435,7 @@ AriClient.prototype._webcall_CALLRPC = function (msg, callback) {
         callback(err, result);
     });
 }
+
 
 //*****************************************************************************
 // EventListener implementation...

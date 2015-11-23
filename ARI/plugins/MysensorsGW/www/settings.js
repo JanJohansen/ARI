@@ -11,7 +11,7 @@ ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriCl
             var clientName = result.name;
 
             // Get list of clients.
-            ari.callRpc("MysensorsGW.getConfig", {}, function (err, result) {
+            ari.callFunction("MysensorsGW.getConfig", {}, function (err, result) {
                 if (err) { console.log(err); return; }
 
                 console.log(result);
@@ -21,7 +21,7 @@ ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriCl
 
             $scope.saveConfig = function ()
             {
-                ari.callRpc("MysensorsGW.setConfig", $scope.config, function (err, result) {
+                ari.callFunction("MysensorsGW.setConfig", $scope.config, function (err, result) {
                     if (err) { console.log(err); return; }
                 });
             }

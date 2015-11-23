@@ -85,6 +85,7 @@
     <Content Include="ari_state.default.json" />
     <Content Include="config.json" />
     <Content Include="nodemon.json" />
+    <Content Include="Notes.txt" />
     <Content Include="package.json" />
     <Content Include="documentation\readme.html" />
     <Content Include="plugins\MysensorsGW\ariManifest.json" />

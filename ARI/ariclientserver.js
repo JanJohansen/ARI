@@ -10,7 +10,7 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
     this.name = "";
     this._subscriptions = {};
     this._nextReqId = 0;
-    this.clientModel = null;    // This will be set upon authentication.
+    this.clientModel = null;    // This will be set after authentication.
     
     //this._server.clients.push(this);   // Put into list of connected clients.
 
@@ -66,7 +66,7 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
             }
         }
     });
-
+    
     this._ws.on("close", function () { 
         // !!! USE SELF
         self.handleClientDisconnect();
@@ -84,16 +84,17 @@ AriClientServer.prototype.jsonReplacer = function (key, value) {
 AriClientServer.prototype.handleClientDisconnect = function () {
     console.log("Client disconnected.");
     if (!this.clientModel) return;  // Probably left before calling connect!
+    
     if ((Object.keys(this.clientModel.values).length === 0) || (Object.keys(this.clientModel.functions).length === 0)) {
         if (!this.clientModel.pendingAuthorization) {   // If authorization is  pending we still need to persist client data!
             // remove client (e.g. don't persist!)
-            delete this._server.clientsModel[this.name];
+            delete this._server.clientModels[this.name];
         }
     }
     else {
         // persist, and mark as offline!
         this.clientModel.online = false;
-        this.clientModel.__clientServer = null;
+        delete this.clientModel.__clientServer;
     }
 }
 
@@ -115,7 +116,7 @@ AriClientServer.prototype._call = function (command, parameters, callback) {
     this._wsSend(JSON.stringify(msg));
 }
 
-// Publish value to client...
+// Notify client of something. (no return value!)...
 AriClientServer.prototype._notify = function (command, parameters) {
     var msg = {};
     msg.cmd = command;
@@ -146,7 +147,7 @@ AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
             else var clientModelName = user;
             this.name = clientModelName;
 
-            this.clientModel = this._server.clientsModel[clientModelName];
+            this.clientModel = this._server.clientModels[clientModelName];
             if (this.clientModel) {
                 // clientModel found.
                 this.clientModel.online = true;
@@ -161,11 +162,11 @@ AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
                     "online": true,
                     "ip": this._ws._socket.remoteAddress,
                     "__clientServer": this,
-                    "functions": {},
-                    "values": {}
+                    "values": {},
+                    "functions": {}
                 };
                 
-                this._server.clientsModel[clientModelName] = this.clientModel;
+                this._server.clientModels[clientModelName] = this.clientModel;
                 
                 callback(null, { "name": clientName });
                 return;
@@ -177,6 +178,7 @@ AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
 };
 
 AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
+
     if (!pars.name) { callback("Error: Missing name parameter when requesting authToken.", null); return; }
     if (!pars.role && !pars.password) { callback("Error: Missing parameter when requesting authToken.", null); return; }
     
@@ -186,11 +188,11 @@ AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
     
     if (password) {
         // Request is for existing user in system. Find user...
-        if (name in this._server.usersModel) {
+        if (name in this._server.userModels) {
             // Check password.
-            if (this._server.usersModel[name].password == password) {
+            if (this._server.userModels[name].password == password) {
                 // Reply with authToken and possibly new Name.
-                payload = { "name": name, "role": this._server.usersModel[name].role, "created": this._server.usersModel[name].created };
+                payload = { "name": name, "role": this._server.userModels[name].role, "created": this._server.userModels[name].created };
                 var token = jwt.encode(payload, this._server.JWTSecret);
                 callback(null, { "name": name, "authToken": token });
             } else {
@@ -214,16 +216,16 @@ AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
         var newName = name;
         var count = 1;
         while (true) {
-            if (!this._server.usersModel[newName]) break;
+            if (!this._server.userModels[newName]) break;
             newName = name + "(" + count + ")";
             count++;
         }
         
         // Create new user.
-        this._server.usersModel[newName] = {};
-        this._server.usersModel[newName].name = newName;
-        this._server.usersModel[newName].created = new Date().toISOString();
-        this._server.usersModel[newName].role= role;
+        this._server.userModels[newName] = {};
+        this._server.userModels[newName].name = newName;
+        this._server.userModels[newName].created = new Date().toISOString();
+        this._server.userModels[newName].role= role;
         
         // Reply with authToken and possibly new Name.
         var payload = { "name": newName, "role": pars.role, "created": new Date().toISOString() };
@@ -232,16 +234,50 @@ AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
     }
 };
 
+
 //-----------------------------------------------------------------------------
-AriClientServer.prototype._webcall_REGISTERRPC = function (pars, callback) {
-    console.log("RegisterRPC(", pars, ")");
+AriClientServer.prototype._webnotify_SETCLIENTINFO = function (clientInfo) {
+    console.log("_webcall_CLIENTINFO", clientInfo);
     
-    this.clientModel.functions[pars.name] = pars;
-    callback(null, {});
+    // clientInfo has already been JSON.parsed!
+
+    // TODO: Merge client info with present info... Remove values, functions, etc. not in Info from client.
+    if (clientInfo.values) {
+        for (var key in this.clientModel.values) {
+            if (!clientInfo.values[key]) {
+                // value removed from clientInfo - remove from clientModel.
+                delete this.clientModel.values[key];
+            }
+        }
+    }
+    if (clientInfo.functions) {
+        for (var key in this.clientModel.functions) {
+            if (!clientInfo.functions[key]) {
+                // value removed from clientInfo - remove from clientModel.
+                delete this.clientModel.functions[key];
+            }
+        }
+    }
+    // Perform deep merge from remote clientInfo to local clientModel.
+    deepMerge(clientInfo, this.clientModel);
 }
 
-// Client wants to call remote (or server local) RPC.
-AriClientServer.prototype._webcall_CALLRPC = function (pars, callback) {
+var deepMerge = function (source, destination) {
+    for (var property in source) {
+        if (typeof source[property] === "object" && source[property] !== null) {
+            destination[property] = destination[property] || {};
+            deepMerge(source[property], destination[property]);
+        } else {
+            destination[property] = source[property];
+        }
+    }
+    return destination;
+};
+
+
+//-----------------------------------------------------------------------------
+// Client wants to call remote function.
+AriClientServer.prototype._webcall_CALLFUNCTION = function (pars, callback) {
     var rpcName = pars.name;
     if (!rpcName) {
         console.log("Error: Missing name of RPC to call! - Ignoring...");
@@ -252,7 +288,7 @@ AriClientServer.prototype._webcall_CALLRPC = function (pars, callback) {
     // Find RPC in other connected clients, in offline clients, in server registered rpc's or even in own client! (Ping yourself ;O)
     var rpcNameParts = rpcName.split(".");
     // Find client
-    var client = this._server.clientsModel[rpcNameParts[0]];
+    var client = this._server.clientModels[rpcNameParts[0]];
     if (client) {
         // Client found, now find rpc.
         var rpc = client.functions[rpcNameParts[1]];
@@ -261,7 +297,7 @@ AriClientServer.prototype._webcall_CALLRPC = function (pars, callback) {
                 callback("Error: Target client for function call is offline.", null);
                 return;
             } else {
-                client.__clientServer._call("CALLRPC", { "name": rpcName.substring(rpcName.indexOf(".") + 1), "params": pars.params}, function (err, result) { 
+                client.__clientServer._call("CALLFUNCTION", { "name": rpcName.substring(rpcName.indexOf(".") + 1), "params": pars.params}, function (err, result) { 
                     callback(err, result);
                 });
             }
@@ -278,23 +314,8 @@ AriClientServer.prototype._webcall_CALLRPC = function (pars, callback) {
 };
 
 //-----------------------------------------------------------------------------
-AriClientServer.prototype._webcall_REGISTERVALUE = function (pars, callback) {
-    console.log("RegisterValue(", pars, ")");
-    
-    if (!pars.name) { callback("Error: Trying to register value without specifying name:", null); return;}
-    
-    if (!this.clientModel.values[pars.name]) this.clientModel.values[pars.name] = {};   // Create if not existing!
-    this.clientModel.values[pars.name].name = pars.name;
-
-    // Merge optionals into value model.    
-    if (pars.optionals) {
-        for (var key in pars.optionals) {
-            this.clientModel.values[pars.name][key] = pars.optionals[key];
-        }
-    }
-    callback(null, {});
-}
-
+// Client wants to subscribe to topic.
+// TODO: Needs update after implementing values.!
 AriClientServer.prototype._webcall_SUBSCRIBE = function (pars, callback) {
     console.log("subscribe(", pars, ")");
     
@@ -306,8 +327,8 @@ AriClientServer.prototype._webcall_SUBSCRIBE = function (pars, callback) {
     callback(null, {}); // Send reply before sending latest values!!!
     
     // Send last values of subscribed values.
-    for (var key in this._server.clientsModel) {
-        var client = this._server.clientsModel[key];
+    for (var key in this._server.clientModels) {
+        var client = this._server.clientModels[key];
         if (client.values) {
             for (var valName in client.values) {
                 if (this.matches(name, client.name + "." + valName)) {
@@ -321,6 +342,7 @@ AriClientServer.prototype._webcall_SUBSCRIBE = function (pars, callback) {
     }
 }
 
+// Helper function to match strA (possibly including wildcard *) to strB.
 AriClientServer.prototype.matches = function (strA, strB) {
     if (strA == strB) return true;
     var aPos = strA.indexOf('*');
@@ -331,7 +353,7 @@ AriClientServer.prototype.matches = function (strA, strB) {
     return false;
 }
 
-
+// Client wants to unsibscribe from subscription.
 AriClientServer.prototype._webcall_UNSUBSCRIBE = function (pars, callback) {
     console.log("unsubscribe(", pars, ")");
     
@@ -342,6 +364,7 @@ AriClientServer.prototype._webcall_UNSUBSCRIBE = function (pars, callback) {
     callback(null, {});
 }
 
+// Client want to publish a topic with a value.
 AriClientServer.prototype._webnotify_PUBLISH = function (pars) {
     //console.log("publish(", pars, ")");
     
@@ -351,4 +374,53 @@ AriClientServer.prototype._webnotify_PUBLISH = function (pars) {
         return;
     }
     this._server.publish(this.name + "." + valueName, pars.value);
+}
+
+/*****************************************************************************/
+// Client wants to watch for change to a remote value.
+AriClientServer.prototype._webnotify_WATCHVALUE = function (pars, callback) {
+    var name = pars.name;
+    if (!name) { callback("Error: No name parameter specified!", null); return; }
+    
+    if (!this.clientModel._watches) this.clientModel._watches = {};
+    this.clientModel._watches[name] = {}; // Just indicate that this client watches this value.
+
+    // Send last values of subscribed values.
+    for (var key in this._server.clientModels) {
+        var client = this._server.clientModels[key];
+        if (client.values) {
+            for (var valName in client.values) {
+                if (this.matches(name, client.name + "." + valName)) {
+                    var clientValue = client.values[valName];
+                    if (clientValue && clientValue.value) {
+                        this._notify("VALUE", { "name": client.name + "." + valName , "value": clientValue.value });
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Client notifies that a member value (of this client) was set.
+AriClientServer.prototype._webnotify_VALUE = function (pars) {
+    var valueName = pars.name;
+    if (!valueName) {
+        console.log("Error: Missing name of value to publish! - Ignoring...");
+        return;
+    }
+    // Add client name to path and let server handle.
+    this._server.handleValue(this.name + "." + valueName, pars.value);
+}
+
+// Client wants to set remote (no-local) value.
+AriClientServer.prototype._webnotify_SETVALUE = function (pars) {
+    var name = pars.name;
+    var value = pars.value;
+    if (!name || !value) {
+        console.log("Error: Missing name or value to set! - Ignoring...");
+        return;
+    }
+
+    // Add client name to path and let server handle.
+    this._server.setValue(name, value);
 }

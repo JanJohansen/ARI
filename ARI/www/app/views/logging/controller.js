@@ -10,7 +10,7 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
             console.log("Client connected as \"" + ari.name + "\"");
             
             // Get list of clients.
-            ari.callRpc("ari.listLogs", {}, function (err, result) {
+            ari.callFunction("ari.listLogs", {}, function (err, result) {
                 if (err) { console.log(err); return; }
                 
                 console.log("listLogs -->", result);
@@ -19,7 +19,7 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
             });
             
             $scope.logSelected = function (logName) {
-                ari.callRpc("ari.getLog", { "name": logName }, function (err, result) {
+                ari.callFunction("ari.getLog", { "name": logName }, function (err, result) {
                     if (err) { console.log(err); return; }
                     var entries = result.split("\n");
                     var data = [];
