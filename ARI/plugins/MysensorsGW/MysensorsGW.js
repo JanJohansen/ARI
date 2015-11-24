@@ -97,6 +97,12 @@ ari.onconnect = function (result) {
             });
         }
     }
+    
+    // Example on getValue
+    // TODO: Remove... :O)
+    ari.getValue("GW433.Garage.temperature", function (err, result) {
+        console.log("GETVALUE:", result);
+    });
 
     // Open serial port and start handling telegrams from GW.
     openPort(config.portName);

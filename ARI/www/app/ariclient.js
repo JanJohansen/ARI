@@ -316,6 +316,13 @@ AriClient.prototype.unWatchValue = function (name) {
     this._notify("UNWATCHVALUE", { "name": name });
 }
 
+// Get latest reported value from server.
+AriClient.prototype.getValue = function (name, callback) {
+    this._call("GETVALUE", { "name": name }, function (err, result) { 
+        callback(err, result);
+    });
+}
+
 // Function to set local or remote values.
 AriClient.prototype.setValue = function (name, value) {
     if (this.clientModel.values.hasOwnProperty(name)) {

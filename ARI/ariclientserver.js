@@ -416,11 +416,23 @@ AriClientServer.prototype._webnotify_VALUE = function (pars) {
 AriClientServer.prototype._webnotify_SETVALUE = function (pars) {
     var name = pars.name;
     var value = pars.value;
-    if (!name || !value) {
+    if ((name === undefined) || (value === undefined)) {
         console.log("Error: Missing name or value to set! - Ignoring...");
         return;
     }
 
     // Add client name to path and let server handle.
     this._server.setValue(name, value);
+}
+
+// Client wants to get latest stored value from a client.
+AriClientServer.prototype._webcall_GETVALUE = function (pars, callback) {
+    var name = pars.name;
+    if (name === undefined) {
+        console.log("Error: Missing name to get! - Ignoring...");
+        callback("Error: Missing name to get!", null);
+        return;
+    }
+    
+    this._server.getValue(name, callback);
 }

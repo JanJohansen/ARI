@@ -131,6 +131,23 @@ Ari.prototype.setValue = function (name, value) {
     }
 }
 
+// Main getValue function called by all clients.!
+Ari.prototype.getValue = function (name, callback) {
+    var clientName = name.split(".")[0];
+    
+    // Find client.
+    var client = this.clientModels[clientName];
+    if (client) {
+        if (client.values) {
+            // Removeo client name and setValue...
+            name = name.substring(name.indexOf(".") + 1);
+            if (client.values[name]) callback(null, client.values[name].value);
+            else callback("Value name not found on client", null);
+        }
+    }
+    else callback("Client for getValue not found.", null);
+}
+
 // Main handleValue function called by all clients.!
 Ari.prototype.handleValue = function (name, value) {
     
