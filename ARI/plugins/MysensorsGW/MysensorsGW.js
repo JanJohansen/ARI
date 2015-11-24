@@ -9,6 +9,9 @@ var serialPort = null;
 // TODO: Select serial port based on pnpId to be able to use same HW when connected to different UDB port.
 // TODO: Implement set/getConfig with "latest available" + configgured pnpId!
 
+var simpleJSONFilter = require("simple-json-filter");
+var sjf = new simpleJSONFilter();
+
 // Load state.
 var stateStore = new ConfigStore(__dirname, "state");
 var state = stateStore.load();
@@ -93,6 +96,32 @@ ari.onconnect = function (result) {
                 // This function is called if remote client wants to set this inputs.
                 // TODO: Send message to sensor here.
                 console.log("EXTERNAL SETVALUE:", name, value);
+
+                // Split name into usable entities
+                var res = name.split(".");
+                var num = value - 1;
+                // create a filter to use with simpleJSONFilter
+                var filter = {"name": res[0]};
+                var nodeFound = sjf.exec(filter, config.nodes);
+                if (nodeFound) {
+                  // Bingo node was found
+                  var address = Object.keys(nodeFound)[0];
+                  var filter = {"name": res[1]};
+                  var sensorFound = sjf.exec(filter, nodeFound[address].sensors);
+
+                  if (sensorFound) {
+                    // Sensor found, now lets send a telegram to the node.
+                    // It is currently only sending V_STATUS=2 to the node
+                    // with the value as payload (num = value -1).
+                    // Since sending 0 from nodeRed is ignored, somewhere.
+                    var sensorId = Object.keys(sensorFound)[0];
+                    console.log("serial message: " + address + ";" + sensorId+ ";1;0;2;" + num + "\n");
+                    serialPort.write(address + ";" + sensorId + ";1;0;2;" + num + "\n", function(err, results) {
+                       console.log('err ' + err);
+                       console.log('results ' + results);
+                    });
+                  }
+                }
 
             });
         }
