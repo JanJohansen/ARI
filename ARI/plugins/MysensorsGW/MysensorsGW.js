@@ -32,13 +32,8 @@ ari.onconnect = function (result) {
     clientName = result.name;   // Store name in case we got a new one (with (x) at the end!)
     console.log("Client connected as \"" + ari.name + "\"");
 
-    // handle subscriptions.
-    ari.subscribe(clientName + ".*", function (path, value) {
-        console.log("->", path, "=", value);
-    });
-
     // register functions.
-    ari.registerRpc("getConfig", { description: "Get configuration data for UI." }, function (pars, callback) {
+    ari.registerFunction("getConfig", { description: "Get configuration data for UI." }, function (pars, callback) {
 
         var uiconfig = config;
 
@@ -57,7 +52,7 @@ ari.onconnect = function (result) {
         });
     });
 
-    ari.registerRpc("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
+    ari.registerFunction("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
         console.log("Storing new configuration.");
         if (pars.portName != config.portName) {
             console.log("Selecting new serial port:", pars.portName);
@@ -94,7 +89,12 @@ ari.onconnect = function (result) {
         var msNode = config.nodes[key];
         for (key2 in msNode.sensors) {
             var sensor = msNode.sensors[key2];
-            ari.registerValue(msNode.name + "." + sensor.name);
+            ari.registerValue(msNode.name + "." + sensor.name, {}, function (name, value) {
+                // This function is called if remote client wants to set this inputs.
+                // TODO: Send message to sensor here.
+                console.log("EXTERNAL SETVALUE:", name, value);
+
+            });
         }
     }
 
@@ -159,7 +159,7 @@ ari.onconnect = function (result) {
             var sensor = node.sensors[msMsg.sensorId];
             if (sensor) {
                 console.log("-> @" + new Date().toISOString(), "MySensor." + node.name + "." + sensor.name, "=", msMsg.payload);
-                ari.publish(node.name + "." + sensor.name, msMsg.payload);
+                ari.setValue(node.name + "." + sensor.name, msMsg.payload);
             }
             else {
               console.log(parts);
