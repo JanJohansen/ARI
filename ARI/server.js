@@ -114,9 +114,14 @@ process.stdin.on('data', function (text) {
 function handleConsoleQuit() {
     console.log('User shut down... Bye.');
     ari.shutDown();
+    saveDebug(true);
     process.exit();
 }
 
+
+/*****************************************************************************/
+// Plugin handling.
+var pluginInfos = {};
 
 // Start installed plugins.
 var pluginsPath = __dirname + "/plugins";
@@ -131,29 +136,39 @@ fs.readdir(pluginsPath, function (err, files) {
                 fs.readFile(pluginsPath + "/" + dir + "/" + "ariManifest.json", function (err, data) {
                     try { var manifest = JSON.parse(data) } catch (e) { console.log(e); return; }
                     if (manifest) {
-                        if (manifest.plugins) {
-                            for (var id in manifest.plugins) {
-                                var plugin = manifest.plugins[id];
-                                if (plugin.name && plugin.nodeMain) {
-                                    console.log("Starting plugin:", plugin.name);
-                                    
-                                    // Child will use parent's stdios
-                                    if (!plugin.arguments) plugin.arguments = "";
-                                    var args = [plugin.nodeMain].concat(plugin.arguments.split(" "));
-                                    var pluginProcess = cp.spawn("node", args, { "cwd": pluginsPath + "/" + plugin.name});
-                
-                                    pluginProcess.stdout.on('data', function (data) {
-                                        console.log("/" + plugin.name + ":", data.toString());
-                                    });
-                
-                                    pluginProcess.stderr.on('data', function (data) {
-                                        console.log(plugin.name + " ERROR:", data.toString());
-                                    });
-                
-                                    pluginProcess.on('close', function (code) {
-                                        console.log(plugin.name + " exit!:", code.toString());
-                                        // TODO: Implement restart plugin n times before reporting error?
-                                    });
+                        if (manifest.packageInfo.name != undefined) {
+                            pluginInfos[manifest.packageInfo.name] = manifest;
+                            if (manifest.plugins) {
+                                for (var id in manifest.plugins) {
+                                    var plugin = manifest.plugins[id];
+                                    if (plugin.name && plugin.nodeMain) {
+                                        console.log("Starting plugin:", plugin.name);
+                                        
+                                        // Child will use parent's stdios
+                                        if (!plugin.arguments) plugin.arguments = "";
+                                        var args = [plugin.nodeMain].concat(plugin.arguments.split(" "));
+                                        var pluginProcess = cp.spawn("node", args, { "cwd": pluginsPath + "/" + plugin.name });
+                                        
+                                        plugin.stdout = "";
+                                        plugin.errout = "";
+                                        plugin.debugFilePath = pluginsPath + "/" + dir + "/";
+
+                                        pluginProcess.stdout.on('data', function (data) {
+                                            console.log("/" + plugin.name + ":", data.toString());
+                                            plugin.stdout += data.toString();
+                                        });
+                                        
+                                        pluginProcess.stderr.on('data', function (data) {
+                                            console.log(plugin.name + " ERROR:", data.toString());
+                                            plugin.errout += data.toString();
+                                        });
+                                        
+                                        pluginProcess.on('close', function (code) {
+                                            console.log(plugin.name + " exit!:", code.toString());
+                                            // TODO: Implement restart plugin n times before reporting error?
+                                            saveDebug(false);
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -163,3 +178,35 @@ fs.readdir(pluginsPath, function (err, files) {
         });
     });
 });
+
+var saveDebug = function (synchronous){
+    
+    for (var manifestName in pluginInfos) {
+        for (var pluginName in pluginInfos[manifestName].plugins) {
+            var plugin = pluginInfos[manifestName].plugins[pluginName];
+            
+            // For stdout
+            var fileName = plugin.debugFilePath + plugin.name + ".stdout.log";
+            var stdlog = plugin.stdout;
+            plugin.stdout = "";
+            if (stdlog != "") {
+                if (synchronous) fs.appendFileSync(fileName, stdlog);
+                else fs.appendFile(fileName, stdlog, function () { });
+                console.log("DebugLog file written:", fileName)
+            }
+            
+            // For stderr
+            var fileName = plugin.debugFilePath + plugin.name + ".stderr.log";
+            var stdlog = plugin.stderr;
+            plugin.stderr = "";
+            if (stdlog != "") {
+                if (synchronous) fs.appendFileSync(fileName, stdlog);
+                else fs.appendFile(fileName, stdlog, function () { });
+                console.log("DebugLog file written:", fileName)
+            }
+        }
+    }
+}
+
+// Save debug log eavery 10 minutes.
+setInterval(saveDebug, 10 * 60 * 1000);
