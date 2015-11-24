@@ -24,17 +24,12 @@ ari.onconnect = function (result) {
     clientName = result.name;   // Store name in case we got a new one (with (x) at the end!)
     console.log("Client connected as \"" + ari.name + "\"");
     
-    // handle subscriptions.
-    ari.subscribe(clientName + ".*", function (path, value) {
-        //console.log("->", path, "=", value);
-    });
-    
     // register functions.
-    ari.registerRpc("getConfig", { description: "Get configuration data for UI." }, function (pars, callback) {
+    ari.registerFunction("getConfig", { description: "Get configuration data for UI." }, function (pars, callback) {
         callback(null, config);
     });
     
-    ari.registerRpc("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
+    ari.registerFunction("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
         config = pars.config;
         callback(null, {}); // Indicate OK.
     });
@@ -44,7 +39,7 @@ ari.onconnect = function (result) {
     ari.registerValue("cpuLoad", { description: "Average CPU utilization since last update." });
 
     // Provide one time updates...
-    ari.publish("lastBoot", new Date(os.uptime()).toISOString());
+    ari.setValue("lastBoot", new Date(os.uptime()).toISOString());
     
     // Provide system infor each second.
     var reportInterval = 1000;
@@ -56,7 +51,7 @@ ari.onconnect = function (result) {
             totalIdle += cpus[key].times.idle;
         }
         var load = 1 - (totalIdle - lastIdle) / reportInterval / cpus.length;
-        if (lastIdle > 0) ari.publish("cpuLoad", +load.toFixed(3));   // Round to 3 digits and only send after first period!
+        if (lastIdle > 0) ari.setValue("cpuLoad", +load.toFixed(3));   // Round to 3 digits and only send after first period!
         lastIdle = totalIdle;
     }, reportInterval);
 }
