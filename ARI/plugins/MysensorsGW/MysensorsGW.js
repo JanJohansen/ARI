@@ -9,6 +9,9 @@ var serialPort = null;
 // TODO: Select serial port based on pnpId to be able to use same HW when connected to different UDB port.
 // TODO: Implement set/getConfig with "latest available" + configgured pnpId!
 
+var simpleJSONFilter = require("simple-json-filter");
+var sjf = new simpleJSONFilter();
+
 // Load state.
 var stateStore = new ConfigStore(__dirname, "state");
 var state = stateStore.load();
@@ -94,6 +97,32 @@ ari.onconnect = function (result) {
                 // TODO: Send message to sensor here.
                 console.log("EXTERNAL SETVALUE:", name, value);
 
+                // Split name into usable entities
+                var res = name.split(".");
+                var num = value - 1;
+                // create a filter to use with simpleJSONFilter
+                var filter = {"name": res[0]};
+                var nodeFound = sjf.exec(filter, config.nodes);
+                if (nodeFound) {
+                  // Bingo node was found
+                  var address = Object.keys(nodeFound)[0];
+                  var filter = {"name": res[1]};
+                  var sensorFound = sjf.exec(filter, nodeFound[address].sensors);
+
+                  if (sensorFound) {
+                    // Sensor found, now lets send a telegram to the node.
+                    // It is currently only sending V_STATUS=2 to the node
+                    // with the value as payload (num = value -1).
+                    // Since sending 0 from nodeRed is ignored, somewhere.
+                    var sensorId = Object.keys(sensorFound)[0];
+                    console.log("serial message: " + address + ";" + sensorId+ ";1;0;2;" + num + "\n");
+                    serialPort.write(address + ";" + sensorId + ";1;0;2;" + num + "\n", function(err, results) {
+                       console.log('err ' + err);
+                       console.log('results ' + results);
+                    });
+                  }
+                }
+
             });
         }
     }
@@ -166,6 +195,8 @@ ari.onconnect = function (result) {
             if (sensor) {
                 console.log("-> @" + new Date().toISOString(), "MySensor." + node.name + "." + sensor.name, "=", msMsg.payload);
                 ari.setValue(node.name + "." + sensor.name, msMsg.payload);
+                node.sensors[msMsg.sensorId].values = { "name": msMsg.subType, "msType": msMsg.subType, "value": msMsg.payload};
+                configStore.save(config);
             }
             else {
               console.log(parts);
@@ -183,11 +214,32 @@ ari.onconnect = function (result) {
             var notAdded = config.notAdded[msMsg.nodeId];
             // if nodeId does not exists add it to the list
             if (!notAdded) {
+              config.notAdded[msMsg.nodeId] = {};
+            }
+
+            if (!config.notAdded[msMsg.nodeId].name) {
               // Add new node to the notAdded list
               // together with the skechtname
-              var element = {};
-              element = {"name": msMsg.payload};
-              config.notAdded[msMsg.nodeId] = element;
+              config.notAdded[msMsg.nodeId].name = msMsg.payload;
+              configStore.save(config);
+            }
+          }
+          else if(msMsg.sensorId == 255 && msMsg.messageType == 3 && msMsg.subType == 12)
+          {
+            // lookup nodeId in notAdded
+            if (!config.notAdded) {
+              config.notAdded = {};
+            }
+            var notAdded = config.notAdded[msMsg.nodeId];
+            // if nodeId does not exists add it to the list
+            if (!notAdded) {
+              config.notAdded[msMsg.nodeId] = {};
+            }
+            // if nodeId does not exists add it to the list
+            if (!config.notAdded[msMsg.nodeId].version) {
+              // Add new node to the notAdded list
+              // together with the skechtname
+              config.notAdded[msMsg.nodeId].version = msMsg.payload;
               configStore.save(config);
             }
           }
@@ -196,7 +248,9 @@ ari.onconnect = function (result) {
             // the node presents the sensors it provides
             // with messageType set to 0 and the subtype represents
             // the sensor provided
-            if (!config.notAdded) config.notAdded = {};
+            if (!config.notAdded) {
+              config.notAdded = {};
+            }
             var notAdded = config.notAdded[msMsg.nodeId];
             if (notAdded) {
               if(!config.notAdded[msMsg.nodeId].sensors) {
@@ -210,7 +264,12 @@ ari.onconnect = function (result) {
                 presentation[3] = "Light"
                 presentation[6] = "Temperature";
                 presentation[7] = "Humidity";
-                config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": presentation[msMsg.subType]};
+
+                var sensor = {
+                  "name": presentation[msMsg.subType],
+                  "msType": msMsg.subType
+                }
+                config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = sensor;
                 //config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": msMsg.subType};
                 configStore.save(config);
                 console.log("Sensor added " + msMsg.sensorId);
@@ -230,6 +289,7 @@ ari.onerror = function (result) {
 }
 
 ari.onclose = function (result) {
+  console.log("onClose: MySensorGW");
     if (serialPort) {
         if (serialPort.isOpen()) serialPort.close();
         serialPort = null;
