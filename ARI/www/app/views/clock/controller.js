@@ -19,7 +19,7 @@ ariModule.register.controller('clockController', ["$scope", "$interval", 'AriCli
             var clientName = result.name;
             console.log("Client connected as \"" + ari.name + "\"");
             
-            ari.subscribe("ari.time", function (path, value) {
+            ari.watchValue("ari.time", function (path, value) {
                 var date = new Date(value);
                 $scope.hour = addZero(date.getHours());
                 $scope.minute = addZero(date.getMinutes());
@@ -29,7 +29,7 @@ ariModule.register.controller('clockController', ["$scope", "$interval", 'AriCli
         };
         
         $scope.$on('$destroy', function () {
-            ari.unsubscribe("ari.time");
+            ari.unWatchValue("ari.time");
             if (ari) ari.close();
         });
     /*    

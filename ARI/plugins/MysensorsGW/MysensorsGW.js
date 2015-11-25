@@ -2,7 +2,7 @@
 var ConfigStore = require("../../configStore.js");
 
 var SerialPortModule = require("serialport");
-var SerialPort = SerialPortModule.SerialPort; // localize object constructor 
+var SerialPort = SerialPortModule.SerialPort; // localize object constructor
 
 var serialPort = null;
 
@@ -31,15 +31,10 @@ ari.onconnect = function (result) {
     }
     clientName = result.name;   // Store name in case we got a new one (with (x) at the end!)
     console.log("Client connected as \"" + ari.name + "\"");
-    
-    // handle subscriptions.
-    ari.subscribe(clientName + ".*", function (path, value) {
-        console.log("->", path, "=", value);
-    });
-    
+
     // register functions.
-    ari.registerRpc("getConfig", { description: "Get configuration data for UI." }, function (pars, callback) {
-        
+    ari.registerFunction("getConfig", { description: "Get configuration data for UI." }, function (pars, callback) {
+
         var uiconfig = config;
 
         // Add possble ports for configuration via settings view...
@@ -56,8 +51,8 @@ ari.onconnect = function (result) {
             callback(null, uiconfig);
         });
     });
-    
-    ari.registerRpc("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
+
+    ari.registerFunction("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
         console.log("Storing new configuration.");
         if (pars.portName != config.portName) {
             console.log("Selecting new serial port:", pars.portName);
@@ -68,66 +63,101 @@ ari.onconnect = function (result) {
         // Store config.
         configStore.save(config);
 
+        // Deregister deactive nodes
+        for (key in config.notAdded) {
+            var msNode = config.notAdded[key];
+            for (key2 in msNode.sensors) {
+                var sensor = msNode.sensors[key2];
+                ari.deRegisterValue(msNode.name + "." + sensor.name);
+            }
+        }
+
+        // Register active nodes
+        for (key in config.nodes) {
+            var msNode = config.nodes[key];
+            for (key2 in msNode.sensors) {
+                var sensor = msNode.sensors[key2];
+                ari.registerValue(msNode.name + "." + sensor.name);
+            }
+        }
+
         callback(null, {}); // Indicate OK.
     });
-    
+
     // Register values.
     for (key in config.nodes) {
         var msNode = config.nodes[key];
         for (key2 in msNode.sensors) {
             var sensor = msNode.sensors[key2];
-            ari.registerValue(msNode.name + "." + sensor.name);
+            ari.registerValue(msNode.name + "." + sensor.name, {}, function (name, value) {
+                // This function is called if remote client wants to set this inputs.
+                // TODO: Send message to sensor here.
+                console.log("EXTERNAL SETVALUE:", name, value);
+
+            });
         }
     }
     
-    // Open serial port and start handling telegrams from GW.    
+    // Example on getValue
+    // TODO: Remove... :O)
+    ari.getValue("GW433.Garage.temperature", function (err, result) {
+        console.log("GETVALUE:", result);
+    });
+
+    // Open serial port and start handling telegrams from GW.
     openPort(config.portName);
-    
-    
+
 /*    mySensorsGW.write("ls\n", function (err, results) {
         console.log('err ' + err);
         console.log('results ' + results);
     });
 */
 
-    
-    function openPort(name){
-        // Serial port comuunication to mysensor gateway.    
-        if (serialPort) {
-            if (serialPort.isOpen()) serialPort.close();
-            serialPort = null;
-        }
-        try {
-            serialPort = new SerialPort(config.portName, {
-                baudrate: 115200,
-                parser: SerialPortModule.parsers.readline('\n')
-            });
-            
-            serialPort.on("open", function () {
-                serialPort.on('data', function (data) {
-                    //        console.log('MSGW: ' + data);
-                    handleMSGWTlg(data);
 
-                });
-            });
-        } catch (e) {
-            console.log("ERROR: Couldn't open port:", config.portName);
-            console.log("Set port in settings view for plugin.");
-        }
+    function openPort(name){
+      console.log("Trying to open Serialport");
+      // Serial port comuunication to mysensor gateway.
+      if (serialPort) {
+          if (serialPort.isOpen()) serialPort.close();
+          serialPort = null;
+      }
+
+
+      serialPort = new SerialPort(config.portName, {
+          baudrate: 115200,
+          parser: SerialPortModule.parsers.readline('\n')},
+          false
+      );
+
+      serialPort.open();
+
+      serialPort.on("open", function (error) {
+        serialPort.on('data', function (data) {
+        //        console.log('MSGW: ' + data);
+        handleMSGWTlg(data);
+
+        });
+      });
+
+      serialPort.on("error", function(error) {
+        console.log("error happend " + error);
+      });
     }
-    
+
     function handleMSGWTlg(data) {
         var parts = data.split(';');
-        
+
         var msMsg = {
             nodeId: parts[0],
             sensorId: parts[1],
             messageType: parts[2],
             ack: parts[3],
-            subType: parts[4], 
+            subType: parts[4],
             payload: parts[5],
         };
-        
+
+
+
         if (msMsg.nodeId == 0) return;  // Ignore gateway messages for now.
         if (!config.nodes) config.nodes = {};
         var node = config.nodes[msMsg.nodeId];
@@ -135,11 +165,60 @@ ari.onconnect = function (result) {
             var sensor = node.sensors[msMsg.sensorId];
             if (sensor) {
                 console.log("-> @" + new Date().toISOString(), "MySensor." + node.name + "." + sensor.name, "=", msMsg.payload);
-                ari.publish(node.name + "." + sensor.name, msMsg.payload);
+                ari.setValue(node.name + "." + sensor.name, msMsg.payload);
             }
-            else console.log(parts);
+            else {
+              console.log(parts);
+            }
         }
-        else console.log(parts);
+        else {
+          // sensorId 255 is used to provide skecth name and version
+          // with message type 3 and subtype 11 for name and 12 for version
+          if(msMsg.sensorId == 255 && msMsg.messageType == 3 && msMsg.subType == 11)
+          {
+            // lookup nodeId in notAdded
+            if (!config.notAdded) {
+              config.notAdded = {};
+            }
+            var notAdded = config.notAdded[msMsg.nodeId];
+            // if nodeId does not exists add it to the list
+            if (!notAdded) {
+              // Add new node to the notAdded list
+              // together with the skechtname
+              var element = {};
+              element = {"name": msMsg.payload};
+              config.notAdded[msMsg.nodeId] = element;
+              configStore.save(config);
+            }
+          }
+          else if (msMsg.sensorId != 255 && msMsg.messageType == 0) {
+            // Handle presentation message from node
+            // the node presents the sensors it provides
+            // with messageType set to 0 and the subtype represents
+            // the sensor provided
+            if (!config.notAdded) config.notAdded = {};
+            var notAdded = config.notAdded[msMsg.nodeId];
+            if (notAdded) {
+              if(!config.notAdded[msMsg.nodeId].sensors) {
+                config.notAdded[msMsg.nodeId].sensors = {};
+              }
+              // Check if sensor is not already added
+              var sensors = notAdded.sensors[msMsg.sensorId];
+              if (!sensors) {
+                //sensor is not added to the list
+                var presentation = {};
+                presentation[3] = "Light"
+                presentation[6] = "Temperature";
+                presentation[7] = "Humidity";
+                config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": presentation[msMsg.subType]};
+                //config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": msMsg.subType};
+                configStore.save(config);
+                console.log("Sensor added " + msMsg.sensorId);
+              }
+            }
+          }
+          console.log(parts);
+        }
     }
 }
 
@@ -156,4 +235,3 @@ ari.onclose = function (result) {
         serialPort = null;
     }
 }
-

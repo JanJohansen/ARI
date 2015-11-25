@@ -59,16 +59,16 @@ ari.onconnect = function (result) {
     console.log("Client connected as \"" + ari.name + "\"");
     
     // handle subscriptions.
-    ari.subscribe(clientName + ".*", function (path, value) {
+    /*ari.subscribe(clientName + ".*", function (path, value) {
         console.log("->", path, "=", value);
-    });
+    });*/
     
     // register functions.
-    ari.registerRpc("getConfig", { description: "Get configuration data for UI." }, function (pars, callback) {
+    ari.registerFunction("getConfig", { description: "Get configuration data for UI." }, function (pars, callback) {
         callback(null, config);
     });
     
-    ari.registerRpc("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
+    ari.registerFunction("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
         config = pars.config;
         callback(null, {}); // Indicate OK.
     });
@@ -88,11 +88,16 @@ ari.onconnect = function (result) {
             baudrate: 115200,
             parser: SerialPortModule.parsers.readline("\n")
         });
-    } catch (e) {
+    /*} catch (e) {
         console.log("ERROR when trying to open serialport:", e);
         if (serialPort) serialPort.close();
         process.exit(1);
-    }
+    }*/
+    
+    
+    serialPort.on("error", function (error) {
+        console.log("error happend " + error);
+    });
     
     serialPort.on("open", function () {
         console.log('Serial port opened.');
@@ -146,7 +151,7 @@ ari.onconnect = function (result) {
             if (transmitter) {
                 // Send if value changed.
                 console.log("IS same?", name + "T", WT450LastVals[name + "T"]);
-                if (WT450LastVals[name + "T"] != temperature) ari.publish(transmitter.alias, temperature);
+                if (WT450LastVals[name + "T"] != temperature) ari.setValue(transmitter.alias, temperature);
                 WT450LastVals[name + "T"] = temperature; // Store latest value.
             }
             else console.log("-> @" + new Date().toISOString(), name + ".temperature =", temperature);
@@ -155,7 +160,7 @@ ari.onconnect = function (result) {
                 transmitter = config.protocols.WT450[name + "H"];
                 if (transmitter) {
                     // Send if value changed.
-                    if (WT450LastVals[name + "H"] != humidity) ari.publish(transmitter.alias, humidity);
+                    if (WT450LastVals[name + "H"] != humidity) ari.setValue(transmitter.alias, humidity);
                     WT450LastVals[name + "H"] = humidity; // Store latest value.
                 }
                 else console.log("-> @" + new Date().toISOString(), name + ".humidity =", humidity);
@@ -169,7 +174,7 @@ ari.onconnect = function (result) {
                 console.log("-> @", new Date().toISOString(), "GW433." + transmitter.alias);
                 
                 // Set timer to send alias = 0 after 100 mSec
-                if (!PT2262Timers[transmitter.alias]) ari.publish(transmitter.alias, "1");
+                if (!PT2262Timers[transmitter.alias]) ari.setValue(transmitter.alias, "1");
                 else clearTimeout(PT2262Timers[transmitter.alias]);
                 PT2262Timers[transmitter.alias] = setTimeout(pt2262Timeout, 100, transmitter.alias);
 
@@ -180,7 +185,7 @@ ari.onconnect = function (result) {
 }
 
 var pt2262Timeout = function (alias){
-    ari.publish(alias, "0");
+    ari.setValue(alias, "0");
     delete PT2262Timers[alias];
 }
 

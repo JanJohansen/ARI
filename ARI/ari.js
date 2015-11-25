@@ -22,8 +22,9 @@ var Ari = module.exports.Ari = function (options) {
     
     this.JWTSecret = config.JWTSecret || 'AriSecret';
     
-    this.clientsModel = state.clients || {};
-    this.usersModel = state.users || {};
+    this.clientModels = state.clients || {};
+    this.userModels = state.users || {};
+
     this.loggingConfig = state.loggingConfig || { "values": {} };
     this.logs = {};
     
@@ -48,9 +49,9 @@ var Ari = module.exports.Ari = function (options) {
     });
 
     // DEBUG
-    /*Object.observe(this.clientsModel, function (changes) {
+    /*Object.observe(this.clientModels, function (changes) {
         changes.forEach(function (change) {
-            console.log("--Observed _clientsModel:", change.type, change.name);
+            console.log("--Observed clientModels:", change.type, change.name);
             if (change.type == "add") {
                 Object.observe(change.object[change.name].functions, function (changes) {
                     changes.forEach(function (change) {
@@ -63,13 +64,16 @@ var Ari = module.exports.Ari = function (options) {
 };
 
 /*****************************************************************************/
-// Main function called by clients.!
-Ari.prototype.callRpc = function (name, params, callback) {
+// Main function called by all clients.!
+Ari.prototype.callFunction = function (name, params, callback) {
     // Find client...
-    var clientName = name.split(".");
-    for (client in this._clients) {
-        if (client.name == clientName) {
-            ariClient.callRpc(name, params, callback);
+    var clientName = name.split(".")[0];
+    
+    // Find client.
+    var client = this.clientModels[clientName];
+    if (client) {
+        if (client.__clientServer) {
+            client.__clientServer.callFunction(name, params, callback);
         }
     }
 }
@@ -77,23 +81,9 @@ Ari.prototype.callRpc = function (name, params, callback) {
 // Main publish function called by all clients.!
 Ari.prototype.publish = function (name, value) {
     
-    // This would be a good place to log values...
-    //console.log("PUB:", name, "=", value);
-    
-    for (var key in this.loggingConfig.values) {
-        var loggingConfig = this.loggingConfig.values[key];
-        if (this.matches(key, name)) {
-            if (!this.logs[name]) this.logs[name] = []; // Create if not exists.
-            //var ds = (new Date()).toISOString().replace(/[^0-9]/g, "");
-            var ds = new Date().getTime();
-            this.logs[name].push({ "t": ds, "v": value });
-        }
-    }
-
-    var clientName = name.split(".")[0];
-    
     // Store last value and time of update.
-    var client = this.clientsModel[clientName];
+    var clientName = name.split(".")[0];
+    var client = this.clientModels[clientName];
     if (client) {
         if (client.values) {
             var clientValueName = name.substring(name.indexOf(".") + 1);
@@ -106,8 +96,8 @@ Ari.prototype.publish = function (name, value) {
     }
     
     // Find all subscribing and connected clients and notify...
-    for (var key in this.clientsModel) {
-        var client = this.clientsModel[key];
+    for (var key in this.clientModels) {
+        var client = this.clientModels[key];
         if (client) {
             if (client.online == true) {
                 var cs = client.__clientServer;
@@ -123,6 +113,88 @@ Ari.prototype.publish = function (name, value) {
     }
 }
 
+// Main setValue function called by all clients.!
+// For now allow to try to set any value even nonregistered values!
+Ari.prototype.setValue = function (name, value) {
+    //console.log("setValue:", name, "=", value);
+    
+    var clientName = name.split(".")[0];
+    
+    // Find client.
+    var client = this.clientModels[clientName];
+    if (client) {
+        if (client.__clientServer) {
+            // Removeo client name and setValue...
+            name = name.substring(name.indexOf(".") + 1);
+            client.__clientServer._notify("SETVALUE", { "name": name , "value": value });
+        }
+    }
+}
+
+// Main getValue function called by all clients.!
+Ari.prototype.getValue = function (name, callback) {
+    var clientName = name.split(".")[0];
+    
+    // Find client.
+    var client = this.clientModels[clientName];
+    if (client) {
+        if (client.values) {
+            // Removeo client name and setValue...
+            name = name.substring(name.indexOf(".") + 1);
+            if (client.values[name]) callback(null, client.values[name].value);
+            else callback("Value name not found on client", null);
+        }
+    }
+    else callback("Client for getValue not found.", null);
+}
+
+// Main handleValue function called by all clients.!
+Ari.prototype.handleValue = function (name, value) {
+    
+    // Store last value and time of update.
+    var clientName = name.split(".")[0];
+    var client = this.clientModels[clientName];
+    if (client) {
+        if (client.values) {
+            var clientValueName = name.substring(name.indexOf(".") + 1);
+            var clientValue = client.values[clientValueName];
+            if (clientValue) {
+                clientValue.value = value;
+                clientValue.updated = new Date().toISOString();
+            }
+        }
+    }
+    
+    // This would be a good place to log values...
+    for (var key in this.loggingConfig.values) {
+        var loggingConfig = this.loggingConfig.values[key];
+        if (this.matches(key, name)) {
+            if (!this.logs[name]) this.logs[name] = []; // Create if not exists.
+            var ds = new Date().getTime();
+            this.logs[name].push({ "t": ds, "v": value });
+        }
+    }
+   
+    //var clientName = name.split(".")[0];    
+    // Find all clients watching value and notify.
+    for (var key in this.clientModels) {
+        var clientModel = this.clientModels[key];
+        if (clientModel._watches) {
+            for (var watch in clientModel._watches) {
+                if (this.matches(watch, name)) {
+                    var cs = clientModel.__clientServer;
+                    if (cs) {
+                        cs._notify("VALUE", { "name": name , "value": value });
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+/*****************************************************************************/
+// Match possible wildcarded strA to strB.
 Ari.prototype.matches = function(strA, strB)
 {
     if (strA == strB) return true;
@@ -144,8 +216,8 @@ Ari.prototype.set = function (name, value) {
 Ari.prototype.shutDown = function () {
     // Store state...
     var state = {
-        "clients": this.clientsModel , 
-        "users": this.usersModel,
+        "clients": this.clientModels , 
+        "users": this.userModels,
         "loggingConfig": this.loggingConfig
     };
     this.stateStore.save(state);

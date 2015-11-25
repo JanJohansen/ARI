@@ -10,7 +10,7 @@ app.directive('ariValue', ["$interval", "AriClient",
             restrict: 'E',
             link: function (scope, element, attrs) {
                 console.log("link:attrs =", attrs);
-                ari.subscribe(attrs.name, function (path, value) {
+                ari.watchValue(attrs.name, function (path, value) {
                     scope.$parent[attrs.value] = value;
                     scope.$parent.$apply();
                 });
