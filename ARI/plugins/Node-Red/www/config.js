@@ -5,8 +5,7 @@ ariModule.register.controller('nodeRedController', ["$scope", "$interval", 'AriC
     function ($scope, $interval, AriClient, $location, $sce) {
         
         //$location
-        $scope.iFrameUrl = $sce.trustAsResourceUrl("http://" + $location.host() + ":1882");
-        console.log("http://" + $location.host() + ":1882");
+        $scope.iFrameUrl = $sce.trustAsResourceUrl("http://" + $location.host() + ":1880");
 
 
         /*
