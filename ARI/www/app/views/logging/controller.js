@@ -29,7 +29,7 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
 
             $scope.logSelected = function (logName) {
                 logRequest.name = logName;
-                ari.callRpc("ari.getLog", logRequest, function (err, result) {
+                ari.callFunction("ari.getLog", logRequest, function (err, result) {
                     if (err) { console.log(err); return; }
                     var entries = result.split("\n");
                     var data = [];
