@@ -61,12 +61,14 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
             
             $scope.setPeriod = function (name) {
                 if (name == "today") {
-                    logRequest.startTime = logRequest.endTime = new Date();
+                    logRequest.startTime = new Date();
+                    logRequest.endTime = new Date();
                     logRequest.startTime.setHours(0, 0, 0, 0);
                     logRequest.endTime.setHours(23, 59, 59, 999);
                 }
                 else if (name == "yesterday") {
-                    logRequest.startTime = logRequest.endTime = new Date() - 24 * 60 * 60 * 1000;
+                    logRequest.startTime = new Date();
+                    logRequest.endTime = new Date();
                     logRequest.startTime.setHours(0, 0, 0, 0);
                     logRequest.endTime.setHours(23, 59, 59, 999);
                 }
