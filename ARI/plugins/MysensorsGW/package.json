@@ -8,6 +8,7 @@
     "email": ""
   },
   "dependencies": {
-    "serialport": "1.7.4"
+    "serialport": "1.7.4",
+    "simple-json-filter": "^0.3.0"
   }
 }
