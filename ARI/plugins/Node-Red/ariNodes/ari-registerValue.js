@@ -26,14 +26,10 @@ module.exports = function (RED) {
             // handle subscriptions.
             var optionals = null;
             if (config.description) optionals = { "description": config.description };
-            ari.registerValue(self.ariValue, optionals , function (err, result) {
-                if (err) console.log("Error in call to registerValue", err);
-            });
-            
-            ari.subscribe(self.ariValue, function (path, value) {
+            ari.registerValue(self.ariValue, optionals , function (name, value) {
                 //console.log("->", path, "=", value);
                 var msg = {};
-                msg.name = path;
+                msg.name = name;
                 msg.value = value;
                 // send out the message.
                 self.send(msg);
@@ -50,9 +46,7 @@ module.exports = function (RED) {
         this.on("close", function (done) {
             // Called when the node is shutdown - eg on redeploy.
             // Allows ports to be closed, connections dropped etc.
-            ari.unsubscribe(this.ariValue, function () { 
-                done();
-            });
+            done();
         });
     }
     

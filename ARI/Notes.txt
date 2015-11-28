@@ -87,3 +87,6 @@ Client->Server: VALUE(val1, value);
 		}
 	}
 }
+
+to debug node-red use this command:
+node-debug node_modules/node-red/red.js -v -s settings.js

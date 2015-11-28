@@ -34,6 +34,7 @@ module.exports = function (RED) {
         this.on("close", function (done) {
             // Called when the node is shutdown - eg on redeploy.
             // Allows ports to be closed, connections dropped etc.
+            done();
         });
 
         // respond to inputs....

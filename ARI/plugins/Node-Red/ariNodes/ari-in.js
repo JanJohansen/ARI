@@ -20,18 +20,20 @@ module.exports = function (RED) {
         console.log("Get ARI singleton");
         var ari = new AriSingleton.getInstance("Node-Red");
         
+        var handleValue = function (path, value) {
+            //console.log("->", path, "=", value);
+            var msg = {};
+            msg.name = path;
+            msg.value = value;
+            // send out the message.
+            self.send(msg);
+        };
+        
         var handleConnect = function () {
             self.status({ fill: "green", shape: "dot", text: "connected" });
 
             // handle subscriptions.
-            ari.subscribe(self.ariValue, function (path, value) {
-                //console.log("->", path, "=", value);
-                var msg = {};
-                msg.name = path;
-                msg.value = value;                
-                // send out the message.
-                self.send(msg);
-            });
+            ari.watchValue(self.ariValue, handleValue);
         }
         
         ari.on("connect", handleConnect);
@@ -44,9 +46,8 @@ module.exports = function (RED) {
         this.on("close", function (done) {
             // Called when the node is shutdown - eg on redeploy.
             // Allows ports to be closed, connections dropped etc.
-            ari.unsubscribe(this.ariValue, function () { 
-                done();
-            });
+            ari.unWatchValue(this.ariValue, handleValue);
+            done();
         });
     }
     
