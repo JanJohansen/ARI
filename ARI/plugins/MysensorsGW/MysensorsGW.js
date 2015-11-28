@@ -400,6 +400,9 @@ ari.onconnect = function (result) {
           config.nodes[msMsg.nodeId].batteryLevel = msMsg.payload;
           configStore.save(config);
           break;
+        case "6": // Config Metric or Imperial
+          setMetric(msMsg);
+          break;
         case "11": // Sketch name
           config.nodes[msMsg.nodeId].name = msMsg.payload;
           configStore.save(config);
@@ -412,6 +415,15 @@ ari.onconnect = function (result) {
         console.log("msInternal - subType not supported: " + msMsg.subType);
           break;
       }
+    }
+
+    function setMetric(msMsg) {
+      console.log("Reply to node with (M)etric");
+      console.log("serial message: " + msMsg.nodeId + ";" + msMsg.sensorId + ";" + msMsg.messageType + ";0;" + msMsg.subType + ";" + "M" + "\n");
+      serialPort.write(msMsg.nodeId + ";" + msMsg.sensorId + ";" + msMsg.messageType + ";0;" + msMsg.subType + ";" + "M" + "\n", function(err, results) {
+         console.log('err ' + err);
+         console.log('results ' + results);
+      });
     }
 
     function msRequest(msMsg) {
