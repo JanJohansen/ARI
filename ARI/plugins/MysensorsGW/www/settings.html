@@ -19,7 +19,7 @@
                             <th>Deactivate:</th>
                         </tr>
                     </thead>
-                    <tr ng-repeat="(key, value) in config.nodes">
+                    <tr ng-repeat="(key, value) in config.nodes" ng-show="showNodeId(key)">
                             <td>{{key}}</td>
                             <td>-</td>
                             <td><input type="text" ng-model="value.name"></td>
@@ -38,7 +38,7 @@
                             <th>Activate:</th>
                         </tr>
                     </thead>
-                    <tr ng-repeat="(key, value) in config.notAdded">
+                    <tr ng-repeat="(key, value) in config.nodes" ng-hide="showNodeId(key)">
                             <td>{{key}}</td>
                             <td>-</td>
                             <td><input type="text" ng-model="value.name"></td>

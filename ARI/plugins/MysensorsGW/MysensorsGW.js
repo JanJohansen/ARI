@@ -337,7 +337,7 @@ ari.onconnect = function (result) {
       // if nodeId does not exists add it to the list
       if (!nodes) {
         config.nodes[msMsg.nodeId] = {};
-        config.nodes[msMsg.nodeId].status = "deactive";
+        config.nodes[msMsg.nodeId].active = false;
       }
 
       switch (msMsg.subType) {
