@@ -30,7 +30,7 @@ module.exports = function (RED) {
                 //console.log("->", path, "=", value);
                 var msg = {};
                 msg.name = name;
-                msg.value = value;
+                msg.payload = value;
                 // send out the message.
                 self.send(msg);
             });

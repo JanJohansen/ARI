@@ -24,7 +24,7 @@ module.exports = function (RED) {
             //console.log("->", path, "=", value);
             var msg = {};
             msg.name = path;
-            msg.value = value;
+            msg.payload = value;
             // send out the message.
             self.send(msg);
         };

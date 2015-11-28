@@ -373,7 +373,7 @@ AriClient.prototype._webnotify_VALUE = function (msg) {
 AriClient.prototype._webnotify_SETVALUE = function (msg) {
     var name = msg.name;
     var value = msg.value;
-    if (!name || !value) return;
+    if (name == undefined || value == undefined) return;
     
     //console.log("SETVALUE:", name, "=", value);
     

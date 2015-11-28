@@ -39,7 +39,7 @@ module.exports = function (RED) {
 
         // respond to inputs....
         this.on('input', function (msg) {
-            ari.setValue(self.ariValue, msg.value || msg.payload);
+            ari.setValue(self.ariValue, msg.payload);
         });
     }
 
