@@ -156,21 +156,45 @@ ari.onconnect = function (result) {
         configStore.save(config);
 
         // Deregister deactive nodes
-        for (key in config.notAdded) {
-            var msNode = config.notAdded[key];
+        for (key in config.nodes) {
+          var msNode = config.nodes[key];
+          if (!msNode.active) {
             for (key2 in msNode.sensors) {
                 var sensor = msNode.sensors[key2];
-                ari.deRegisterValue(msNode.name + "." + sensor.name);
+                // currently not supported by AriClient
+                ari.unRegisterValue(msNode.name + "." + sensor.name);
+
+                for (key3 in sensor.setReqTypes) {
+                  var setReqType = sensor.setReqTypes[key3];
+                  ari.unRegisterValue(msNode.name + "." + sensor.name + "." + setReqType.name);
+                }
             }
+          }
         }
 
-        // Register active nodes
+        // Register values.
         for (key in config.nodes) {
-            var msNode = config.nodes[key];
+          var msNode = config.nodes[key];
+          if (msNode.active) {
             for (key2 in msNode.sensors) {
-                var sensor = msNode.sensors[key2];
-                ari.registerValue(msNode.name + "." + sensor.name);
+              var sensor = msNode.sensors[key2];
+              ari.registerValue(msNode.name + "." + sensor.name, {}, function (name, value) {
+                  // This function is called if remote client wants to set this inputs.
+                  // TODO: Send message to sensor here.
+                  console.log("EXTERNAL SETVALUE:", name, value);
+                  sendDataToNode(name, value);
+              });
+              for (key3 in sensor.setReqTypes) {
+                var setReqType = sensor.setReqTypes[key3];
+                ari.registerValue(msNode.name + "." + sensor.name + "." + setReqType.name, {}, function (name, value) {
+                    // This function is called if remote client wants to set this inputs.
+                    // TODO: Send message to sensor here.
+                    console.log("EXTERNAL SETVALUE:", name, value);
+                    sendDataToNode(name, value);
+                });
+              }
             }
+          }
         }
 
         callback(null, {}); // Indicate OK.
@@ -178,22 +202,35 @@ ari.onconnect = function (result) {
 
     // Register values.
     for (key in config.nodes) {
-        var msNode = config.nodes[key];
+      var msNode = config.nodes[key];
+      if (msNode.active) {
         for (key2 in msNode.sensors) {
-            var sensor = msNode.sensors[key2];
-            ari.registerValue(msNode.name + "." + sensor.name, {}, function (name, value) {
+          var sensor = msNode.sensors[key2];
+          ari.registerValue(msNode.name + "." + sensor.name, {}, function (name, value) {
+              // This function is called if remote client wants to set this inputs.
+              // TODO: Send message to sensor here.
+              console.log("EXTERNAL SETVALUE:", name, value);
+              sendDataToNode(name, value);
+          });
+          for (key3 in sensor.setReqTypes) {
+            var setReqType = sensor.setReqTypes[key3];
+            ari.registerValue(msNode.name + "." + sensor.name + "." + setReqType.name, {}, function (name, value) {
                 // This function is called if remote client wants to set this inputs.
                 // TODO: Send message to sensor here.
                 console.log("EXTERNAL SETVALUE:", name, value);
                 sendDataToNode(name, value);
             });
+          }
         }
+      }
     }
 
     function sendDataToNode(name, value) {
       // Split name into usable entities
       var res = name.split(".");
-      var num = value - 0;
+      var number = res.length;
+      var subType = null;
+
       // create a filter to use with simpleJSONFilter
       var filter = {"name": res[0]};
       var nodeFound = sjf.exec(filter, config.nodes);
@@ -204,13 +241,24 @@ ari.onconnect = function (result) {
         var sensorFound = sjf.exec(filter, nodeFound[address].sensors);
 
         if (sensorFound) {
-          // Sensor found, now lets send a telegram to the node.
-          // It is currently only sending V_STATUS=2 to the node
-          // with the value as payload (num = value -1).
-          // Since sending 0 from nodeRed is ignored, somewhere.
           var sensorId = Object.keys(sensorFound)[0];
-          console.log("serial message: " + address + ";" + sensorId+ ";1;0;2;" + num + "\n");
-          serialPort.write(address + ";" + sensorId + ";1;0;2;" + num + "\n", function(err, results) {
+          subType = nodeFound[address].sensors[sensorId].msType;
+
+          // if number == 3, then node.sensor.value is specified in "name"
+          // Therefore we have to lookup the subType of the value and not
+          // the subType of the sensor.
+          if (number == 3) {
+            var filter = {"name": res[2]};
+
+            var setReqTypeFound = sjf.exec(filter, nodeFound[address].sensors[sensorId].setReqTypes);
+            if (setReqTypeFound) {
+              subType = Object.keys(setReqTypeFound)[0];
+            }
+          }
+          // We now have the node address, sensorId and the msType
+          // Lets send the message :)
+          console.log("serial message: " + address + ";" + sensorId+ ";1;0;" + subType + ";" + value + "\n");
+          serialPort.write(address + ";" + sensorId + ";1;0;" + subType + ";" + value + "\n", function(err, results) {
              console.log('err ' + err);
              console.log('results ' + results);
           });
@@ -282,6 +330,12 @@ ari.onconnect = function (result) {
         if (!config.nodes) config.nodes = {};
         console.log("Messages: "+ parts);
 
+        if (msMsg.ack == 1) {
+          // Currently only print a message to the console and return.
+          console.log("This is an ACK message");
+          return;
+        }
+
         switch (msMsg.messageType) {
           case "0": // 0 presentation
             msPresentation(msMsg);
@@ -290,6 +344,7 @@ ari.onconnect = function (result) {
             msSet(msMsg);
             break;
           case "2": // 2 request
+            msRequest(msMsg);
             break;
           case "3": // 3 Internal
             msInternal(msMsg);
@@ -302,24 +357,19 @@ ari.onconnect = function (result) {
     }
 
     function msPresentation(msMsg) {
-      if (config.nodes[msMsg.nodeId]) {
-        return;
-      }
-      if (msMsg.sensorId != 255 && msMsg.messageType == 0) {
+
+      if (msMsg.sensorId != 255) {
         // Handle presentation message from node
         // the node presents the sensors it provides
         // with messageType set to 0 and the subtype represents
         // the sensor provided
-        if (!config.notAdded) {
-          config.notAdded = {};
-        }
-        var notAdded = config.notAdded[msMsg.nodeId];
-        if (notAdded) {
-          if(!config.notAdded[msMsg.nodeId].sensors) {
-            config.notAdded[msMsg.nodeId].sensors = {};
+        var nodes = config.nodes[msMsg.nodeId];
+        if (nodes) {
+          if(!config.nodes[msMsg.nodeId].sensors) {
+            config.nodes[msMsg.nodeId].sensors = {};
           }
           // Check if sensor is not already added
-          var sensors = notAdded.sensors[msMsg.sensorId];
+          var sensors = nodes.sensors[msMsg.sensorId];
           if (!sensors) {
             //sensor is not added to the list
 
@@ -327,8 +377,8 @@ ari.onconnect = function (result) {
               "name": presentation[msMsg.subType],
               "msType": msMsg.subType
             }
-            config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = sensor;
-            //config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": msMsg.subType};
+            config.nodes[msMsg.nodeId].sensors[msMsg.sensorId] = sensor;
+            //config.nodes[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": msMsg.subType};
             configStore.save(config);
             console.log("Sensor added " + msMsg.sensorId);
           }
@@ -337,30 +387,28 @@ ari.onconnect = function (result) {
     }
 
     function msInternal(msMsg) {
-      if (config.nodes[msMsg.nodeId]) {
-        return;
-      }
-      // lookup nodeId in notAdded
-      if (!config.notAdded) {
-        config.notAdded = {};
-      }
-      var notAdded = config.notAdded[msMsg.nodeId];
+      // lookup nodeId in nodes
+      var nodes = config.nodes[msMsg.nodeId];
       // if nodeId does not exists add it to the list
-      if (!notAdded) {
-        config.notAdded[msMsg.nodeId] = {};
+      if (!nodes) {
+        config.nodes[msMsg.nodeId] = {};
+        config.nodes[msMsg.nodeId].active = false;
       }
 
       switch (msMsg.subType) {
         case "0": // Battery Level 0-100
-          config.notAdded[msMsg.nodeId].batteryLevel = msMsg.payload;
+          config.nodes[msMsg.nodeId].batteryLevel = msMsg.payload;
           configStore.save(config);
           break;
+        case "6": // Config Metric or Imperial
+          setMetric(msMsg);
+          break;
         case "11": // Sketch name
-          config.notAdded[msMsg.nodeId].name = msMsg.payload;
+          config.nodes[msMsg.nodeId].name = msMsg.payload;
           configStore.save(config);
           break;
         case "12": // Sketch version
-          config.notAdded[msMsg.nodeId].version = msMsg.payload;
+          config.nodes[msMsg.nodeId].version = msMsg.payload;
           configStore.save(config);
           break;
         default:
@@ -369,21 +417,97 @@ ari.onconnect = function (result) {
       }
     }
 
+    function setMetric(msMsg) {
+      console.log("Reply to node with (M)etric");
+      console.log("serial message: " + msMsg.nodeId + ";" + msMsg.sensorId + ";" + msMsg.messageType + ";0;" + msMsg.subType + ";" + "M" + "\n");
+      serialPort.write(msMsg.nodeId + ";" + msMsg.sensorId + ";" + msMsg.messageType + ";0;" + msMsg.subType + ";" + "M" + "\n", function(err, results) {
+         console.log('err ' + err);
+         console.log('results ' + results);
+      });
+    }
+
+    function msRequest(msMsg) {
+      var node = config.nodes[msMsg.nodeId];
+      if (node) {
+        var sensor = node.sensors[msMsg.sensorId];
+        if (sensor) {
+          if(node.active) {
+            if(!node.sensors[msMsg.sensorId].setReqTypes) {
+              node.sensors[msMsg.sensorId].setReqTypes = {};
+            }
+            if(!node.sensors[msMsg.sensorId].setReqTypes[msMsg.subType]) {
+              // Add new name and set, request Type for sensor
+              node.sensors[msMsg.sensorId].setReqTypes[msMsg.subType] = { "name": setReqTypes[msMsg.subType], "msType": msMsg.subType};
+              configStore.save(config);
+              console.log("request type added for " + msMsg.nodeId);
+              // Since the node is active we have to register the subtype and
+              // register the function to be called when the subtype shall be set
+              ari.registerValue(node.name + "." + sensor.name + "." + setReqTypes[msMsg.subType].name, {}, function (name, value) {
+                  // This function is called if remote client wants to set this inputs.
+                  // TODO: Send message to sensor here.
+                  console.log("EXTERNAL SETVALUE:", name, value);
+                  sendDataToNode(name, value);
+              });
+            }
+            console.log("Request: " + node.name + "." + sensor.name + "." + setReqTypes[msMsg.subType].name);
+
+            ari.getValue(node.name + "." + sensor.name + "." + setReqTypes[msMsg.subType].name, function (err, result) {
+                console.log("GETVALUE:", result);
+            });
+          } else {
+            if(!node.sensors[msMsg.sensorId].setReqTypes) {
+              node.sensors[msMsg.sensorId].setReqTypes = {};
+            }
+            if(!node.sensors[msMsg.sensorId].setReqTypes[msMsg.subType]) {
+              // Add new name and set, request Type for sensor
+              node.sensors[msMsg.sensorId].setReqTypes[msMsg.subType] = { "name": setReqTypes[msMsg.subType], "msType": msMsg.subType};
+              configStore.save(config);
+              console.log("set request type added for " + msMsg.nodeId);
+            }
+          }
+        }
+      }
+    }
+
     function msSet(msMsg) {
       var node = config.nodes[msMsg.nodeId];
       if (node) {
         var sensor = node.sensors[msMsg.sensorId];
         if (sensor) {
-          console.log("-> @" + new Date().toISOString(), "MySensor." + node.name + "." + sensor.name, "=", msMsg.payload);
-          ari.setValue(node.name + "." + sensor.name, msMsg.payload);
-          if(!node.sensors[msMsg.sensorId].setReqTypes) {
-            node.sensors[msMsg.sensorId].setReqTypes = {};
+          if(node.active) {
+            if(!node.sensors[msMsg.sensorId].setReqTypes) {
+              node.sensors[msMsg.sensorId].setReqTypes = {};
+            }
+            if(!node.sensors[msMsg.sensorId].setReqTypes[msMsg.subType]) {
+              // Add new name and set, request Type for sensor
+              node.sensors[msMsg.sensorId].setReqTypes[msMsg.subType] = { "name": setReqTypes[msMsg.subType], "msType": msMsg.subType};
+              configStore.save(config);
+              console.log("set type added for " + msMsg.nodeId);
+
+              // Since the node is active we have to register the subtype and
+              // register the function to be called when the subtype shall be set
+              ari.registerValue(node.name + "." + sensor.name + "." + setReqTypes[msMsg.subType].name, {}, function (name, value) {
+                  // This function is called if remote client wants to set this inputs.
+                  // TODO: Send message to sensor here.
+                  console.log("EXTERNAL SETVALUE:", name, value);
+                  sendDataToNode(name, value);
+              });
+            }
+            // setValue
+            console.log("-> @" + new Date().toISOString(), "MysensorsGW." + node.name + "." + sensor.name + "." + setReqTypes[msMsg.subType], "=", msMsg.payload);
+            ari.setValue(node.name + "." + sensor.name + "." + setReqTypes[msMsg.subType], msMsg.payload);
           }
-          if(!node.sensors[msMsg.sensorId].setReqTypes[msMsg.subType]) {
-            // Add new name and set, request Type for sensor
-            node.sensors[msMsg.sensorId].setReqTypes[msMsg.subType] = { "name": setReqTypes[msMsg.subType], "msType": msMsg.subType};
-            configStore.save(config);
-            console.log("set request type added for " + msMsg.nodeId);
+          else {
+            if(!node.sensors[msMsg.sensorId].setReqTypes) {
+              node.sensors[msMsg.sensorId].setReqTypes = {};
+            }
+            if(!node.sensors[msMsg.sensorId].setReqTypes[msMsg.subType]) {
+              // Add new name and set, request Type for sensor
+              node.sensors[msMsg.sensorId].setReqTypes[msMsg.subType] = { "name": setReqTypes[msMsg.subType], "msType": msMsg.subType};
+              configStore.save(config);
+              console.log("set request type added for " + msMsg.nodeId);
+            }
+            console.log("notActive " + msMsg.nodeId);
           }
         }
       }
