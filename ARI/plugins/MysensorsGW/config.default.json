@@ -1,33 +1,3 @@
 {
-    "portName": "COM6",
-    "nodes": {
-        "1": {
-            "name": "MultiThing",
-            "sensors": {
-                "0": {
-                    "name": "Temperature"
-                },
-                "1": {
-                    "name": "Humidity"
-                },
-                "2": {
-                    "name": "Motion"
-                }
-            }
-        },
-        "10": {
-            "name": "DevThing",
-            "sensors": {
-                "0": {
-                    "name": "Temperature"
-                },
-                "1": {
-                    "name": "Humidity"
-                },
-                "2": {
-                    "name": "Motion"
-                }
-            }
-        }
-    }
+    "portName": "COM6"
 }
