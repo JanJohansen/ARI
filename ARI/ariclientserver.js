@@ -18,7 +18,7 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
         // !!! USE "SELF" !!!
         
         // DEBUG!
-        console.log('-->', message);
+        //console.log('-->', message);
 
         try { var msg = JSON.parse(message); }        
         catch (e) {
@@ -247,7 +247,7 @@ AriClientServer.prototype._webnotify_SETCLIENTINFO = function (clientInfo) {
             if (!clientInfo.values[key]) {
                 // value removed from clientInfo - remove from clientModel.
                 delete this.clientModel.values[key];
-            }
+}
         }
     }
     if (clientInfo.functions) {
@@ -378,7 +378,7 @@ AriClientServer.prototype._webnotify_PUBLISH = function (pars) {
 
 /*****************************************************************************/
 // Client wants to watch for change to a remote value.
-AriClientServer.prototype._webnotify_WATCHVALUE = function (pars, callback) {
+AriClientServer.prototype._webnotify_WATCHVALUE = function (pars) {
     var name = pars.name;
     if (!name) { callback("Error: No name parameter specified!", null); return; }
     
@@ -399,6 +399,14 @@ AriClientServer.prototype._webnotify_WATCHVALUE = function (pars, callback) {
             }
         }
     }
+}
+
+// Client stops watching a value.
+AriClientServer.prototype._webnotify_UNWATCHVALUE = function (pars) {
+    var name = pars.name;
+    if (!name) { callback("Error: No name parameter specified!", null); return; }
+    
+    delete this.clientModel._watches[name];
 }
 
 // Client notifies that a member value (of this client) was set.

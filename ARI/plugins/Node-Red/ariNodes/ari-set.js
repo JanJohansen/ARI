@@ -34,11 +34,12 @@ module.exports = function (RED) {
         this.on("close", function (done) {
             // Called when the node is shutdown - eg on redeploy.
             // Allows ports to be closed, connections dropped etc.
+            done();
         });
 
         // respond to inputs....
         this.on('input', function (msg) {
-            ari.setValue(self.ariValue, msg.value || msg.payload);
+            ari.setValue(self.ariValue, msg.payload);
         });
     }
 

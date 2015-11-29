@@ -5,7 +5,7 @@ module.exports = function (RED) {
     var AriSingleton = require("./AriSingleton.js");
 
     // The main node definition - most things happen in here
-    function ariIn(config) {
+    function ariRegisterValue(config) {
         // Create a RED node
         RED.nodes.createNode(this, config);
         
@@ -20,20 +20,20 @@ module.exports = function (RED) {
         console.log("Get ARI singleton");
         var ari = new AriSingleton.getInstance("Node-Red");
         
-        var handleValue = function (path, value) {
-            //console.log("->", path, "=", value);
-            var msg = {};
-            msg.name = path;
-            msg.payload = value;
-            // send out the message.
-            self.send(msg);
-        };
-        
         var handleConnect = function () {
             self.status({ fill: "green", shape: "dot", text: "connected" });
 
             // handle subscriptions.
-            ari.watchValue(self.ariValue, handleValue);
+            var optionals = null;
+            if (config.description) optionals = { "description": config.description };
+            ari.registerValue(self.ariValue, optionals , function (name, value) {
+                //console.log("->", path, "=", value);
+                var msg = {};
+                msg.name = name;
+                msg.payload = value;
+                // send out the message.
+                self.send(msg);
+            });
         }
         
         ari.on("connect", handleConnect);
@@ -46,12 +46,11 @@ module.exports = function (RED) {
         this.on("close", function (done) {
             // Called when the node is shutdown - eg on redeploy.
             // Allows ports to be closed, connections dropped etc.
-            ari.unWatchValue(this.ariValue, handleValue);
             done();
         });
     }
     
     // Register the node by name. This must be called before overriding any of the
     // Node functions.
-    RED.nodes.registerType("ari-in", ariIn);
+    RED.nodes.registerType("ari-registerValue", ariRegisterValue);
 }

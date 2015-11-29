@@ -41,6 +41,7 @@
     <Compile Include="plugins\MysensorsGW\MysensorsGW.js" />
     <Compile Include="plugins\MysensorsGW\www\settings.js" />
     <Compile Include="plugins\Node-Red\ariNodes\ari-in.js" />
+    <Compile Include="plugins\Node-Red\ariNodes\ari-registerValue.js" />
     <Compile Include="plugins\Node-Red\ariNodes\ari-set.js" />
     <Compile Include="plugins\Node-Red\ariNodes\AriSingleton.js" />
     <Compile Include="plugins\Node-Red\settings.js" />
@@ -94,6 +95,7 @@
     <Content Include="plugins\MysensorsGW\www\settings.html" />
     <Content Include="plugins\Node-Red\ariManifest.json" />
     <Content Include="plugins\Node-Red\ariNodes\ari-in.html" />
+    <Content Include="plugins\Node-Red\ariNodes\ari-registerValue.html" />
     <Content Include="plugins\Node-Red\ariNodes\ari-set.html" />
     <Content Include="plugins\Node-Red\package.json" />
     <Content Include="plugins\Node-Red\www\config.html" />

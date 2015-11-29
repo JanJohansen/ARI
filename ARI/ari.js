@@ -206,7 +206,13 @@ Ari.prototype.matches = function(strA, strB)
     return false;
 }
 
+// Main set function called by all clients.!
+Ari.prototype.set = function (name, value) {
 
+}
+
+
+/*****************************************************************************/
 Ari.prototype.shutDown = function () {
     // Store state...
     var state = {
@@ -219,6 +225,7 @@ Ari.prototype.shutDown = function () {
     this.saveLog(true);
 }
 
+/*****************************************************************************/
 // Store logs for individual values in individual files named "valueName-date" with a timestam and a avalue separated by comma.
 // TODO: Convert this to an async function!
 Ari.prototype.saveLog = function(synchronous) {

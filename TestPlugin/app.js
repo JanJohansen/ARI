@@ -82,7 +82,7 @@ ari.onconnect = function (result) {
     }
     
     // Handle receiver on serial port.
-    console.log("Opening serial port 'COM13'.");
+    console.log("Opening serial port 'COM?'.");
     //try {
         serialPort = new SerialPort("COM13", {
             baudrate: 115200,
@@ -98,7 +98,7 @@ ari.onconnect = function (result) {
     serialPort.on("error", function (error) {
         console.log("error happend " + error);
     });
-
+    
     serialPort.on("open", function () {
         console.log('Serial port opened.');
         

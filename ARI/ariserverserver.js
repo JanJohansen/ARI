@@ -127,18 +127,73 @@ AriServerServer.prototype._webcall_listLogs = function (parameters, callback) {
     });
 }
 
+/*****************************************************************************/
+// LOGGING
 AriServerServer.prototype._webcall_getLog = function (parameters, callback) {
     
-    // TODO: implement time limits for getting logs, and combine multiple files into one reply!
-    
     if (!parameters.name) { callback("Error: Missing name!", null); return; }
+    
+    var fileName = parameters.name;
+    var startTime = Date.parse(parameters.startTime) || 0;
+    var endTime = Date.parse(parameters.endTime) || new Date();
+    var minInterval = parameters.minInterval || 0;
+    var interpolation = parameters.interpolation || "mean";
 
     var logsPath = __dirname + "/" + this._server.loggingConfig.logFilePath;
-    var fileName = parameters.name;// + "_" + dateString + ".log"; // e.g. "./logs/ari.time_20151001.log"
-    fs.readFile(logsPath + "/" + fileName, "utf8", function (err, data) {
-        //if (err) throw err;
-        callback(null, data);
-    });    
     
+    // TODO: implement time limits for getting logs, and combine multiple files into one reply!
+    /*
+    fs.open(logsPath + "/" + fileName, "r", function (err, fd) {
+        if (err) { callback("Error when trying to open log file."); return; }
+        
+        fs.fstat(fd, function (err, stats) {
+            var fileSize = stats.size;
+            var chunkSize = 512;
+            var buffer = new Buffer(chunkSize);
+            var bytesRead = 0;
+            
+            var lowPos = 0;
+            var highPos = fileSize;
+
+            var position = (lowPos + highPos) / 2;  // Go to middle...
+            // Find start of next line.
+            fs.read(fd, buffer, 0, chunkSize, position, function (err, bytesRead, buffer) {
+                var nlPos = buffer.indexOf('\n');
+                if (nlPos == -1) { callback("Error when trying to seach log file.!"); return; }
+                nlPos += 1;
+
+                // Get next line - check timestamp
+                var str = bufffer.toString('utf8', nlPos, nlPos + 50); // outputs: abcde
+                console.log("Search:", str);
+
+                var timeStamp = parseInt(str);
+
+                if (timeStamp > startTime) highPos = nlPos;
+                else lowPos = nlPos;
+            });
+        });
+    });
+    */
+
+    fs.readFile(logsPath + "/" + fileName, "utf8", function (err, data) {
+        if (err) callback("Error when reading log file.", null);
+        
+        var lines = data.split("\n");
+        var startLine = 0;
+        var endLine = Number.MAX_VALUE;
+        data = "";
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+            var parts = line.split(",");
+            var ts = parseInt(parts[0]);
+            var val = String(parts[1]);
+            if (ts < startTime) startLine = ts;
+            else data += line + '\n';
+            if (ts < endTime) endLine = ts;
+            else break;
+        }
+        
+        callback(null, data);
+    });
 }
 

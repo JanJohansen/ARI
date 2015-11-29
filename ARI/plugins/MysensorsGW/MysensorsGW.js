@@ -9,6 +9,98 @@ var serialPort = null;
 // TODO: Select serial port based on pnpId to be able to use same HW when connected to different UDB port.
 // TODO: Implement set/getConfig with "latest available" + configgured pnpId!
 
+var simpleJSONFilter = require("simple-json-filter");
+var sjf = new simpleJSONFilter();
+
+// TODO: setreqTypes shall be moved to a separate file.
+var setReqTypes = {};
+setReqTypes[0] = "V_TEMP";
+setReqTypes[1] = "V_HUM";
+setReqTypes[2] = "V_STATUS";
+setReqTypes[3] = "V_PERCENTAGE";
+setReqTypes[4] = "V_PRESSURE";
+setReqTypes[5] = "V_FORECAST";
+setReqTypes[6] = "V_RAIN";
+setReqTypes[7] = "V_RAINRATE";
+setReqTypes[8] = "V_WIND";
+setReqTypes[9] = "V_GUST";
+setReqTypes[10] = "V_DIRECTION";
+setReqTypes[11] = "V_UV";
+setReqTypes[12] = "V_WEIGHT";
+setReqTypes[13] = "V_DISTANCE";
+setReqTypes[14] = "V_IMPEDANCE";
+setReqTypes[15] = "V_ARMED";
+setReqTypes[16] = "V_TRIPPED";
+setReqTypes[17] = "V_WATT";
+setReqTypes[18] = "V_KWH";
+setReqTypes[19] = "V_SCENE_ON";
+setReqTypes[20] = "V_SCENE_OFF";
+setReqTypes[21] = "V_HVAC_FLOW_RATE";
+setReqTypes[22] = "V_HVAC_SPEED";
+setReqTypes[23] = "V_LIGHT_LEVEL";
+setReqTypes[24] = "V_VAR1";
+setReqTypes[25] = "V_VAR2";
+setReqTypes[26] = "V_VAR3";
+setReqTypes[27] = "V_VAR4";
+setReqTypes[28] = "V_VAR5";
+setReqTypes[29] = "V_UP";
+setReqTypes[30] = "V_DOWN";
+setReqTypes[31] = "V_STOP";
+setReqTypes[32] = "V_IR_SEND";
+setReqTypes[33] = "V_IR_RECEIVE";
+setReqTypes[34] = "V_FLOW";
+setReqTypes[35] = "V_VOLUME";
+setReqTypes[36] = "V_LOCK_STATUS";
+setReqTypes[37] = "V_LEVEL";
+setReqTypes[38] = "V_VOLTAGE";
+setReqTypes[39] = "V_CURRENT";
+setReqTypes[40] = "V_RGB";
+setReqTypes[41] = "V_RGBW";
+setReqTypes[42] = "V_ID";
+setReqTypes[43] = "V_UNIT_PREFIX";
+setReqTypes[44] = "V_HVAC_SETPOINT_COOL";
+setReqTypes[45] = "V_HVAC_SETPOINT_HEAT";
+setReqTypes[46] = "V_FLOW_MODE";
+
+// TODO: presentation shall be moved to a separate file.
+var presentation = {};
+presentation[0] = "Door";
+presentation[1] = "Motion";
+presentation[2] = "Smoke";
+presentation[3] = "Light";
+presentation[4] = "Dimmer";
+presentation[5] = "Cover";
+presentation[6] = "Temperature";
+presentation[7] = "Humidity";
+presentation[8] = "Barometer";
+presentation[9] = "Wind";
+presentation[10] = "Rain";
+presentation[11] = "UV";
+presentation[12] = "Weight";
+presentation[13] = "Power";
+presentation[14] = "Heater";
+presentation[15] = "Distance";
+presentation[16] = "Light_Level";
+presentation[17] = "Arduino_Node";
+presentation[18] = "Arduino_Repeater_Node";
+presentation[19] = "Lock";
+presentation[20] = "IR";
+presentation[21] = "Water";
+presentation[22] = "Air_Quality";
+presentation[23] = "Custom";
+presentation[24] = "Dust";
+presentation[25] = "Scene_Controller";
+presentation[26] = "RGB_Light";
+presentation[27] = "RGBW_Light";
+presentation[28] = "Color_Sensor";
+presentation[29] = "HVAC";
+presentation[30] = "Multimeter";
+presentation[31] = "Sprinkler";
+presentation[32] = "Water_Leak";
+presentation[33] = "Sound";
+presentation[34] = "Vibration";
+presentation[35] = "Moisture";
+
 // Load state.
 var stateStore = new ConfigStore(__dirname, "state");
 var state = stateStore.load();
@@ -93,11 +185,39 @@ ari.onconnect = function (result) {
                 // This function is called if remote client wants to set this inputs.
                 // TODO: Send message to sensor here.
                 console.log("EXTERNAL SETVALUE:", name, value);
-
+                sendDataToNode(name, value);
             });
         }
     }
-    
+
+    function sendDataToNode(name, value) {
+      // Split name into usable entities
+      var res = name.split(".");
+      var num = value - 0;
+      // create a filter to use with simpleJSONFilter
+      var filter = {"name": res[0]};
+      var nodeFound = sjf.exec(filter, config.nodes);
+      if (nodeFound) {
+        // Bingo node was found
+        var address = Object.keys(nodeFound)[0];
+        var filter = {"name": res[1]};
+        var sensorFound = sjf.exec(filter, nodeFound[address].sensors);
+
+        if (sensorFound) {
+          // Sensor found, now lets send a telegram to the node.
+          // It is currently only sending V_STATUS=2 to the node
+          // with the value as payload (num = value -1).
+          // Since sending 0 from nodeRed is ignored, somewhere.
+          var sensorId = Object.keys(sensorFound)[0];
+          console.log("serial message: " + address + ";" + sensorId+ ";1;0;2;" + num + "\n");
+          serialPort.write(address + ";" + sensorId + ";1;0;2;" + num + "\n", function(err, results) {
+             console.log('err ' + err);
+             console.log('results ' + results);
+          });
+        }
+      }
+    }
+
     // Example on getValue
     // TODO: Remove... :O)
     ari.getValue("GW433.Garage.temperature", function (err, result) {
@@ -144,6 +264,8 @@ ari.onconnect = function (result) {
       });
     }
 
+
+
     function handleMSGWTlg(data) {
         var parts = data.split(';');
 
@@ -156,69 +278,115 @@ ari.onconnect = function (result) {
             payload: parts[5],
         };
 
-
-
         if (msMsg.nodeId == 0) return;  // Ignore gateway messages for now.
         if (!config.nodes) config.nodes = {};
-        var node = config.nodes[msMsg.nodeId];
-        if (node) {
-            var sensor = node.sensors[msMsg.sensorId];
-            if (sensor) {
-                console.log("-> @" + new Date().toISOString(), "MySensor." + node.name + "." + sensor.name, "=", msMsg.payload);
-                ari.setValue(node.name + "." + sensor.name, msMsg.payload);
-            }
-            else {
-              console.log(parts);
-            }
+        console.log("Messages: "+ parts);
+
+        switch (msMsg.messageType) {
+          case "0": // 0 presentation
+            msPresentation(msMsg);
+            break;
+          case "1": // 1 set
+            msSet(msMsg);
+            break;
+          case "2": // 2 request
+            break;
+          case "3": // 3 Internal
+            msInternal(msMsg);
+            break;
+          case "4": // Stream
+            break;
+          default:
+            console.log("No success");
         }
-        else {
-          // sensorId 255 is used to provide skecth name and version
-          // with message type 3 and subtype 11 for name and 12 for version
-          if(msMsg.sensorId == 255 && msMsg.messageType == 3 && msMsg.subType == 11)
-          {
-            // lookup nodeId in notAdded
-            if (!config.notAdded) {
-              config.notAdded = {};
-            }
-            var notAdded = config.notAdded[msMsg.nodeId];
-            // if nodeId does not exists add it to the list
-            if (!notAdded) {
-              // Add new node to the notAdded list
-              // together with the skechtname
-              var element = {};
-              element = {"name": msMsg.payload};
-              config.notAdded[msMsg.nodeId] = element;
-              configStore.save(config);
-            }
-          }
-          else if (msMsg.sensorId != 255 && msMsg.messageType == 0) {
-            // Handle presentation message from node
-            // the node presents the sensors it provides
-            // with messageType set to 0 and the subtype represents
-            // the sensor provided
-            if (!config.notAdded) config.notAdded = {};
-            var notAdded = config.notAdded[msMsg.nodeId];
-            if (notAdded) {
-              if(!config.notAdded[msMsg.nodeId].sensors) {
-                config.notAdded[msMsg.nodeId].sensors = {};
-              }
-              // Check if sensor is not already added
-              var sensors = notAdded.sensors[msMsg.sensorId];
-              if (!sensors) {
-                //sensor is not added to the list
-                var presentation = {};
-                presentation[3] = "Light"
-                presentation[6] = "Temperature";
-                presentation[7] = "Humidity";
-                config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": presentation[msMsg.subType]};
-                //config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": msMsg.subType};
-                configStore.save(config);
-                console.log("Sensor added " + msMsg.sensorId);
-              }
-            }
-          }
-          console.log(parts);
+    }
+
+    function msPresentation(msMsg) {
+      if (config.nodes[msMsg.nodeId]) {
+        return;
+      }
+      if (msMsg.sensorId != 255 && msMsg.messageType == 0) {
+        // Handle presentation message from node
+        // the node presents the sensors it provides
+        // with messageType set to 0 and the subtype represents
+        // the sensor provided
+        if (!config.notAdded) {
+          config.notAdded = {};
         }
+        var notAdded = config.notAdded[msMsg.nodeId];
+        if (notAdded) {
+          if(!config.notAdded[msMsg.nodeId].sensors) {
+            config.notAdded[msMsg.nodeId].sensors = {};
+          }
+          // Check if sensor is not already added
+          var sensors = notAdded.sensors[msMsg.sensorId];
+          if (!sensors) {
+            //sensor is not added to the list
+
+            var sensor = {
+              "name": presentation[msMsg.subType],
+              "msType": msMsg.subType
+            }
+            config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = sensor;
+            //config.notAdded[msMsg.nodeId].sensors[msMsg.sensorId] = {"name": msMsg.subType};
+            configStore.save(config);
+            console.log("Sensor added " + msMsg.sensorId);
+          }
+        }
+      }
+    }
+
+    function msInternal(msMsg) {
+      if (config.nodes[msMsg.nodeId]) {
+        return;
+      }
+      // lookup nodeId in notAdded
+      if (!config.notAdded) {
+        config.notAdded = {};
+      }
+      var notAdded = config.notAdded[msMsg.nodeId];
+      // if nodeId does not exists add it to the list
+      if (!notAdded) {
+        config.notAdded[msMsg.nodeId] = {};
+      }
+
+      switch (msMsg.subType) {
+        case "0": // Battery Level 0-100
+          config.notAdded[msMsg.nodeId].batteryLevel = msMsg.payload;
+          configStore.save(config);
+          break;
+        case "11": // Sketch name
+          config.notAdded[msMsg.nodeId].name = msMsg.payload;
+          configStore.save(config);
+          break;
+        case "12": // Sketch version
+          config.notAdded[msMsg.nodeId].version = msMsg.payload;
+          configStore.save(config);
+          break;
+        default:
+        console.log("msInternal - subType not supported: " + msMsg.subType);
+          break;
+      }
+    }
+
+    function msSet(msMsg) {
+      var node = config.nodes[msMsg.nodeId];
+      if (node) {
+        var sensor = node.sensors[msMsg.sensorId];
+        if (sensor) {
+          console.log("-> @" + new Date().toISOString(), "MySensor." + node.name + "." + sensor.name, "=", msMsg.payload);
+          ari.setValue(node.name + "." + sensor.name, msMsg.payload);
+          if(!node.sensors[msMsg.sensorId].setReqTypes) {
+            node.sensors[msMsg.sensorId].setReqTypes = {};
+          }
+          if(!node.sensors[msMsg.sensorId].setReqTypes[msMsg.subType]) {
+            // Add new name and set, request Type for sensor
+            node.sensors[msMsg.sensorId].setReqTypes[msMsg.subType] = { "name": setReqTypes[msMsg.subType], "msType": msMsg.subType};
+            configStore.save(config);
+            console.log("set request type added for " + msMsg.nodeId);
+          }
+        }
+      }
     }
 }
 
@@ -230,6 +398,7 @@ ari.onerror = function (result) {
 }
 
 ari.onclose = function (result) {
+  console.log("onClose: MySensorGW");
     if (serialPort) {
         if (serialPort.isOpen()) serialPort.close();
         serialPort = null;

@@ -52,7 +52,7 @@ AriClient.prototype._connect = function () {
 
     // Open socket!
     if (!this._ws) {
-        console.log("Creating WSocket!");
+        //console.log("Creating WSocket!");
         this._ws = new WebSocket(this.url);
     }
     this._ws.onopen = function () {
@@ -92,7 +92,7 @@ AriClient.prototype._connect = function () {
                     return;
                 }
                 
-                console.log("registerClient result:", result);
+                //console.log("registerClient result:", result);
                 self.name = result.name;
                 
                 // Send if we have stored msg's...
@@ -304,16 +304,32 @@ AriClient.prototype.registerValue = function (name, optionals, inputCallback) {
 }
 
 // Watch remote client value - call function when value change is notified.
+// Returns reference to the function. Store this to be able to unwatch for this specific callback in case you have more than one watch/callback on same value.
 AriClient.prototype.watchValue = function (name, callback) {
+    // Target structure: this.clientModel._watches = {valName1: [function1, function2,...], valName2: [function3, function4,...], ...}
     if (!this.clientModel._watches) this.clientModel._watches = {};
-    this.clientModel._watches[name] = { "_callback": callback };
+    if (!this.clientModel._watches[name]) this.clientModel._watches[name] = [];
+    this.clientModel._watches[name].push(callback);
     this._notify("WATCHVALUE", { "name": name });
+    return callback;
 }
 
 // unWatch value
-AriClient.prototype.unWatchValue = function (name) {
-    delete this.clientModel._watches[name];
-    this._notify("UNWATCHVALUE", { "name": name });
+// Provide original callback in case you have more than one callback per watch. Calling unwatch without callback function will unwatch all callbacks for the value.
+AriClient.prototype.unWatchValue = function (name, callback) {
+    if (!callback) {
+        if(this.clientModel._watches) delete this.clientModel._watches[name];
+    } else {
+        if (this.clientModel._watches) {
+            var watch = this.clientModel._watches[name];
+            if (watch) {
+                watch.splice(watch.indexOf(callback), 1);   // remove callback from list of callbacks for watch.
+            }
+        }
+    }
+    if (!this.clientModel._watches || !this.clientModel._watches[name] || this.clientModel._watches[name].length == 0) {
+        this._notify("UNWATCHVALUE", { "name": name });
+    }
 }
 
 // Get latest reported value from server.
@@ -340,35 +356,32 @@ AriClient.prototype._webnotify_VALUE = function (msg) {
     var name = msg.name;
     if (!name) return;
     
-    console.log("VALUE:", name, "=", msg.value);
-
-    var watch = this.clientModel._watches[name];
-    if (watch) {
-        watch._callback(name, msg.value)
-    }
-
+    //console.log("VALUE:", name, "=", msg.value);
+    
+    // Call all registered callbacks for watched values.
     for (var watch in this.clientModel._watches) {
         if (this._matches(watch, name)) {
-            this.clientModel._watches[watch]._callback(name, msg.value)
+            watch = this.clientModel._watches[watch];
+            for (var i in watch) {
+                watch[i](name, msg.value);
+            }
         }
     }
 }
-
 
 // Remote client wants to set a local value.
 AriClient.prototype._webnotify_SETVALUE = function (msg) {
     var name = msg.name;
     var value = msg.value;
-    if (!name || !value) return;
+    if (name == undefined || value == undefined) return;
     
-    console.log("SETVALUE:", name, "=", value);
+    //console.log("SETVALUE:", name, "=", value);
     
     var v = this.clientModel.values[name];
     if (v) {
         if(v._callback) v._callback(name, value)
     }
 }
-
 
 /*****************************************************************************/
 // PUB/SUB --------------------------------------------------------------------

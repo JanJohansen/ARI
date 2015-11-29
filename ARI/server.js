@@ -138,40 +138,40 @@ fs.readdir(pluginsPath, function (err, files) {
                     if (manifest) {
                         if (manifest.packageInfo.name != undefined) {
                             pluginInfos[manifest.packageInfo.name] = manifest;
-                            if (manifest.plugins) {
-                                for (var id in manifest.plugins) {
-                                    var plugin = manifest.plugins[id];
-                                    if (plugin.name && plugin.nodeMain) {
-                                        console.log("Starting plugin:", plugin.name);
-                                        
-                                        // Child will use parent's stdios
-                                        if (!plugin.arguments) plugin.arguments = "";
-                                        var args = [plugin.nodeMain].concat(plugin.arguments.split(" "));
+                        if (manifest.plugins) {
+                            for (var id in manifest.plugins) {
+                                var plugin = manifest.plugins[id];
+                                if (plugin.name && plugin.nodeMain) {
+                                    console.log("Starting plugin:", plugin.name);
+                                    
+                                    // Child will use parent's stdios
+                                    if (!plugin.arguments) plugin.arguments = "";
+                                    var args = [plugin.nodeMain].concat(plugin.arguments.split(" "));
                                         var pluginProcess = cp.spawn("node", args, { "cwd": pluginsPath + "/" + plugin.name });
-                                        
+                
                                         plugin.stdout = "";
                                         plugin.errout = "";
                                         plugin.debugFilePath = pluginsPath + "/" + dir + "/";
 
-                                        pluginProcess.stdout.on('data', function (data) {
-                                            console.log("/" + plugin.name + ":", data.toString());
+                                    pluginProcess.stdout.on('data', function (data) {
+                                        console.log("/" + plugin.name + ":", data.toString());
                                             plugin.stdout += data.toString();
-                                        });
-                                        
-                                        pluginProcess.stderr.on('data', function (data) {
-                                            console.log(plugin.name + " ERROR:", data.toString());
+                                    });
+                
+                                    pluginProcess.stderr.on('data', function (data) {
+                                        console.log(plugin.name + " ERROR:", data.toString());
                                             plugin.errout += data.toString();
-                                        });
-                                        
-                                        pluginProcess.on('close', function (code) {
-                                            console.log(plugin.name + " exit!:", code.toString());
-                                            // TODO: Implement restart plugin n times before reporting error?
+                                    });
+                
+                                    pluginProcess.on('close', function (code) {
+                                        console.log(plugin.name + " exit!:", code.toString());
+                                        // TODO: Implement restart plugin n times before reporting error?
                                             saveDebug(false);
-                                        });
-                                    }
+                                    });
                                 }
                             }
                         }
+                    }
                     }
                 });
             } // else its a file or error...
