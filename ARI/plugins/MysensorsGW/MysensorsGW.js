@@ -146,15 +146,16 @@ ari.onconnect = function (result) {
 
     ari.registerFunction("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
         console.log("Storing new configuration.");
-        if (pars.portName != config.portName) {
-            console.log("Selecting new serial port:", pars.portName);
-            openPort(pars.portName);
-        }
         delete pars.portOptions;
         config = pars;
         // Store config.
         configStore.save(config);
 
+        if (pars.portName != config.portName) {
+            console.log("Selecting new serial port:", pars.portName);
+            openPort(pars.portName);
+        }
+        
         // Deregister deactive nodes
         for (key in config.nodes) {
           var msNode = config.nodes[key];
@@ -283,7 +284,7 @@ ari.onconnect = function (result) {
 
 
     function openPort(name){
-      console.log("Trying to open Serialport");
+      console.log("Trying to open Serialport " + config.portName);
       // Serial port comuunication to mysensor gateway.
       if (serialPort) {
           if (serialPort.isOpen()) serialPort.close();
