@@ -141,7 +141,7 @@ Ari.prototype.getValue = function (name, callback) {
         if (client.values) {
             // Removeo client name and setValue...
             name = name.substring(name.indexOf(".") + 1);
-            if (client.values[name]) callback(null, client.values[name].value);
+            if (client.values[name]) callback(null, { "name": name, "value": client.values[name].value });
             else callback("Value name not found on client", null);
         }
     }
