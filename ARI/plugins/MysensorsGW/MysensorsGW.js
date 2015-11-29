@@ -155,7 +155,7 @@ ari.onconnect = function (result) {
             console.log("Selecting new serial port:", pars.portName);
             openPort(pars.portName);
         }
-        
+
         // Deregister deactive nodes
         for (key in config.nodes) {
           var msNode = config.nodes[key];
@@ -269,8 +269,8 @@ ari.onconnect = function (result) {
 
     // Example on getValue
     // TODO: Remove... :O)
-    ari.getValue("GW433.Garage.temperature", function (err, result) {
-        console.log("GETVALUE:", result);
+    ari.getValue("GW433.Garage.temperature", function (err, name, value) {
+        console.log("GETVALUE: ", value + " sendTo: " + name);
     });
 
     // Open serial port and start handling telegrams from GW.
@@ -452,8 +452,8 @@ ari.onconnect = function (result) {
             }
             console.log("Request: " + node.name + "." + sensor.name + "." + setReqTypes[msMsg.subType].name);
 
-            ari.getValue(node.name + "." + sensor.name + "." + setReqTypes[msMsg.subType].name, function (err, result) {
-                console.log("GETVALUE:", result);
+            ari.getValue(node.name + "." + sensor.name + "." + setReqTypes[msMsg.subType].name, function (err, name, value) {
+                console.log("GETVALUE:", value + " SendTo: " + name);
             });
           } else {
             if(!node.sensors[msMsg.sensorId].setReqTypes) {
