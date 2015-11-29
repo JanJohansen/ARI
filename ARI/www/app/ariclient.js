@@ -303,6 +303,12 @@ AriClient.prototype.registerValue = function (name, optionals, inputCallback) {
     this.sendClientInfo();
 }
 
+// Remove info about value and send update to server.
+AriClient.prototype.unRegisterValue = function (name) {
+    delete this.clientModel.values[name];
+    this.sendClientInfo();
+}
+
 // Watch remote client value - call function when value change is notified.
 // Returns reference to the function. Store this to be able to unwatch for this specific callback in case you have more than one watch/callback on same value.
 AriClient.prototype.watchValue = function (name, callback) {
