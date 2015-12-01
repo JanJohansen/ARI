@@ -28,7 +28,22 @@ ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriCl
 
             $scope.activateNodeId = function (nodeId)
             {
-              $scope.config.nodes[nodeId].active = true;
+              var result = {};
+              var number = 0;
+              var sensors = $scope.config.nodes[nodeId].sensors;
+              for (var key in sensors) {
+                var sensor = sensors[key];
+                if (!sensor.setReqTypes) {
+                  result[number] = {"name": $scope.config.nodes[nodeId].name, "sensor": sensors[key].name};
+                  number = number + 1;
+                  console.log("BINGO");
+                }
+              }
+              if (number != 0) {
+                alert("Missing setReqTypes for sensor \n" + JSON.stringify(result, null, 4));
+              } else {
+                $scope.config.nodes[nodeId].active = true;
+              }
             }
 
             $scope.deActivateNodeId = function (nodeId)
