@@ -296,7 +296,7 @@ AriClient.prototype.sendClientInfo = function (){
 
 // For easier update of values, call this and re-register all again.
 AriClient.prototype.clearValues = function () {
-    self.clientModel.values = {};
+    this.clientModel.values = {};
     this.sendClientInfo();
 }
 
