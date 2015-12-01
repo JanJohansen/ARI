@@ -147,14 +147,14 @@ ari.onconnect = function (result) {
     ari.registerFunction("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
         console.log("Storing new configuration.");
         delete pars.portOptions;
-        config = pars;
-        // Store config.
-        configStore.save(config);
-
+        
         if (pars.portName != config.portName) {
             console.log("Selecting new serial port:", pars.portName);
             openPort(pars.portName);
         }
+        
+        config = pars;
+        configStore.save(config);
 
         // clear values on ari
         ari.clearValues();
@@ -258,7 +258,7 @@ ari.onconnect = function (result) {
 
 
     function openPort(name){
-      console.log("Trying to open Serialport " + config.portName);
+      console.log("Trying to open Serialport " + name);
       // Serial port comuunication to mysensor gateway.
       if (serialPort) {
           if (serialPort.isOpen()) serialPort.close();
@@ -266,7 +266,7 @@ ari.onconnect = function (result) {
       }
 
 
-      serialPort = new SerialPort(config.portName, {
+      serialPort = new SerialPort(name, {
           baudrate: 115200,
           parser: SerialPortModule.parsers.readline('\n')},
           false
@@ -544,7 +544,7 @@ ari.onconnect = function (result) {
             }
             // setValue
             console.log("-> @" + new Date().toISOString(), "MysensorsGW." + node.name + "." + sensor.name + "." + sensor.setReqTypes[msMsg.subType].name, "=", msMsg.payload);
-            ari.setValue(node.name + "." + sensor.name + "." + sensor.setReqTypes[msMsg.subType], msMsg.payload);
+            ari.setValue(node.name + "." + sensor.name + "." + sensor.setReqTypes[msMsg.subType].name, msMsg.payload);
           }
           else {
             if(!node.sensors[msMsg.sensorId].setReqTypes) {
