@@ -156,22 +156,8 @@ ari.onconnect = function (result) {
             openPort(pars.portName);
         }
 
-        // Deregister deactive nodes
-        for (key in config.nodes) {
-          var msNode = config.nodes[key];
-          if (!msNode.active) {
-            for (key2 in msNode.sensors) {
-                var sensor = msNode.sensors[key2];
-                // currently not supported by AriClient
-                ari.unRegisterValue(msNode.name + "." + sensor.name);
-
-                for (key3 in sensor.setReqTypes) {
-                  var setReqType = sensor.setReqTypes[key3];
-                  ari.unRegisterValue(msNode.name + "." + sensor.name + "." + setReqType.name);
-                }
-            }
-          }
-        }
+        // clear values on ari
+        ari.clearValues();
 
         // Register values.
         for (key in config.nodes) {
@@ -179,12 +165,6 @@ ari.onconnect = function (result) {
           if (msNode.active) {
             for (key2 in msNode.sensors) {
               var sensor = msNode.sensors[key2];
-              ari.registerValue(msNode.name + "." + sensor.name, {}, function (name, value) {
-                  // This function is called if remote client wants to set this inputs.
-                  // TODO: Send message to sensor here.
-                  console.log("EXTERNAL SETVALUE:", name, value);
-                  sendDataToNode(name, value);
-              });
               for (key3 in sensor.setReqTypes) {
                 var setReqType = sensor.setReqTypes[key3];
                 ari.registerValue(msNode.name + "." + sensor.name + "." + setReqType.name, {}, function (name, value) {
@@ -207,12 +187,6 @@ ari.onconnect = function (result) {
       if (msNode.active) {
         for (key2 in msNode.sensors) {
           var sensor = msNode.sensors[key2];
-          ari.registerValue(msNode.name + "." + sensor.name, {}, function (name, value) {
-              // This function is called if remote client wants to set this inputs.
-              // TODO: Send message to sensor here.
-              console.log("EXTERNAL SETVALUE:", name, value);
-              sendDataToNode(name, value);
-          });
           for (key3 in sensor.setReqTypes) {
             var setReqType = sensor.setReqTypes[key3];
             ari.registerValue(msNode.name + "." + sensor.name + "." + setReqType.name, {}, function (name, value) {
