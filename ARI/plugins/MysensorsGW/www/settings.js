@@ -3,7 +3,6 @@
 var ariModule = angular.module('ari');
 ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriClient', "AriUser",
     function ($scope, AriClient, AriUser) {
-        $scope.clientInfo = {};
 
         var ari = AriClient.create("MysensorsGW_Settings");
 
@@ -40,7 +39,12 @@ ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriCl
                 }
               }
               if (number != 0) {
-                alert("Missing setReqTypes for sensor \n" + JSON.stringify(result, null, 4));
+                var r = confirm("Missing setReqTypes for sensor \n" + JSON.stringify(result, null, 4) + "\n\n add node any way?");
+                if (r == true) {
+                    $scope.config.nodes[nodeId].active = true;
+                } else {
+                }
+                //alert("Missing setReqTypes for sensor \n" + JSON.stringify(result, null, 4));
               } else {
                 $scope.config.nodes[nodeId].active = true;
               }
@@ -51,12 +55,16 @@ ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriCl
               $scope.config.nodes[nodeId].active = false;
             }
 
+            $scope.editNodeId = function (nodeId)
+            {
+              var node = $scope.config.nodes[nodeId];
+              alert("test \n" + JSON.stringify(node, null, 4));
+            }
+
             $scope.showNodeId = function (nodeId)
             {
               return $scope.config.nodes[nodeId].active;
             }
-
-
         };
 
 
