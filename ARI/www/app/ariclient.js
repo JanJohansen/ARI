@@ -291,9 +291,20 @@ AriClient.prototype.sendClientInfo = function (){
             self._notify("SETCLIENTINFO", self.clientModel);
             console.log("clientInfo:", self.clientModel);
         }, 10);
-}
+    }
 }
 
+// For easier update of values, call this and re-register all again.
+AriClient.prototype.clearValues = function () {
+    self.clientModel.values = {};
+    this.sendClientInfo();
+}
+
+// For easier update of functions, call this and re-register all again.
+AriClient.prototype.clearFunctions = function () {
+    self.clientModel.functions = {};
+    this.sendClientInfo();
+}
 
 /*****************************************************************************/
 // Values ---------------------------------------------------------------------
