@@ -302,6 +302,19 @@ ari.onconnect = function (result) {
         };
 
         if (msMsg.nodeId == 0) return;  // Ignore gateway messages for now.
+        if (msMsg.nodeId == 255 && msMsg.sensorId == 255 && msMsg.messageType == 3 && msMsg.subType == 3) {
+          var newNodeId = getFreeId();
+
+          console.log("serial message: " + msMsg.nodeId + ";" + msMsg.sensorId + ";" + msMsg.messageType + ";0;" + "4" + ";" + newNodeId + "\n");
+          serialPort.write(msMsg.nodeId + ";" + msMsg.sensorId + ";" + msMsg.messageType + ";0;" + "4" + ";" + newNodeId + "\n", function(err, results) {
+             console.log('err ' + err);
+             console.log('results ' + results);
+          });
+          return; // Return message is handled
+        }
+        if (msMsg.nodeId == 255) {
+          return; // Do not handle 
+        }
         if (!config.nodes) config.nodes = {};
         console.log("Messages: "+ parts);
 
@@ -329,6 +342,16 @@ ari.onconnect = function (result) {
           default:
             console.log("No success");
         }
+    }
+
+    function getFreeId() {
+      var node = config.nodes;
+      for (var i = 10; i < 254; i++) {
+        if (!node[i])
+        {
+          return i;
+        }
+      }
     }
 
     function msPresentation(msMsg) {

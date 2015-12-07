@@ -58,7 +58,10 @@ ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriCl
             $scope.editNodeId = function (nodeId)
             {
               var node = $scope.config.nodes[nodeId];
-              alert("test \n" + JSON.stringify(node, null, 4));
+              //prompt("Please edit:", JSON.stringify(node, null, 4));
+              var data = JSON.stringify(node, null, 4); // pretty print
+              data = "<textarea cols='100' rows='150'>" + data + "</textarea>"; // encase in text area
+              open("data:text/html,"+ encodeURIComponent(data), "_blank", "width=300,height=500");
             }
 
             $scope.showNodeId = function (nodeId)
