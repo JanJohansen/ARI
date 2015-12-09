@@ -101,6 +101,27 @@ AriServerServer.prototype._webcall_getClientInfo = function (parameters, callbac
     else callback("Error: Unknown client name!", null);
 }
 
+// Client requests to set Alias for name...
+AriServerServer.prototype._webcall_setAlias = function (parameters, callback) {
+    var name = parameters.name;
+    var alias = parameters.alias;
+    
+    // TODO: Check if alias is already used...
+
+    // Find client.
+    var clientName = parameters.name.split(".")[0];
+    var client = this._server.clientModels[clientName];
+    if (client) {
+        name = name.substring(name.indexOf(".") + 1);
+        if (client.values[name]) {
+            client.values[name].alias = alias;
+            callback(null, {}); //OK
+        }
+    }
+    callback("Error when trying to set alias.", null);
+}
+
+
 //-----------------------------------------------------------------------------
 // Return array of clients.
 AriServerServer.prototype._webcall_getLoggingConfig = function (parameters, callback) {

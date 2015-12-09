@@ -384,7 +384,11 @@ AriClientServer.prototype._webnotify_WATCHVALUE = function (pars) {
 
     if (!this.clientModel._watches) this.clientModel._watches = {};
     this.clientModel._watches[name] = {}; // Just indicate that this client watches this value.
-
+    
+    // Check if this is an alias. Use name if it is.
+    var vName = this._server.findValueByAlias(name);
+    if (vName) name = vName;
+    
     // Send last values of subscribed values.
     for (var key in this._server.clientModels) {
         var client = this._server.clientModels[key];
@@ -426,6 +430,11 @@ AriClientServer.prototype._webnotify_VALUE = function (pars) {
 AriClientServer.prototype._webnotify_SETVALUE = function (pars) {
     var name = pars.name;
     var value = pars.value;
+    
+    // Check if this is an alias. Use name if it is.
+    var vName = this._server.findValueByAlias(name);
+    if (vName) name = vName;
+
     if ((name === undefined) || (value === undefined)) {
         console.log("Error: Missing name or value to set! - Ignoring...");
         return;
@@ -438,6 +447,11 @@ AriClientServer.prototype._webnotify_SETVALUE = function (pars) {
 // Client wants to get latest stored value from a client.
 AriClientServer.prototype._webcall_GETVALUE = function (pars, callback) {
     var name = pars.name;
+    
+    // Check if this is an alias. Use name if it is.
+    var vName = this._server.findValueByAlias(name);
+    if (vName) name = vName;
+
     if (name === undefined) {
         console.log("Error: Missing name to get! - Ignoring...");
         callback("Error: Missing name to get!", null);

@@ -71,6 +71,8 @@
     <Compile Include="www\app\node_modules\jquery-ui\jquery-ui.js" />
     <Compile Include="www\app\node_modules\jquery\dist\jquery.js" />
     <Compile Include="www\app\node_modules\jquery\dist\jquery.min.js" />
+    <Compile Include="www\app\views\aliases\controller.js" />
+    <Compile Include="www\app\views\aliases\ui-grid.min.js" />
     <Compile Include="www\app\views\clients\controller.js" />
     <Compile Include="www\app\views\clock\controller.js" />
     <Compile Include="www\app\views\floor\controller.js" />
@@ -122,6 +124,8 @@
     <Content Include="www\app\node_modules\bootstrap\dist\fonts\glyphicons-halflings-regular.woff2" />
     <Content Include="www\app\node_modules\jquery\dist\jquery.min.map" />
     <Content Include="www\app\package.json" />
+    <Content Include="www\app\views\aliases\index.html" />
+    <Content Include="www\app\views\aliases\ui-grid.min.css" />
     <Content Include="www\app\views\clients\index.html" />
     <Content Include="www\app\views\clock\index.html" />
     <Content Include="www\app\views\floor\Floorplan.JPG" />
@@ -164,6 +168,7 @@
     <Folder Include="www\app\node_modules\jquery\" />
     <Folder Include="www\app\node_modules\jquery\dist\" />
     <Folder Include="www\app\views\" />
+    <Folder Include="www\app\views\aliases\" />
     <Folder Include="www\app\views\clients\" />
     <Folder Include="www\app\views\clock\" />
     <Folder Include="www\app\views\floor\" />

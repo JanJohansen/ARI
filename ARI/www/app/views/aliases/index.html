@@ -1,0 +1,58 @@
+<div class="container-fluid" ng-controller="aliasesController">
+    <div class="row">
+        <div class="col-xs-12 col-sm-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Aliases:
+                    <input ng-model="clientquery">
+                </div>
+                <!-- Table -->
+                <!-- <script type="text/ng-template" id="tree_node">
+                    <tr tt-node is-branch="node.type == 'folder'">
+                        <td><span ng-bind="node.name"></span></td>
+                        <td ng-bind="node.type"></td>
+                        <td ng-bind="node.size"></td>
+                    </tr>
+                </script>
+
+                <h3>Basic File Browser</h3>
+
+                <table tt-table tt-params="dynamic_params">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table> -->
+
+                <!--<div ui-grid="gridOptions" class="myGrid"></div>            
+                <div ui-grid="{ data: gridOptions.data }"  class="myGrid"></div>            -->
+                <!-- Table -->
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Client:</th>
+                            <th>ValueName:</th>
+                            <th>Alias:</th>
+                            <th>Value:</th>
+                        </tr>
+                    </thead>
+                    <tbody ng-repeat="client in clients">
+                        <tr>
+                            <td colspan="2">{{client.name}}</td>
+                        </tr>
+                        <tr ng-repeat="(name, value) in client.values | filter:clientquery">
+                            <td></td>
+                            <td>{{name}}</td>
+                            <td><input type="text" value={{value.alias}} onchange="angular.element(this).scope().setAlias(this)" name="{{client.name}}.{{name}}" /></td>
+                            <td>{{value.value}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

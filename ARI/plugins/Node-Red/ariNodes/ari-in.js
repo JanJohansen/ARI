@@ -23,7 +23,8 @@ module.exports = function (RED) {
         var handleValue = function (path, value) {
             //console.log("->", path, "=", value);
             var msg = {};
-            msg.name = path;
+            //msg.name = path;
+            msg.topic = path;
             msg.payload = value;
             // send out the message.
             self.send(msg);
