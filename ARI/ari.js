@@ -64,6 +64,36 @@ var Ari = module.exports.Ari = function (options) {
 };
 
 /*****************************************************************************/
+// Find alias.Return vlaue for alias if found. Return undefined if not found.
+Ari.prototype.findValueByAlias = function (alias) {
+    for (var cName in this.clientModels) {
+        var values = this.clientModels[cName].values;
+        if (values) {
+            for (var vName in values) {
+                var vAlias = values[vName].alias;
+                if (vAlias && (vAlias == alias)) {
+                    return cName + "." + vName;
+                }
+            }
+        }
+    }
+    return undefined;
+}
+
+Ari.prototype.findValueByName = function (name) {
+    var clientName = name.split(".")[0];
+    
+    // Find client.
+    var client = this.clientModels[clientName];
+    if (client) {
+        var clientValueName = name.substring(name.indexOf(".") + 1);
+        if (client.values) return client.values[clientValueName];
+    }
+    return undefined;
+}
+
+
+/*****************************************************************************/
 // Main function called by all clients.!
 Ari.prototype.callFunction = function (name, params, callback) {
     // Find client...
@@ -118,13 +148,17 @@ Ari.prototype.publish = function (name, value) {
 Ari.prototype.setValue = function (name, value) {
     //console.log("setValue:", name, "=", value);
     
-    var clientName = name.split(".")[0];
+    // Check if this is an alias. Use name if it is.
+    var vName = this.findValueByAlias(name);
+    if (vName) name = vName;
+
     
     // Find client.
+    var clientName = name.split(".")[0];
     var client = this.clientModels[clientName];
     if (client) {
         if (client.__clientServer) {
-            // Removeo client name and setValue...
+            // Remove client name and notify setValue...
             name = name.substring(name.indexOf(".") + 1);
             client.__clientServer._notify("SETVALUE", { "name": name , "value": value });
         }
@@ -133,15 +167,19 @@ Ari.prototype.setValue = function (name, value) {
 
 // Main getValue function called by all clients.!
 Ari.prototype.getValue = function (name, callback) {
-    var clientName = name.split(".")[0];
+    
+    // Check if this is an alias. Use name if it is.
+    var vName = this.findValueByAlias(name);
+    if (vName) name = vName;
     
     // Find client.
+    var clientName = name.split(".")[0];
     var client = this.clientModels[clientName];
     if (client) {
         if (client.values) {
             // Removeo client name and setValue...
             name = name.substring(name.indexOf(".") + 1);
-            if (client.values[name]) callback(null, client.values[name].value);
+            if (client.values[name]) callback(null, { "name": name, "value": client.values[name].value });
             else callback("Value name not found on client", null);
         }
     }
@@ -174,17 +212,22 @@ Ari.prototype.handleValue = function (name, value) {
             this.logs[name].push({ "t": ds, "v": value });
         }
     }
+    
+    var v = this.findValueByName(name);
+    if (v && v.alias) var alias = v.alias;
    
-    //var clientName = name.split(".")[0];    
     // Find all clients watching value and notify.
     for (var key in this.clientModels) {
         var clientModel = this.clientModels[key];
         if (clientModel._watches) {
             for (var watch in clientModel._watches) {
-                if (this.matches(watch, name)) {
-                    var cs = clientModel.__clientServer;
-                    if (cs) {
+                var cs = clientModel.__clientServer;
+                if (cs) {
+                    if (this.matches(watch, name)) {    // Check NAME
                         cs._notify("VALUE", { "name": name , "value": value });
+                    }
+                    if (alias && this.matches(watch, alias)) {   // Check ALIAS
+                        cs._notify("VALUE", { "name": alias , "value": value });
                     }
                 }
             }

@@ -10,7 +10,7 @@ participant Server
 participant Client2
 participant App2
 
-note right of App: Create clientInfo and sending to server.
+note right of App: Create clientInfo and send to server.
 
 App->Client: registerValue("val1", ...
 App->Client: registerFunction("func1", function(){...})
@@ -24,7 +24,7 @@ Client2->Server: CLIENTINFO(clientInfo)
 note right of App: Dynamically watch or subscribe...
 
 App->Client: watchValue(App2.val1, watchCB(){...}
-Client->Server: WATCH(App2.value);
+Client->Server: WATCH(App2.val1);
 
 
 note right of App: Set remote value sequence.
@@ -43,6 +43,21 @@ note right of App: Set local value sequence.
 
 App->Client: setValue(val1, value)
 Client->Server: VALUE(val1, value);
+
+
+note right of App: ALIAS handling
+
+App->Client: watchValue(alias1, watchCB(){...}
+Client->Server: WATCH(alias1);
+
+App->Client: setValue(alias1, value)
+Client->Server: SETVALUE(alias1, value);
+Server->Client2: SETVALUE(val1, value); 
+Client2->App2: val1CBFunc(val1, value); 
+App2->Client2: setValue(val1, value);
+Client2->Server: VALUE(val1, value)
+Server->Client: VALUE(App2.val1 or alias1???, value)
+Client->App: watchCB(App2.val1 or alias1???, value)
 
 
 /*****************************************************************************/

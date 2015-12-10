@@ -3,7 +3,6 @@
 var ariModule = angular.module('ari');
 ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriClient', "AriUser",
     function ($scope, AriClient, AriUser) {
-        $scope.clientInfo = {};
 
         var ari = AriClient.create("MysensorsGW_Settings");
 
@@ -28,23 +27,52 @@ ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriCl
 
             $scope.activateNodeId = function (nodeId)
             {
-              var node = $scope.config.notAdded[nodeId];
-              $scope.config.nodes[nodeId] = node;
-              $scope.config.notAdded[nodeId] = null;
-              delete $scope.config.notAdded[nodeId];
-              $scope.$apply();
+              var result = {};
+              var number = 0;
+              var sensors = $scope.config.nodes[nodeId].sensors;
+              for (var key in sensors) {
+                var sensor = sensors[key];
+                if (!sensor.setReqTypes) {
+                  result[number] = {"name": $scope.config.nodes[nodeId].name, "sensor": sensors[key].name};
+                  number = number + 1;
+                  console.log("BINGO");
+                }
+              }
+              if (number != 0) {
+                var r = confirm("Missing setReqTypes for sensor \n" + JSON.stringify(result, null, 4) + "\n\n add node any way?");
+                if (r == true) {
+                    $scope.config.nodes[nodeId].active = true;
+                } else {
+                }
+                //alert("Missing setReqTypes for sensor \n" + JSON.stringify(result, null, 4));
+              } else {
+                $scope.config.nodes[nodeId].active = true;
+              }
             }
 
             $scope.deActivateNodeId = function (nodeId)
             {
-              var node = $scope.config.nodes[nodeId];
-              $scope.config.notAdded[nodeId] = node;
-              $scope.config.nodes[nodeId] = null;
-              delete $scope.config.nodes[nodeId];
-              $scope.$apply();
+              $scope.config.nodes[nodeId].active = false;
             }
 
+            $scope.removeNodeId = function (nodeId)
+            {
+              delete $scope.config.nodes[nodeId];
+            }
 
+            $scope.editNodeId = function (nodeId)
+            {
+              var node = $scope.config.nodes[nodeId];
+              //prompt("Please edit:", JSON.stringify(node, null, 4));
+              var data = JSON.stringify(node, null, 4); // pretty print
+              data = "<textarea cols='100' rows='150'>" + data + "</textarea>"; // encase in text area
+              open("data:text/html,"+ encodeURIComponent(data), "_blank", "width=300,height=500");
+            }
+
+            $scope.showNodeId = function (nodeId)
+            {
+              return $scope.config.nodes[nodeId].active;
+            }
         };
 
 

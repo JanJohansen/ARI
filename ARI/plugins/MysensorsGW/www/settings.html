@@ -9,40 +9,22 @@
                 <select ng-model="config.portName" ng-options="portOption for portOption in config.portOptions track by portOption" style="width:100%;" />
                 <br />
                 <br />
-                Active Nodes:
+                Nodes:
                 <table class="table">
                     <thead>
                         <tr>
                             <th>Node Address:</th>
-                            <th>SensuatorId :O)</th>
+                            <!-- <th>SensuatorId :O)</th> -->
                             <th>Name:</th>
-                            <th>Deactivate:</th>
+                            <th>Toggle:</th>
                         </tr>
                     </thead>
                     <tr ng-repeat="(key, value) in config.nodes">
                             <td>{{key}}</td>
-                            <td>-</td>
+                            <!-- <td>-</td> -->
                             <td><input type="text" ng-model="value.name"></td>
-                            <td><button ng-click="deActivateNodeId(key)">deactivate</button></td>
-                    </tr>
-                </table>
-            </div>
-            Deactive Nodes:
-            <div class="panel panel-default">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Node Address:</th>
-                            <th>SensuatorId :O)</th>
-                            <th>Name:</th>
-                            <th>Activate:</th>
-                        </tr>
-                    </thead>
-                    <tr ng-repeat="(key, value) in config.notAdded">
-                            <td>{{key}}</td>
-                            <td>-</td>
-                            <td><input type="text" ng-model="value.name"></td>
-                            <td><button ng-click="activateNodeId(key)">activate</button></td>
+                            <td align="center" ng-hide="showNodeId(key) !== true"><button ng-click="deActivateNodeId(key)">-</button></td>
+                            <td align="center" ng-hide="showNodeId(key) === true"><button ng-click="activateNodeId(key)">+</button><button ng-click="editNodeId(key)">edit</button><button ng-click="removeNodeId(key)">remove</button></td>
                     </tr>
                 </table>
             </div>

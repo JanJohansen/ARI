@@ -26,9 +26,9 @@ function AriClient(clientName, clientModelOptionals) {
     this.reconnectInterval = 2000; // Interval (in mS) to wait before retrying to connect on unexpected disconnection or error. 0 = no retry!
     this.authToken = null;
     this.isConnected = false;
-    
+
     this.name = clientName;
-    
+
     // define clientInfo object to send to server and to maintain local state.
     // Note that members starting with "_" will NOT be sent to server! - So use this to store members with local relevance only.
     this.clientModel = clientModelOptionals || {};
@@ -36,7 +36,7 @@ function AriClient(clientName, clientModelOptionals) {
     this.clientModel.functions = {};      // registered functions
     this.clientModel.values = {};         // registered values
     this.clientModel.subscriptions = {};  // registered subscriptions with "private" callbacks indicated by "_"...
-    
+
     if (typeof window !== 'undefined') { // Config for browser
         this.url = "ws://" + window.location.host;
     } else {
@@ -63,7 +63,7 @@ AriClient.prototype._connect = function () {
                     if (err) { console.log("Error:", err); return; }
                     self.name = result.name;
                     self.authToken = result.authToken;
-                    
+
                     // reconnect, now with authToken
                     self._ws.close();
                     self._ws = null;
@@ -74,40 +74,40 @@ AriClient.prototype._connect = function () {
                     if (err) { console.log("Error:", err); return; };
                     self.name = result.name;
                     self.authToken = result.authToken;
-                    
+
                     // reconnect, not with authToken
                     self._ws.close();
                     self._ws = null;
                 });
             }
         }
-        
+
         if (self.authToken) {
             // We have authToken, so connect "normally".
-            
+
             self._call("CONNECT", { "name": self.name, "authToken": self.authToken }, function (err, result) {
                 if (err) {
                     if (self.onerror) self.onerror(err);
                     self._trigger("error", err);
                     return;
                 }
-                
+
                 //console.log("registerClient result:", result);
                 self.name = result.name;
-                
+
                 // Send if we have stored msg's...
                 for (var i = 0; i < self._pendingMsgs.length; i++) {
                     self._ws.send(self._pendingMsgs[i]);
                 }
                 self._pendingMsgs = [];
-                
+
                 self.isConnected = true;
                 if (self.onconnect) self.onconnect(result);
                 self._trigger("connect", result);
             });
         }
     };
-    
+
     this._ws.onmessage = function (message) {
         self._handleMessage(message);
     };
@@ -179,15 +179,15 @@ AriClient.prototype._notify = function (command, parameters) {
 // Handle incomming messages from server.
 AriClient.prototype._handleMessage = function (message) {
     //console.log("-->", message.data);
-    
-    try { var msg = JSON.parse(message.data); }        
+
+    try { var msg = JSON.parse(message.data); }
         catch (e) { console.log("Error: Illegal JSON in message! - Ignoring..."); return; }
-    
+
     if ("req" in msg) {
         // Request message.
         var cmd = msg.cmd;
         if (!cmd) { console.log("Error: Missing comand in telegram! - Ignoring..."); return; };
-        
+
         var functionName = "_webcall_" + cmd;
         if (functionName in this) {
             // Requested function name exists in this object. Call it...
@@ -220,7 +220,7 @@ AriClient.prototype._handleMessage = function (message) {
         // Notofication message.
         var cmd = msg.cmd;
         if (!cmd) { console.log("Error: Missing comand in telegram! - Ignoring..."); return; };
-        
+
         var functionName = "_webnotify_" + cmd;
         if (functionName in this) {
             // Requested notification function name exists in this object. Call it...
@@ -246,10 +246,10 @@ AriClient.prototype._matches = function (strA, strB) {
 // Normal connect with authToken.
 AriClient.prototype.connect = function (authToken) {
     this.authToken = authToken;
-    this._connect();    
+    this._connect();
 };
 
-// First time connect if only user and password is known. 
+// First time connect if only user and password is known.
 // authToken will be available if successfully loggend in.
 AriClient.prototype.connectUser = function (userName, userPassword) {
     this.userName = userName;
@@ -282,7 +282,7 @@ AriClient.prototype.sendClientInfo = function (){
 
     if (!AriClient.prototype.sendClientInfo.serverupdatePending) {
         AriClient.prototype.sendClientInfo.serverupdatePending = true; // "static" member value of member function!
-        
+
     var self = this;
         setTimeout(function () {
             delete AriClient.prototype.sendClientInfo.serverupdatePending;
@@ -291,9 +291,20 @@ AriClient.prototype.sendClientInfo = function (){
             self._notify("SETCLIENTINFO", self.clientModel);
             console.log("clientInfo:", self.clientModel);
         }, 10);
-}
+    }
 }
 
+// For easier update of values, call this and re-register all again.
+AriClient.prototype.clearValues = function () {
+    this.clientModel.values = {};
+    this.sendClientInfo();
+}
+
+// For easier update of functions, call this and re-register all again.
+AriClient.prototype.clearFunctions = function () {
+    self.clientModel.functions = {};
+    this.sendClientInfo();
+}
 
 /*****************************************************************************/
 // Values ---------------------------------------------------------------------
@@ -305,8 +316,8 @@ AriClient.prototype.registerValue = function (name, optionals, inputCallback) {
 
 // Remove info about value and send update to server.
 AriClient.prototype.unRegisterValue = function (name) {
-    delete this.clientModel.values[name];
-    this.sendClientInfo();
+   delete this.clientModel.values[name];
+   this.sendClientInfo();
 }
 
 // Watch remote client value - call function when value change is notified.
@@ -340,7 +351,7 @@ AriClient.prototype.unWatchValue = function (name, callback) {
 
 // Get latest reported value from server.
 AriClient.prototype.getValue = function (name, callback) {
-    this._call("GETVALUE", { "name": name }, function (err, result) { 
+    this._call("GETVALUE", { "name": name }, function (err, result) {
         callback(err, result);
     });
 }
@@ -361,9 +372,9 @@ AriClient.prototype.setValue = function (name, value) {
 AriClient.prototype._webnotify_VALUE = function (msg) {
     var name = msg.name;
     if (!name) return;
-    
+
     //console.log("VALUE:", name, "=", msg.value);
-    
+
     // Call all registered callbacks for watched values.
     for (var watch in this.clientModel._watches) {
         if (this._matches(watch, name)) {
@@ -380,9 +391,9 @@ AriClient.prototype._webnotify_SETVALUE = function (msg) {
     var name = msg.name;
     var value = msg.value;
     if (name == undefined || value == undefined) return;
-    
+
     //console.log("SETVALUE:", name, "=", value);
-    
+
     var v = this.clientModel.values[name];
     if (v) {
         if(v._callback) v._callback(name, value)
@@ -395,7 +406,7 @@ AriClient.prototype.subscribe = function (name, callback) {
     this.clientModel.subscriptions[name] = { "_callback": callback };
     this.sendClientInfo();
 }
-    
+
 AriClient.prototype.publish = function (name, value) {
     this._notify("PUBLISH", { "name": name, "value": value });
 }
@@ -411,11 +422,11 @@ AriClient.prototype._webnotify_PUBLISH = function (msg) {
     if (!name) {
         return;
     }
-    
+
     for (var subName in this.clientModel.subscriptions) {
         if (this._matches(subName, name)) {
             var value = msg.value;
-            
+
             // Call the local callback
             this.clientModel.subscriptions[subName].callback(name, value);
         }
@@ -444,7 +455,7 @@ AriClient.prototype._webcall_CALLFUNCTION = function (msg, callback) {
         callback("Error: Missing name of RPC to call at client!", null);
         return;
     }
-    
+
     if (!this.clientModel.functions.hasOwnProperty(rpcName)) {
         console.log("Error: Name of RPC not previously registered! - Ignoring...");
         callback("Error: RPC unkknown at client!", null);
@@ -452,12 +463,12 @@ AriClient.prototype._webcall_CALLFUNCTION = function (msg, callback) {
     }
     var rpc = this.clientModel.functions[rpcName];
     var rpcFunc = rpc.func;
-    
+
     var params = msg.params;
-    
-    // Call the local RPC                
+
+    // Call the local RPC
     var result = rpcFunc(params, function (err, result) {
-        // send result back.  
+        // send result back.
         callback(err, result);
     });
 }
