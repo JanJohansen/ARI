@@ -29,6 +29,7 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
 
             $scope.logSelected = function (logName) {
                 logRequest.name = logName;
+                console.log("Requesting log from", logRequest.startTime, "to", logRequest.endTime);
                 ari.callFunction("ari.getLog", logRequest, function (err, result) {
                     if (err) { console.log(err); return; }
                     var entries = result.split("\n");
@@ -69,8 +70,8 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
                 }
                 else if (name == "yesterday") {
                     var d = new Date();
-                    logRequest.startTime = new Date(d.getFullYear(), d.getMonth(), d.getDay(), d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
-                    logRequest.endTime = new Date(d.getFullYear(), d.getMonth(), d.getDay(), d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
+                    logRequest.startTime = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1, d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
+                    logRequest.endTime = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1, d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
                     logRequest.startTime.setHours(0, 0, 0, 0);
                     logRequest.endTime.setHours(23, 59, 59, 999);
                     $scope.logSelected($scope.logName);
