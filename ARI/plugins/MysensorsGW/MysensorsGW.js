@@ -509,14 +509,18 @@ ari.onconnect = function (result) {
             }
             console.log("Request: " + node.name + "." + sensor.name + "." + sensor.setReqTypes[msMsg.subType].name);
 
-            ari.getValue("MysensorsGW." + node.name + "." + sensor.name + "." + sensor.setReqTypes[msMsg.subType].name, function (err, name, value) {
-                var receiver = name;
-                console.log("GETVALUE:", value + " SendTo: " + receiver.name);
-                if ( value == undefined ) {
-                  console.log("Value undefined");
+            ari.getValue("MysensorsGW." + node.name + "." + sensor.name + "." + sensor.setReqTypes[msMsg.subType].name, function (err, result) {
+                //console.log("GETVALUE:", result.value + " SendTo: " + result.name);
+                if (err == null) {
+                  if (result.value && result.name) {
+                    sendDataToNode(result.name, result.value);
+                  }
+                  else {
+                    console.log("Value not defined");
+                  }
                 }
                 else {
-                  sendDataToNode(receiver.name, value);
+                  console.log("Error: " + err);
                 }
             });
           } else {
