@@ -147,12 +147,12 @@ ari.onconnect = function (result) {
     ari.registerFunction("setConfig", { description: "Set configuration data for device." }, function (pars, callback) {
         console.log("Storing new configuration.");
         delete pars.portOptions;
-        
+
         if (pars.portName != config.portName) {
             console.log("Selecting new serial port:", pars.portName);
             openPort(pars.portName);
         }
-        
+
         config = pars;
         configStore.save(config);
 
@@ -313,7 +313,7 @@ ari.onconnect = function (result) {
           return; // Return message is handled
         }
         if (msMsg.nodeId == 255) {
-          return; // Do not handle 
+          return; // Do not handle
         }
         if (!config.nodes) config.nodes = {};
         console.log("Messages: "+ parts);
@@ -509,8 +509,19 @@ ari.onconnect = function (result) {
             }
             console.log("Request: " + node.name + "." + sensor.name + "." + sensor.setReqTypes[msMsg.subType].name);
 
-            ari.getValue(node.name + "." + sensor.name + "." + sensor.setReqTypes[msMsg.subType].name, function (err, name, value) {
-                console.log("GETVALUE:", value + " SendTo: " + name);
+            ari.getValue("MysensorsGW." + node.name + "." + sensor.name + "." + sensor.setReqTypes[msMsg.subType].name, function (err, result) {
+                //console.log("GETVALUE:", result.value + " SendTo: " + result.name);
+                if (err == null) {
+                  if (result.value && result.name) {
+                    sendDataToNode(result.name, result.value);
+                  }
+                  else {
+                    console.log("Value not defined");
+                  }
+                }
+                else {
+                  console.log("Error: " + err);
+                }
             });
           } else {
             if(!node.sensors[msMsg.sensorId].setReqTypes) {
