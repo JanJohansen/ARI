@@ -66,7 +66,17 @@ module.exports = {
 
     // You can protect the user interface with a userid and password by using the following property.
     // The password must be an md5 hash  eg.. 5f4dcc3b5aa765d61d8327deb882cf99 ('password')
-    //httpAdminAuth: {user:"user",pass:"5f4dcc3b5aa765d61d8327deb882cf99"},
+    //httpAdminAuth: { user: "user", pass: "5f4dcc3b5aa765d61d8327deb882cf99" },
+    
+    
+    adminAuth: {
+        type: "credentials",
+        users: [{
+                username: "admin",
+                password: "$2a$08$diKBCeylKsIAS2AbvbXuRurIa4JWOF8.GmyufQavSobcy7Bpqs2nS",
+                permissions: "*"
+            }]
+    },
 
     // Some nodes, such as HTTP In, can be used to listen for incoming http requests.
     // By default, these are served relative to '/'. The following property
