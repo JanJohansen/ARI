@@ -1,0 +1,153 @@
+<div id="flexcontainer" ng-controller="overviewController">
+
+<link href="/views/floor/style.css" rel="stylesheet" />
+  <!-- Load c3.css -->
+  <link href="/views/overview/c3.css" rel="stylesheet" type="text/css">
+<style>
+    #flexcontainer {
+        display: flex;
+        flex-direction: column;
+        background-color: white;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 1px;
+    }
+
+    #content {
+        flex: 1 1 auto;
+        min-height: 1px;
+        position: relative;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 1px;
+        /*background-image: url("views/floor/Floorplan.png");
+        background-size: contain;
+        background-repeat:no-repeat;*/
+    }
+
+    /*#floorplan{
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }*/
+    .abs {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 1px;
+    }
+
+    .floorplan{
+        /*zoom:5;*/
+        max-width: 100%;
+        max-height: 100%;
+        min-height: 1px;
+    }
+    .onFloorplan{
+        position:absolute;
+    }
+
+    .arc {
+        fill: blue;
+    }
+</style>
+<!-- Load d3.js and c3.js -->
+<script src="/views/overview/d3.min.js" charset="utf-8"></script>
+<script src="/views/overview/c3.min.js"></script>
+
+    <ari-value name="ari.time" value="time" ></ari-value>
+    <ari-value name="MysensorsGW.WaterMeter.Water.V_VAR1" value="SHum"></ari-value>
+    <ari-value name="MysensorsGW.WaterMeter.Water.V_VAR1" value="STemp"></ari-value>
+    <br><br>
+    <div id="chart"></div>
+    <center>
+      <select ng-model="selected" ng-change="update()" style="max-width:50%;">
+        <option ng-repeat="log in logs" value="{{log}}">{{log}}</option>
+      </select>
+    </center>
+    <br>
+    <div id="log"></div>
+
+
+    <script>
+      var chart = c3.generate({
+          bindto: '#chart',
+          data: {
+              columns: [
+                  ['data', 0]
+              ],
+              type: 'gauge',
+              onclick: function (d, i) { console.log("onclick", d, i); },
+              onmouseover: function (d, i) { console.log("onmouseover", d, i); },
+              onmouseout: function (d, i) { console.log("onmouseout", d, i); }
+          },
+          gauge: {
+      //        label: {
+      //            format: function(value, ratio) {
+      //                return value;
+      //            },
+      //            show: false // to turn off the min/max labels.
+      //        },
+      //    min: 0, // 0 is default, //can handle negative min e.g. vacuum / voltage / current flow / rate of change
+      //    max: 100, // 100 is default
+      //    units: ' %',
+      //    width: 39 // for adjusting arc thickness
+          },
+          color: {
+              pattern: ['#FF0000', '#60B044', '#F97600', '#FF0000'], // the three color levels for the percentage values.
+              threshold: {
+      //            unit: 'value', // percentage is default
+      //            max: 200, // 100 is default
+                  values: [30, 50, 60, 100]
+              }
+          },
+          size: {
+              height: 100
+          }
+      });
+
+      var log = c3.generate({
+          bindto: '#log',
+          data: {
+            json: [
+                {x: '1450118700126', value: 200}
+            ],
+            keys: {
+                x: 'x', // it's possible to specify 'x' when category axis
+                value: ['value']
+            }
+          },
+          subchart: {
+              show: true,
+              size: {
+                height: 20
+              }
+          },
+          size: {
+            height: 480
+          },
+          axis: {
+              x: {
+                  tick: {
+                      format: function (x) { return new Date(x).toISOString().replace(/T/, ' ').replace(/\..+/, ''); },
+                      rotate: 75,
+                      count: 50
+                  }
+              }
+          },
+          zoom: {
+              enabled: true
+          },
+          transition: {
+              duration: 100
+          }
+      });
+    </script>
+
+</div>
