@@ -8,7 +8,7 @@ ariModule.register.controller('overviewController', ["$scope", "$interval", 'Ari
 
       var ari = AriClient.create("ari_clients");
 
-      watchValue("MysensorsGW.WaterMeter.Water.V_VAR1", chart);
+      watchValue("MysensorsGW.VærelseVand.Humdity.V_HUM", chart);
 
       function watchValue(clientName, theChart) {
         ari.watchValue(clientName, function (path, value) {
