@@ -2,7 +2,7 @@
 
 var ariModule = angular.module('ari');
 ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriClient',
-    function ($scope, $interval, AriClient) {
+        function ($scope, $interval, AriClient) {
         
         var ari = AriClient.create("ari_clients");
         ari.onconnect = function (result) {
@@ -29,24 +29,49 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
 
             $scope.logSelected = function (logName) {
                 logRequest.name = logName;
+                
                 console.log("Requesting log from", logRequest.startTime, "to", logRequest.endTime);
                 ari.callFunction("ari.getLog", logRequest, function (err, result) {
                     if (err) { console.log(err); return; }
                     var entries = result.split("\n");
                     var data = [];
+                    var trace = {
+                        x: [],
+                        y: [],
+                        type: 'scatter',
+                        name: "Trace 1"
+                    };
                     entries.forEach(function (entry) {
                         var split = entry.indexOf(",");
                         if (split == -1) return;    // This is like "continue"!!!
                         var time = +entry.substring(0, split);
                         var value = JSON.parse(entry.substring(split + 1));
                         //data.push({ "time": new Date(time), "value": value });
-                        data.push({ "time": time, "value": value });
+                        //data.push({ "time": time, "value": value });
+                        trace.x.push(new Date(time));
+                        trace.y.push(value);
                     });
+                    
+                    $scope.data = [trace];
+                    $scope.layout = {
+                        title: 'ARI, value-log.',
+                        xaxis: {
+                            title: 'Time'
+                        },
+                        yaxis: {
+                            title: 'Values'
+                        }
+                    };
+                    $scope.options = { showLink: false, displayLogo: false };
+                    $scope.movePoint = function () {
+                        $scope.data[0].y[4]++;
+                    }
+
 
                     $scope.logName = logName;
-                    $scope.data = data;
+                    //$scope.data = data;
                     $scope.$apply();    // make sure nGular treats the update!
-                
+
 /*                if (!$scope.clientInfo.values) $scope.clientInfo.values = {};
                 //var lscope = $scope;
                 ari.subscribe(clientName + ".*", function (path, value) {
@@ -75,7 +100,22 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
                     logRequest.startTime.setHours(0, 0, 0, 0);
                     logRequest.endTime.setHours(23, 59, 59, 999);
                     $scope.logSelected($scope.logName);
+                } else if (name == "week") {
+                    var d = new Date();
+                    logRequest.startTime = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7, d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
+                    logRequest.endTime = new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
+                    logRequest.startTime.setHours(0, 0, 0, 0);
+                    logRequest.endTime.setHours(23, 59, 59, 999);
+                    $scope.logSelected($scope.logName);
+                } else if (name == "month") {
+                    var d = new Date();
+                    logRequest.startTime = new Date(d.getFullYear(), d.getMonth() - 1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
+                    logRequest.endTime = new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
+                    logRequest.startTime.setHours(0, 0, 0, 0);
+                    logRequest.endTime.setHours(23, 59, 59, 999);
+                    $scope.logSelected($scope.logName);
                 }
+
             }
         };
         

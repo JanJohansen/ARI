@@ -48,8 +48,9 @@
                         <button type="button" class="btn btn-default" ng-click="setPeriod('month')">This Month</button>
                     </div>
                 </div>
-                <div style="display: block; height:600px;">
-                    <style>
+                
+                    <plotly style="width:100%; height:600px;" data="data" layout="layout" options="options"></plotly>
+                    <!--<style>
                         .axis path {
                             fill: none;
                             stroke: #777;
@@ -60,8 +61,8 @@
                             font-size: 13px;
                         }
                     </style>
-                    <d3-lines style="display: block;height:100%;" data="data"></d3-lines>
-                </div>
+                    <d3-lines style="display: block;height:100%;" data="data"></d3-lines>-->
+                
             </div>
         </div>
     </div>

@@ -14,10 +14,10 @@ app.directive('d3Lines', [
             link: function (scope, iElement, iAttrs) {
                 console.log("link  d3");
                 
-                var svg = d3.select(iElement[0])// Select "self"element.
-                    .append("svg")// Prepare SVG content
-                    .attr("width", "100%")         // at full width.
-                    .attr("height", "100%");         // at full width.
+                var svg = d3.select(iElement[0])    // Select "self"element.
+                    .append("svg")                  // Prepare SVG content
+                    .attr("width", "100%")          // at full width.
+                    .attr("height", "100%");        // at full width.
                 
                 // on window resize, re-render d3 canvas
                 window.onresize = function () {
@@ -81,6 +81,19 @@ app.directive('d3Lines', [
                     var yAxis = d3.svg.axis()
                         .scale(yScale)
                         .orient("left");
+            
+                    function zoomed() {
+                        svg.select(".x.axis").call(xAxis);
+                        svg.select(".y.axis").call(yAxis);
+                    }
+                    
+                    var zoom = d3.behavior.zoom()
+                        .x(xScale)
+                        .y(yScale)
+                        .scaleExtent([1, 32])
+                        .on("zoom", zoomed);
+                    
+                    svg.call(zoom);
                     
                     svg.append("svg:g")
                         .attr("class", "x axis")
