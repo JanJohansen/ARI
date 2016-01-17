@@ -151,7 +151,8 @@ AriServerServer.prototype._webcall_listLogs = function (parameters, callback) {
 /*****************************************************************************/
 // LOGGING
 AriServerServer.prototype._webcall_getLog = function (parameters, callback) {
-    
+    var self = this;
+
     if (!parameters.name) { callback("Error: Missing name!", null); return; }
     
     var fileName = parameters.name;
@@ -162,40 +163,10 @@ AriServerServer.prototype._webcall_getLog = function (parameters, callback) {
 
     var logsPath = __dirname + "/" + this._server.loggingConfig.logFilePath;
     
-    // TODO: implement time limits for getting logs, and combine multiple files into one reply!
-    /*
-    fs.open(logsPath + "/" + fileName, "r", function (err, fd) {
-        if (err) { callback("Error when trying to open log file."); return; }
-        
-        fs.fstat(fd, function (err, stats) {
-            var fileSize = stats.size;
-            var chunkSize = 512;
-            var buffer = new Buffer(chunkSize);
-            var bytesRead = 0;
-            
-            var lowPos = 0;
-            var highPos = fileSize;
+    
+    // TODO: Combine multiple files into one reply!
 
-            var position = (lowPos + highPos) / 2;  // Go to middle...
-            // Find start of next line.
-            fs.read(fd, buffer, 0, chunkSize, position, function (err, bytesRead, buffer) {
-                var nlPos = buffer.indexOf('\n');
-                if (nlPos == -1) { callback("Error when trying to seach log file.!"); return; }
-                nlPos += 1;
-
-                // Get next line - check timestamp
-                var str = bufffer.toString('utf8', nlPos, nlPos + 50); // outputs: abcde
-                console.log("Search:", str);
-
-                var timeStamp = parseInt(str);
-
-                if (timeStamp > startTime) highPos = nlPos;
-                else lowPos = nlPos;
-            });
-        });
-    });
-    */
-
+    // Transfer entries in log file within time limits     
     fs.readFile(logsPath + "/" + fileName, "utf8", function (err, data) {
         if (err) callback("Error when reading log file.", null);
         
@@ -212,6 +183,15 @@ AriServerServer.prototype._webcall_getLog = function (parameters, callback) {
             else data += line + '\n';
             if (ts < endTime) endLine = ts;
             else break;
+        }
+        
+        // Add log entries in memmory if any...
+        var name = fileName.substring(0, fileName.lastIndexOf(".log")).replace("_", "/");
+        var log = self._server.logs[name];   // Get reference to log if any entries exists in memmory...
+        if (log) {
+            for (var i = 0; i < log.length; i++) {
+                data += JSON.stringify(log[i].t) + "," + JSON.stringify(log[i].v) + "\n";
+            }
         }
         
         callback(null, data);
