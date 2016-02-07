@@ -30,12 +30,12 @@ sudo apt-get install npm
 Select a folder on the raspberry pi to install ARI and run the following command
 ```
 git clone https://github.com/JanJohansen/ARI.git
+cd ARI
+cd ARI
 ```
 
 Run `npm install` to install the necessary packages required by ARI in the following folders
 ```
-cd ARI
-cd ARI
 npm install
 
 npm install www/app
