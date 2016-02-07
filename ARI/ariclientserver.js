@@ -11,68 +11,67 @@ var AriClientServer = module.exports.AriClientServer = function (options) {
     this._subscriptions = {};
     this._nextReqId = 0;
     this.clientModel = null;    // This will be set after authentication.
+    
+    // define local members to ensure correct "this" context in prototype functions!
+    this.handleMessage = function (msg) { self._handleMessage(msg) };
+    this.handleClose = function () { self._handleClose(); };
+    this.onSendMessage = function () { return; };
+}
 
-    //this._server.clients.push(this);   // Put into list of connected clients.
 
-    this._ws.on("message", function (message) {
-        // !!! USE "SELF" !!!
+AriClientServer.prototype._handleMessage = function (message) {
+    // DEBUG!
+    console.log('-->', message);
+    
+    var self = this;
 
-        // DEBUG!
-        //console.log('-->', message);
+    try { var msg = JSON.parse(message); }
+    catch (e) {
+        console.log("Error: Illegal JSON in message! - Ignoring.", message);
+        //websocket.close(1002, "Protocol error.");
+        //handleClientDisconnect();
+        return;
+    }
 
-        try { var msg = JSON.parse(message); }
-        catch (e) {
-            console.log("Error: Illegal JSON in message! - Ignoring...");
-            websocket.close(1002, "Protocol error.");
-            handleClientDisconnect();
-            return;
-        }
+    if ("req" in msg) {
+        // Request message.
+        var cmd = msg.cmd;
+        if (!cmd) { console.log("Error: Missing comand in telegram! - Ignoring..."); return; };
 
-        if ("req" in msg) {
-            // Request message.
-            var cmd = msg.cmd;
-            if (!cmd) { console.log("Error: Missing comand in telegram! - Ignoring..."); return; };
-
-            var functionName = "_webcall_" + cmd;
-            if (functionName in self) {
-                // Requested function name exists in this object. Call it...
-                self[functionName](msg.pars, function (err, result) {
-                    // reply with results...
-                    var res = {};
-                    res.res = msg.req;
-                    res.err = err;
-                    res.result = result;
-                    self._ws.send(JSON.stringify(res, self.jsonReplacer));
-                });
-            } else {
-                console.log("Error: Trying to call unknown webcall: ", functionName);
-            }
-        } else if ("res" in msg) {
-            // Response message.
-            var responseId = msg.res;
-            // Get stored callback from calling function.
-            msg.callback = self._pendingCallbacks[msg.res];
-            delete self._pendingCallbacks[msg.res];
-            msg.callback(msg.err, msg.result);
+        var functionName = "_webcall_" + cmd;
+        if (functionName in self) {
+            // Requested function name exists in this object. Call it...
+            self[functionName](msg.pars, function (err, result) {
+                // reply with results...
+                var res = {};
+                res.res = msg.req;
+                res.err = err;
+                res.result = result;
+                self.onSendMessage(JSON.stringify(res, self.jsonReplacer));
+            });
         } else {
-            // Notofication message.
-            var cmd = msg.cmd;
-            if (!cmd) { console.log("Error: Missing comand in telegram! - Ignoring..."); return; };
-
-            var functionName = "_webnotify_" + cmd;
-            if (functionName in self) {
-                // Requested notification function name exists in this object. Call it...
-                self[functionName](msg.pars);
-            }
+            console.log("Error: Trying to call unknown webcall: ", functionName);
         }
-    });
+    } else if ("res" in msg) {
+        // Response message.
+        var responseId = msg.res;
+        // Get stored callback from calling function.
+        msg.callback = self._pendingCallbacks[msg.res];
+        delete self._pendingCallbacks[msg.res];
+        msg.callback(msg.err, msg.result);
+    } else {
+        // Notofication message.
+        var cmd = msg.cmd;
+        if (!cmd) { console.log("Error: Missing comand in telegram! - Ignoring..."); return; };
 
-    this._ws.on("close", function () {
-        // !!! USE SELF
-        self.handleClientDisconnect();
-        console.log("Client disconnected: ", self._givenName);
-    });
-};
+        var functionName = "_webnotify_" + cmd;
+        if (functionName in self) {
+            // Requested notification function name exists in this object. Call it...
+            self[functionName](msg.pars);
+        }
+    }
+}
+
 
 AriClientServer.prototype.jsonReplacer = function (key, value) {
     //console.log("-- ", key, ",", value);
@@ -91,17 +90,20 @@ AriClientServer.prototype.handleClientDisconnect = function () {
             delete this._server.clientModels[this.name];
         }
     }
-    else {
-        // persist, and mark as offline!
+    
+    // Mark as offline!
+    if (this.clientModel) {
         this.clientModel.online = false;
         delete this.clientModel.__clientServer;
     }
 }
 
-// Send msg to client
-AriClientServer.prototype._wsSend = function (msg) {
-    this._ws.send(msg);
+
+AriClientServer.prototype._handleClose = function () {
+    this.handleClientDisconnect();
 }
+
+
 
 // Call method on client...
 AriClientServer.prototype._call = function (command, parameters, callback) {
@@ -113,7 +115,7 @@ AriClientServer.prototype._call = function (command, parameters, callback) {
     msg.cmd = command;
     msg.pars = parameters;
     this._pendingCallbacks[msg.req] = callback;
-    this._wsSend(JSON.stringify(msg));
+    this.onSendMessage(JSON.stringify(msg));
 }
 
 // Notify client of something. (no return value!)...
@@ -121,7 +123,7 @@ AriClientServer.prototype._notify = function (command, parameters) {
     var msg = {};
     msg.cmd = command;
     msg.pars = parameters;
-    this._wsSend(JSON.stringify(msg));
+    this.onSendMessage(JSON.stringify(msg));
 }
 
 /*****************************************************************************/
@@ -160,7 +162,7 @@ AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
                     "name": this.name,
                     "created": new Date().toISOString(),
                     "online": true,
-                    "ip": this._ws._socket.remoteAddress,
+                    //"ip": this._ws._socket.remoteAddress, // TODO: Get IP from TCP socket or WebSocket...
                     "__clientServer": this,
                     "values": {},
                     "functions": {}
@@ -239,6 +241,11 @@ AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
 AriClientServer.prototype._webnotify_SETCLIENTINFO = function (clientInfo) {
     console.log("_webcall_CLIENTINFO", clientInfo);
 
+    if (!this.clientModel) {
+        console.log("ERROR trying to call SetClientInfo before calling Connect!");
+        return;
+    }
+
     // clientInfo has already been JSON.parsed!
 
     // TODO: Merge client info with present info... Remove values, functions, etc. not in Info from client.
@@ -247,7 +254,7 @@ AriClientServer.prototype._webnotify_SETCLIENTINFO = function (clientInfo) {
             if (!clientInfo.values[key]) {
                 // value removed from clientInfo - remove from clientModel.
                 delete this.clientModel.values[key];
-}
+            }
         }
     }
     if (clientInfo.functions) {

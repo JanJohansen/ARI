@@ -1,0 +1,195 @@
+<div id="flexcontainer" ng-controller="UIBuilderController">
+
+    <link href="style.css" rel="stylesheet" />
+    <script src="../../node_modules/interact.js/dist/interact.min.js"></script>
+    <style>
+        #flexcontainer {
+            display: block;
+            background-color: black;
+            flex-direction: column;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 1px;
+        }
+
+        /*Custom font for numbers*/
+        @font-face {
+	        font-family: "bebas";
+	        src: url("http://thecodeplayer.com/uploads/fonts/BebasNeue.otf");
+        }
+    </style>
+
+    <ari-value name="ari.time" value="time" ></ari-value>
+    <ari-value name="GW433.Garage.temperature" value="GTemp" ></ari-value>
+    <ari-value name="GW433.Livingroom.temperature" value="LTemp"></ari-value>
+
+    <h1 class="uielement" style="display:inline-block;">{{time}}</h1>
+    <h2 class="uielement" style="display:inline-block;">{{LTemp}}</h2>
+    <h3 class="uielement" style="display:inline-block;">{{GTemp}}</h3>
+
+    <canvas id="myCanvas" class="uielement" width=100 height=100 style="display:inline-block;" ></canvas>
+    <button class="uielement" style="display:inline-block;">Test</button>
+
+    <canvas id="gauge" width="300" height="300" style="display:inline-block;" class="uielement" ></canvas>
+
+
+    <script>
+        var canvas = document.getElementById('myCanvas');
+        var context = canvas.getContext('2d');
+        var centerX = canvas.width / 2;
+        var centerY = canvas.height / 2;
+        var radius = canvas.width / 3;
+
+        context.beginPath();
+        context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+        //context.fillStyle = '#ff0000';
+        //context.fill();
+        context.lineWidth = 5;
+        context.strokeStyle = '#ff0000';
+        context.shadowColor = '#ff0000';
+        context.shadowBlur = 40;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        context.stroke();
+
+        // target elements with the "draggable" class
+        interact('.uielement')
+        .draggable({
+            // enable inertial throwing
+            inertia: true,
+            // keep the element within the area of it's parent
+            restrict: {
+                restriction: "parent",
+                endOnly: true,
+                elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+            },
+            // enable autoScroll
+            autoScroll: true,
+
+            // call this function on every dragmove event
+            onmove: dragMoveListener,
+            // call this function on every dragend event
+            onend: function (event) {
+                var textEl = event.target.querySelector('p');
+
+                textEl && (textEl.textContent =
+                    'moved a distance of '
+                    + (Math.sqrt(event.dx * event.dx +
+                                event.dy * event.dy) | 0) + 'px');
+            }
+        });
+
+        function dragMoveListener(event) {
+            var target = event.target,
+                // keep the dragged position in the data-x/data-y attributes
+                x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+                y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+            // translate the element
+            target.style.webkitTransform =
+            target.style.transform =
+            'translate(' + x + 'px, ' + y + 'px)';
+
+            // update the posiion attributes
+            target.setAttribute('data-x', x);
+            target.setAttribute('data-y', y);
+        }
+
+        // this is used later in the resizing and gesture demos
+        window.dragMoveListener = dragMoveListener;
+
+
+        // Gauge stuff ********************************************************
+//        window.onload = function () {
+            //canvas initialization
+            var canvas = document.getElementById("gauge");
+            var ctx = canvas.getContext("2d");
+            //dimensions
+            var W = canvas.width;
+            var H = canvas.height;
+            //Variables
+            var degrees = 0;
+            var new_degrees = 0;
+            var difference = 0;
+            var color = "yellow"; //green looks better to me
+            var bgcolor = "#222222";
+            var text;
+            var animation_loop, redraw_loop;
+
+            function init() {
+                //Clear the canvas everytime a chart is drawn
+                ctx.clearRect(0, 0, W, H);
+
+                //Background 360 degree arc
+                ctx.beginPath();
+                ctx.strokeStyle = bgcolor;
+                ctx.lineWidth = 30;
+                ctx.arc(W / 2, H / 2, 100, 0, Math.PI * 2, false); //you can see the arc now
+
+                ctx.shadowColor = '#000088';
+                ctx.shadowBlur = 100;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+
+                ctx.stroke();
+
+                //gauge will be a simple arc
+                //Angle in radians = angle in degrees * PI / 180
+                var radians = degrees * Math.PI / 180;
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 30;
+                //The arc starts from the rightmost end. If we deduct 90 degrees from the angles
+                //the arc will start from the topmost end
+                ctx.arc(W / 2, H / 2, 100, 0 - 90 * Math.PI / 180, radians - 90 * Math.PI / 180, false);
+                //you can see the arc now
+                ctx.stroke();
+
+                //Lets add the text
+                ctx.fillStyle = color;
+                //ctx.font = "50px bebas";
+                ctx.font = "50px Impact";
+                text = Math.floor(degrees / 360 * 100) + "%";
+                //Lets center the text
+                //deducting half of text width from position x
+                text_width = ctx.measureText(text).width;
+                //adding manual value to position y since the height of the text cannot
+                //be measured easily. There are hacks but we will keep it manual for now.
+                ctx.fillText(text, W / 2 - text_width / 2, H / 2 + 15);
+            }
+
+            function draw() {
+                //Cancel any movement animation if a new chart is requested
+                if (typeof animation_loop != undefined) clearInterval(animation_loop);
+
+                //random degree from 0 to 360
+                new_degrees = Math.round(Math.random() * 360);
+                difference = new_degrees - degrees;
+                //This will animate the gauge to new positions
+                //The animation will take 1 second
+                //time for each frame is 1sec / difference in degrees
+                animation_loop = setInterval(animate_to, 1000 / difference);
+            }
+
+            //function to make the chart move to new degrees
+            function animate_to() {
+                //clear animation loop if degrees reaches to new_degrees
+                if (degrees == new_degrees)
+                    clearInterval(animation_loop);
+
+                if (degrees < new_degrees)
+                    degrees++;
+                else
+                    degrees--;
+
+                init();
+            }
+
+            //Lets add some animation for fun
+            draw();
+            redraw_loop = setInterval(draw, 2000); //Draw a new chart every 2 seconds
+       // }
+    </script>
+</div>

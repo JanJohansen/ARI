@@ -168,7 +168,10 @@ AriServerServer.prototype._webcall_getLog = function (parameters, callback) {
 
     // Transfer entries in log file within time limits     
     fs.readFile(logsPath + "/" + fileName, "utf8", function (err, data) {
-        if (err) callback("Error when reading log file.", null);
+        if (err) {
+            callback("Error when reading log file.", null);
+            return;
+        }
         
         var lines = data.split("\n");
         var startLine = 0;

@@ -4,8 +4,34 @@ var ariModule = angular.module('ari');
 ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriClient',
         function ($scope, $interval, AriClient) {
         
+        // Prepare data for graph.
+        $scope.data = [];
+        $scope.layout = {
+            //title: 'ARI, value-log.',
+            autosize: true,
+            height: 800,
+            margin: {
+                l: 50,
+                r: 50,
+                b: 50,
+                t: 50//,
+                //pad: 4
+            },
+            xaxis: {
+                title: 'Time'
+            }
+            /*yaxis: {
+                title: 'Values'
+            }*/
+        };
+        $scope.options = { showLink: false, displayLogo: false };
+        $scope.clearData = function () {
+            $scope.data = [];
+        }
+
         var ari = AriClient.create("ari_clients");
         ari.onconnect = function (result) {
+
             var clientName = result.name;
             console.log("Client connected as \"" + ari.name + "\"");
             
@@ -34,12 +60,11 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
                 ari.callFunction("ari.getLog", logRequest, function (err, result) {
                     if (err) { console.log(err); return; }
                     var entries = result.split("\n");
-                    var data = [];
                     var trace = {
                         x: [],
                         y: [],
                         type: 'scatter',
-                        name: "Trace 1"
+                        name: logName
                     };
                     entries.forEach(function (entry) {
                         var split = entry.indexOf(",");
@@ -52,41 +77,43 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
                         trace.y.push(value);
                     });
                     
-                    $scope.data = [trace];
-                    $scope.layout = {
-                        title: 'ARI, value-log.',
-                        xaxis: {
-                            title: 'Time'
-                        },
-                        yaxis: {
-                            title: 'Values'
+                    var found = false;
+                    for (var i = 0; i < $scope.data.length; i++) {
+                        if ($scope.data[i].name == logName) {
+                            $scope.data[i] = trace;   // Update data.
+                            found = true;
+                            break;
                         }
-                    };
-                    $scope.options = { showLink: false, displayLogo: false };
-                    $scope.movePoint = function () {
-                        $scope.data[0].y[4]++;
                     }
+                    if (!found) $scope.data.push(trace);    // Add trace for selected data to graph.
 
-
-                    $scope.logName = logName;
-                    //$scope.data = data;
+                    if ($scope.data.length == 1) $scope.logName = logName;
+                    else $scope.logName = "Multi-value graph.";
                     $scope.$apply();    // make sure nGular treats the update!
 
-/*                if (!$scope.clientInfo.values) $scope.clientInfo.values = {};
-                //var lscope = $scope;
-                ari.subscribe(clientName + ".*", function (path, value) {
-                    console.log("->", path, "=", value);
-                    // Remove client name from valuename since we will show it as a "child" of the client.
-                    path = path.substring(path.indexOf(".") + 1);
-                    if (!$scope.clientInfo.values[path]) $scope.clientInfo.values[path] = {};
-                    $scope.clientInfo.values[path].value = value;
-                    $scope.$apply();
-                });*/
+                    // TODO: Subscribe to selected data and update real time...
+
+
+/*                  ari.subscribe(clientName + ".*", function (path, value) {
+                        console.log("->", path, "=", value);
+                        // Remove client name from valuename since we will show it as a "child" of the client.
+                        path = path.substring(path.indexOf(".") + 1);
+                        if (!$scope.clientInfo.values[path]) $scope.clientInfo.values[path] = {};
+                        $scope.clientInfo.values[path].value = value;
+                        $scope.$apply();
+                    });
+ */
                 });
             }
             
             $scope.setPeriod = function (name) {
-                if (name == "today") {
+                if (name == "24h") {
+                    var d = new Date();
+                    logRequest.startTime = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1, d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
+                    logRequest.endTime = d;
+                    $scope.logSelected($scope.logName);
+                }
+                else if (name == "today") {
                     logRequest.startTime = new Date();
                     logRequest.endTime = new Date();
                     logRequest.startTime.setHours(0, 0, 0, 0);

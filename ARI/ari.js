@@ -6,6 +6,7 @@ var AriClientServer = require("./ariclientserver.js").AriClientServer;
 var AriServerServer = require("./ariserverserver.js").AriServerServer;
 var ConfigStore = require("./configStore.js");
 var fs = require('fs');
+var net = require('net');
 
 var Ari = module.exports.Ari = function (options) {
     var self = this;
@@ -38,29 +39,75 @@ var Ari = module.exports.Ari = function (options) {
     // Save log every at intervals
     setInterval(this.saveLog.bind(this), this.loggingConfig.saveInterval * 60 * 1000);
 
-    // Persisted client information indexed by client.givenName. Contains infor about connection state, etc...
-    // ari: represents the server API, etc.
-    var serverServer = new AriServerServer({ "ariServer": this, "name": "ari" });   
+    // serverServer represents the server API, etc.
+    var serverServer = new AriServerServer({ "ariServer": this, "name": "ari" });
         
     this._wss.on('connection', function connection(ws) {
         // Use "SELF!
         // Create AriClientServer to handle serving of this client.
         var clientServer = new AriClientServer({ ariServer: self, websocket: ws });
+        ws.on("close", clientServer.handleClose);
+        ws.on("error", clientServer.handleClose);
+        ws.on("message", clientServer.handleMessage);
+        clientServer.onSendMessage = function (msg) { 
+            if (ws.readyState !== ws.OPEN) {
+                console.log('ERROR!!! - WS not opened');
+            }
+            else ws.send(msg);
+        }
     });
+    
+    
+    //-------------------------------------------------------------------------
+    // Start a TCP Server
+    var server = net.createServer();
+    server.listen(5000);
+    console.log('TcpServer listening on ' + server.address().address + ':' + server.address().port);
+    server.on('connection', function (socket) {
+        
+        console.log("TcpServer:", socket.name, "connected.");
+        var clientServer = new AriClientServer({ ariServer: self, websocket: socket });
+        socket.on("end", clientServer.handleClose);
+        socket.on("error", clientServer.handleClose);
+        clientServer.onSendMessage = function (msg) {
+            socket.write(msg);
+        }
+        
+        var message = "";
+        //var messagePos = 0;
+        var bCount = 0;
+        var msg = undefined;
+        var brCount = 0;
+        socket.on("data", function (data){
+            var data = data.toString();
+            //console.log("TCPData:", data.toString());
+            for (var i = 0; i < data.length; i++) {
+                if (data[i] == '{') brCount++;
+                else if (data[i] == '}') brCount--;
+                if (brCount == 0) {
+                    message += data.substring(0, i+1);
+                    data = data.slice(i + 1);
+                    i = -1; // Will be incremented to 0 next for loop!
 
-    // DEBUG
-    /*Object.observe(this.clientModels, function (changes) {
-        changes.forEach(function (change) {
-            console.log("--Observed clientModels:", change.type, change.name);
-            if (change.type == "add") {
-                Object.observe(change.object[change.name].functions, function (changes) {
-                    changes.forEach(function (change) {
-                        console.log("--Observed ?:", change.type, change.name);
-                    });
-                });
+                    try {
+                        msg = JSON.parse(message);
+                    } catch (e) {
+                        console.log("ERROR: Not correctky formatted JSON in message!");
+                    }
+                    
+                    if (msg) {
+                        console.log("Message:", message.toString());
+                        clientServer.handleMessage(message);
+                    }
+                    message = "";
+                    msg = undefined;
+                }
+            }
+            if (brCount != 0) {
+                message += data;    // Inbetween data chunks...
             }
         });
-    });*/
+    });
 };
 
 /*****************************************************************************/
@@ -280,7 +327,8 @@ Ari.prototype.saveLog = function(synchronous) {
 
     for (var key in this.logs) {
         //var fileName = __dirname + "/" + this.loggingConfig.logFilePath + key + "_" + dateString + ".log"; // e.g. "./logs/ari.time_20151001.log"
-        var fileName = __dirname + "/" + this.loggingConfig.logFilePath + key + ".log";
+        var fileName = __dirname + "/" + this.loggingConfig.logFilePath + key.replace("/", "_") + ".log";
+        
         var log = this.logs[key];   // Get reference to log...
         delete this.logs[key];// = [];        // Assign new empty array - this prevents race condition.
         

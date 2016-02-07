@@ -42,14 +42,16 @@
                 <div class="panel-heading">
                     <h3>Graph</h3>
                     <div class="btn-group">
+                        <button type="button" class="btn btn-default" ng-click="setPeriod('24h')">Last 24h</button>
                         <button type="button" class="btn btn-default" ng-click="setPeriod('today')">Today</button>
                         <button type="button" class="btn btn-default" ng-click="setPeriod('yesterday')">Yesterday</button>
                         <button type="button" class="btn btn-default" ng-click="setPeriod('week')">This Week</button>
                         <button type="button" class="btn btn-default" ng-click="setPeriod('month')">This Month</button>
                     </div>
+                    <button type="button" class="btn btn-default" ng-click="clearData()">Clear</button>
                 </div>
                 
-                    <plotly style="width:100%; height:600px;" data="data" layout="layout" options="options"></plotly>
+                    <plotly style="width:100%; height:80vh;" data="data" layout="layout" options="options"></plotly>
                     <!--<style>
                         .axis path {
                             fill: none;

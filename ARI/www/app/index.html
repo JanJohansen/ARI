@@ -14,9 +14,7 @@
         <!--<link rel="stylesheet" href="node_modules/jquery-ui/themes/dark-hive/jquery.ui.theme.css">-->
         
         <script src="node_modules/jquery/dist/jquery.js"></script>
-        <script src="node_modules/jquery-ui/jquery-ui.js"></script>
-        <script src="scripts/jquery.ui.touch-punch.min.js"></script>
-
+        <script src="node_modules/interact.js/dist/interact.min.js"></script>
         <script src="node_modules/bootstrap/dist/js/bootstrap.js"></script>
 
         <script src="node_modules/angular/angular.min.js"></script>
@@ -44,12 +42,14 @@
         <link rel="stylesheet" href="css/ari.css">
 
         <style>
-            #draggable {
-                position: absolute;
-            }
-
             label {
                 cursor: pointer;
+            }
+
+            .TopMost{
+                position: absolute;
+                display: inline-block;
+                z-index: 99999999; 
             }
 
             #menu-toggle {
@@ -71,7 +71,7 @@
     </head>
     <body>
 
-        <div id="draggable" class="TopMost" style="vertical-align:text-top;">
+        <div class="TopMost draggable" style="vertical-align:text-top;">
             <label for="menu-toggle" style="margin:0;"><span style="font-size:2em;" class="glyphicon glyphicon-menu-hamburger fa-5x"></span><span>{{user.name}}</span></label>
             <input id="menu-toggle" type="checkbox"/>
             <div id="menu">
@@ -88,6 +88,8 @@
 
                     <button type="button" class="btn btn-default" style="text-align:left"><a href="#plugins/Node-Red/config"><span class="glyphicon glyphicon-random"></span> Node-Red</a></button>
 
+                    <button type="button" class="btn btn-default" style="text-align:left"><a href="#views/uibuilder"><span class="glyphicon glyphicon-pencil"></span> UI Builder</a></button>
+
                     <!--<button type="button" class="btn btn-default" style="text-align:left"><a href="#views/logs"><span class="glyphicon glyphicon-align-left"></span> Logs</a></button>
                     <button type="button" class="btn btn-default" style="text-align:left"><a href="#views/plugins"><span class="glyphicon glyphicon-plus"></span> Plugins <span class="badge">9</span></a></button>
                     <button type="button" class="btn btn-default" style="text-align:left"><a href="#views/settings"><span class="glyphicon glyphicon-cog"></span> Settings</a></button>-->
@@ -96,7 +98,7 @@
             </div>
         </div>
 
-        <div id="ngView">
+        <div id="ngView" >
             <div ng-view></div>
         </div>
 
@@ -108,8 +110,57 @@
             }
 
             $(function () {
-                $("#draggable").draggable({ containment: "parent" });
+                //*************************************************************
+                // target elements with the "draggable" class
+                interact('.draggable')
+                .draggable({
+                    // enable inertial throwing
+                    inertia: true,
+                    // keep the element within the area of it's parent
+                    restrict: {
+                        restriction: "parent",
+                        endOnly: true,
+                        elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+                    },
+                    // enable autoScroll
+                    autoScroll: true,
 
+                    // call this function on every dragmove event
+                    onmove: dragMoveListener,
+                    // call this function on every dragend event
+                    onend: function (event) {
+                        var textEl = event.target.querySelector('p');
+
+                        textEl && (textEl.textContent =
+                            'moved a distance of '
+                            + (Math.sqrt(event.dx * event.dx +
+                                        event.dy * event.dy) | 0) + 'px');
+                        //event.stopImmediatePropagation();
+                        event.preventDefault();
+                    }
+                });
+
+                function dragMoveListener(event) {
+                    var target = event.target,
+                        // keep the dragged position in the data-x/data-y attributes
+                        x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+                        y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+                    // translate the element
+                    target.style.webkitTransform =
+                    target.style.transform =
+                    'translate(' + x + 'px, ' + y + 'px)';
+
+                    // update the posiion attributes
+                    target.setAttribute('data-x', x);
+                    target.setAttribute('data-y', y);
+                }
+
+                // this is used later in the resizing and gesture demos
+                window.dragMoveListener = dragMoveListener;
+
+                //*************************************************************
+                // Blur background when menu is visible.
                 $("#menu-toggle").change(function () {
                     // Blurrr background of page when menu is active...
 /*                    if (this.checked) {
