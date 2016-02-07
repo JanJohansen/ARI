@@ -37,9 +37,17 @@ Run `npm install` to install the necessary packages required by ARI in the follo
 cd ARI
 cd ARI
 npm install
+
+cd www
+cd app
+npm install
+
+cd ..
+cd ..
 cd plugins
 cd MysensorsGW
 npm install
+
 cd ..
 cd Node-Red
 npm install
