@@ -56,17 +56,17 @@ Open a browser (Chrome) `http://MyRaspberryPIaddress:3000`
 You should now see the start screen for ARI.
 
 # TODO's:
-- [] Authentication + Authorization
-- [] 	User name in menu.
-- []	Use www auth token for websocket.
-- [] Device UI w. pending authorizations
-- [] Admin UI
-- [] Logging UI
-- [] Plugin UI
-- [] mDNS for dicovery (ESP8266)
-- [] Exit fullscreen button.
-- [] Use/support IFrame for views?
-- [] "Ari"-fy javascript object to serve.
+- [ ] Authentication + Authorization
+  - [ ] User name in menu.
+  - [ ]	Use www auth token for websocket.
+- [ ] Device UI w. pending authorizations
+- [ ] Admin UI
+- [ ] Logging UI
+- [ ] Plugin UI
+- [ ] mDNS for dicovery (ESP8266)
+- [ ] Exit fullscreen button.
+- [ ] Use/support IFrame for views?
+- [ ] "Ari"-fy javascript object to serve.
 
 //****************
 DONE: Disconnect ariclient (incl. WebSocket) when closing view.
