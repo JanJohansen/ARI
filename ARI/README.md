@@ -38,21 +38,11 @@ cd ARI
 cd ARI
 npm install
 
-cd www
-cd app
-npm install
+npm install www/app
 
-cd ..
-cd ..
-cd plugins
-cd MysensorsGW
-npm install
+npm install plugins/MysensorsGW
 
-cd ..
-cd Node-Red
-npm install
-cd ..
-cd ..
+npm install plugins/Node-Red
 ```
 
 You are now ready to start ARI for the first time
