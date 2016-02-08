@@ -12,7 +12,7 @@
         <link href="css/bootstrap-theme.min.css" rel="stylesheet" />
         <!--<link href="css/cyborg_bootstrap.min.css" rel="stylesheet" />-->
         <!--<link rel="stylesheet" href="node_modules/jquery-ui/themes/dark-hive/jquery.ui.theme.css">-->
-        
+
         <script src="node_modules/jquery/dist/jquery.js"></script>
         <script src="node_modules/interact.js/dist/interact.min.js"></script>
         <script src="node_modules/bootstrap/dist/js/bootstrap.js"></script>
@@ -20,7 +20,8 @@
         <script src="node_modules/angular/angular.min.js"></script>
         <script src="node_modules/angular-animate/angular-animate.js"></script>
         <script src="node_modules/angular-route/angular-route.js"></script>
-        
+        <script src="node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
+
         <script src="script.min.js"></script>
 
         <!-- Load local ngModules... -->
@@ -32,8 +33,8 @@
 
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <script src="ngPlotly.js"></script>
-        
-        
+
+
         <script src="node_modules/d3/d3.min.js"></script>
         <script src="ngLineChart.js"></script>
         <script src="ngGauge.js"></script>
@@ -49,7 +50,7 @@
             .TopMost{
                 position: absolute;
                 display: inline-block;
-                z-index: 99999999; 
+                z-index: 99999999;
             }
 
             #menu-toggle {
@@ -60,11 +61,11 @@
                 display: none; /* default hide the menu */
                 text-align:left;
             }
-            
+
             #menu-toggle:checked + #menu {
                 display: block; /* Show menu if "invisible checkbox" is checked */
-                -moz-box-shadow: 5px 5px 5px #888; 
-                -webkit-box-shadow: 5px 5px 5px #888; 
+                -moz-box-shadow: 5px 5px 5px #888;
+                -webkit-box-shadow: 5px 5px 5px #888;
                 box-shadow: 5px 5px 20px -5px #555;
             }
         </style>
@@ -77,7 +78,7 @@
             <div id="menu">
                 <div class="btn-group-vertical" role="group">
                     <button id="fs-toggle" onclick="tgglFS()" type="button" class="btn btn-default"><span class="glyphicon glyphicon-fullscreen"></span></button>
-                    
+
                     <button type="button" class="btn btn-default" style="text-align:left"><a href="#plugins/MysensorsGW/settings"><span class="glyphicon glyphicon-wrench"></span> MysensorsGW</a></button>
                     <button type="button" class="btn btn-default" style="text-align:left"><a href="#views/clock"><span class="glyphicon glyphicon-hourglass"></span> Clock</a></button>
                     <button type="button" class="btn btn-default" style="text-align:left"><a href="#views/users"><span class="glyphicon glyphicon-user"></span> Users <span class="badge">3</span></a></button>
@@ -93,7 +94,7 @@
                     <!--<button type="button" class="btn btn-default" style="text-align:left"><a href="#views/logs"><span class="glyphicon glyphicon-align-left"></span> Logs</a></button>
                     <button type="button" class="btn btn-default" style="text-align:left"><a href="#views/plugins"><span class="glyphicon glyphicon-plus"></span> Plugins <span class="badge">9</span></a></button>
                     <button type="button" class="btn btn-default" style="text-align:left"><a href="#views/settings"><span class="glyphicon glyphicon-cog"></span> Settings</a></button>-->
-                    
+
                 </div>
             </div>
         </div>

@@ -1,9 +1,9 @@
 'use strict';
 
 // Declare app level module which depends on views, and components
-var ariModule = angular.module('ari', ['ngRoute', 'ngAnimate']);
+var ariModule = angular.module('ari', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
-ariModule.controller('ariMainController', ['$scope', '$http', 'AriUser', 
+ariModule.controller('ariMainController', ['$scope', '$http', 'AriUser', '$uibModal',
     function ($scope, $http, AriUser) {
         $scope.user = AriUser;
     }
@@ -12,7 +12,7 @@ ariModule.controller('ariMainController', ['$scope', '$http', 'AriUser',
 
 //-----------------------------------------------------------------------------
 // Interceptor to allow authentication on server.
-ariModule.config(['$httpProvider', 
+ariModule.config(['$httpProvider',
     function ($httpProvider) {
         $httpProvider.interceptors.push(function (AriUser) {
             return {
@@ -23,7 +23,7 @@ ariModule.config(['$httpProvider',
                         config.headers.auth = token;
                     }
                     return config;
-                },        
+                },
                 "response": function (response) {
                     //if (response.config.url.indexOf(API) === 0 && response.data.token) { // Limit to aip section???
                     if (response.data.token) {
@@ -62,7 +62,7 @@ ariModule.config(function ($controllerProvider, $compileProvider, $filterProvide
 });
 
 // Routes for "hash"'es.
-ariModule.config(['$routeProvider', 
+ariModule.config(['$routeProvider',
     function ($routeProvider) {
         $routeProvider.
         when('/users', {
@@ -80,19 +80,19 @@ ariModule.config(['$routeProvider',
             },
             resolve: {
                 load: function ($q, $route, $rootScope) {
-                    
+
                     var deferred = $q.defer();
-                    
+
                     var dependencies = [
                         'views/' + $route.current.params.view + '/controller.js'
                     ];
-                    
+
                     $script(dependencies, function () {
                         $rootScope.$apply(function () {
                             deferred.resolve();
                         });
                     });
-                    
+
                     return deferred.promise;
                 }
             }
@@ -103,19 +103,19 @@ ariModule.config(['$routeProvider',
             },
             resolve: {
                 load: function ($q, $route, $rootScope) {
-                    
+
                     var deferred = $q.defer();
-                    
+
                     var dependencies = [
                         "plugins/" + $route.current.params.plugin + "/" + $route.current.params.view + '.js'
                     ];
-                    
+
                     $script(dependencies, function () {
                         $rootScope.$apply(function () {
                             deferred.resolve();
                         });
                     });
-                    
+
                     return deferred.promise;
                 }
             }
