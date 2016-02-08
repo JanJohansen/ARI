@@ -1,8 +1,8 @@
 'use strict';
 
 var ariModule = angular.module('ari');
-ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriClient', "AriUser",
-    function ($scope, AriClient, AriUser) {
+ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriClient', "AriUser", '$uibModal',
+    function ($scope, AriClient, AriUser, $uibModal) {
 
         var ari = AriClient.create("MysensorsGW_Settings");
 
@@ -75,7 +75,32 @@ ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriCl
             }
         };
 
+        //$scope.sensors = ['item1', 'item2', 'item3'];
 
+        $scope.open = function (nodeId) {
+
+          var modalInstance = $uibModal.open({
+            animation: true,
+            templateUrl: 'myModalContent.html',
+            controller: 'ModalInstanceCtrl',
+            size: 'lg', //lg, sm
+            resolve: {
+              sensors: function () {
+                // Provide the necessary data to the
+                var node = $scope.config.nodes[nodeId];
+                $scope.sensors = node.sensors;
+                return $scope.sensors;
+              }
+            }
+          });
+
+          modalInstance.result.then(function (selectedItem) {
+            $scope.selected = selectedItem;
+            console.log("OK pressed in Model");
+          }, function () {
+            console.log("Modal dismissed");
+          });
+        };
 
         $scope.$on('$destroy', function () {
             //if ($scope.clientInfo.name) ari.unsubscribe($scope.clientInfo.name + ".*");
@@ -84,3 +109,23 @@ ariModule.register.controller('MysensorsGWSettingsController', ['$scope', 'AriCl
         });
     }
 ]);
+
+// Please note that $uibModalInstance represents a modal window (instance) dependency.
+// It is not the same as the $uibModal service used above.
+
+angular.module('ari').register.controller('ModalInstanceCtrl', function ($scope, $uibModalInstance, sensors) {
+
+  $scope.sensors = sensors;
+
+  $scope.selected = {
+    sensor: 'None'
+  };
+
+  $scope.ok = function () {
+    $uibModalInstance.close($scope.selected.sensor);
+  };
+
+  $scope.cancel = function () {
+    $uibModalInstance.dismiss('cancel');
+  };
+});
