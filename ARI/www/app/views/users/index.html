@@ -12,7 +12,7 @@
                 <th>Online:</th>
             </tr>
         </thead>
-        <tr ng-repeat="user in users | filter:query">
+        <tr ng-repeat="user in users | objectKeyFilter:query">
             <td>{{user.name}}</td>
             <td>{{user.roles}}</td>
             <td>{{user.online}}</td>

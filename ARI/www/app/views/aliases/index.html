@@ -44,7 +44,7 @@
                         <tr>
                             <td colspan="2">{{client.name}}</td>
                         </tr>
-                        <tr ng-repeat="(name, value) in client.values | filter:clientquery">
+                        <tr ng-repeat="(name, value) in client.values | objectKeyFilter:clientquery">
                             <td></td>
                             <td>{{name}}</td>
                             <td><input type="text" value={{value.alias}} onchange="angular.element(this).scope().setAlias(this)" name="{{client.name}}.{{name}}" /></td>
