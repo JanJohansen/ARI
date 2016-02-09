@@ -19,6 +19,28 @@
 	        font-family: "bebas";
 	        src: url("http://thecodeplayer.com/uploads/fonts/BebasNeue.otf");
         }
+
+        .uielement{
+            border: solid;
+            border-color: blue;
+            border-width: 1px;
+            border-style:dashed;
+            display:inline-block;
+            position: relative; /* needed for placement of ui element and wrench symbol etc.*/
+        }
+
+        .toolMenu{
+            position:absolute;
+            left:-2px; 
+            top:-27px;
+            background-color: #808080;
+            opacity:0.5;
+        }
+        button {
+            padding: 0px 0px 0px 1px;
+            /*line-height:0;*/
+        }
+
     </style>
 
     <ari-value name="ari.time" value="time" ></ari-value>
@@ -29,18 +51,46 @@
     <h2 class="uielement" style="display:inline-block;">{{LTemp}}</h2>
     <h3 class="uielement" style="display:inline-block;">{{GTemp}}</h3>
 
-    <canvas id="myCanvas" class="uielement" width=100 height=100 style="display:inline-block;" ></canvas>
-    <button class="uielement" style="display:inline-block;">Test</button>
+    <div class="uielement">
+        
+        <canvas id="myCanvas" width=100 height=100 style="position:relative; left:0px; top:0px;"></canvas>
+        <div class="toolMenu">
+            <button>
+                <span class="glyphicon glyphicon-wrench" ng-click="togleModal();"></span>
+            </button>
+        </div>
+        
+        <script type="text/ng-template" id="myModalContent.html">
+            <div class="modal-header">
+                <h3 class="modal-title">I'm a modal!</h3>
+            </div>
+            <div class="modal-body">
+                <ul>
+                    <li ng-repeat="item in items">
+                        <a href="#" ng-click="$event.preventDefault(); selected.item = item">{{ item }}</a>
+                    </li>
+                </ul>
+                Selected: <b>{{ selected.item }}</b>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" type="button" ng-click="ok()">OK</button>
+                <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+            </div>
+        </script>
+    </div>
 
     <canvas id="gauge" width="300" height="300" style="display:inline-block;" class="uielement" ></canvas>
 
 
     <script>
+
+
+        // DRAW STUFF!!!!
         var canvas = document.getElementById('myCanvas');
         var context = canvas.getContext('2d');
         var centerX = canvas.width / 2;
         var centerY = canvas.height / 2;
-        var radius = canvas.width / 3;
+        var radius = canvas.width / 2.2;
 
         context.beginPath();
         context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
@@ -79,6 +129,32 @@
                     + (Math.sqrt(event.dx * event.dx +
                                 event.dy * event.dy) | 0) + 'px');
             }
+        })
+        .resizable({
+/*            onstart: function (event) {},
+            onmove : function (event) {},
+            onend  : function (event) {},
+
+            edges: {
+                top   : true,       // Use pointer coords to check for resize.
+                left  : false,      // Disable resizing from left edge.
+                bottom: '.resize-s',// Resize if pointer target matches selector
+                right : handleEl    // Resize if pointer target is the given Element
+            },
+*/
+            // Width and height can be adjusted independently. When `true`, width and
+            // height are adjusted at a 1:1 ratio.
+            square: false,
+
+            // Width and height can be adjusted independently. When `true`, width and
+            // height maintain the aspect ratio they had when resizing started.
+            preserveAspectRatio: false,
+
+            // a value of 'none' will limit the resize rect to a minimum of 0x0
+            // 'negate' will allow the rect to have negative width/height
+            // 'reposition' will keep the width/height positive by swapping
+            // the top and bottom edges and/or swapping the left and right edges
+            invert: 'reposition'
         });
 
         function dragMoveListener(event) {
