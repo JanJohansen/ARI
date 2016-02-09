@@ -116,6 +116,7 @@
                 // target elements with the "draggable" class
                 interact('.draggable')
                 .draggable({
+                    manualStart: true,
                     // enable inertial throwing
                     inertia: true,
                     // keep the element within the area of it's parent
@@ -140,6 +141,16 @@
                         //event.stopImmediatePropagation();
                         event.preventDefault();
                     }
+
+                })
+                .on('hold', function (event) {
+                var interaction = event.interaction;
+
+                if (!interaction.interacting()) {
+                  interaction.start({ name: 'drag' },
+                                    event.interactable,
+                                    event.currentTarget);
+                };
                 });
 
                 function dragMoveListener(event) {

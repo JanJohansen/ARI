@@ -3,7 +3,7 @@
 // Declare app level module which depends on views, and components
 var ariModule = angular.module('ari', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
 
-ariModule.controller('ariMainController', ['$scope', '$http', 'AriUser',
+ariModule.controller('ariMainController', ['$scope', '$http', 'AriUser', '$uibModal',
     function ($scope, $http, AriUser) {
         $scope.user = AriUser;
     }

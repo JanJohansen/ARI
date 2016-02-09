@@ -24,11 +24,31 @@
                             <!-- <td>-</td> -->
                             <td><input type="text" ng-model="value.name"></td>
                             <td align="center" ng-hide="showNodeId(key) !== true"><button ng-click="deActivateNodeId(key)">-</button></td>
-                            <td align="center" ng-hide="showNodeId(key) === true"><button ng-click="activateNodeId(key)">+</button><button ng-click="editNodeId(key)">edit</button><button ng-click="removeNodeId(key)">remove</button></td>
+                            <td align="center" ng-hide="showNodeId(key) === true"><button ng-click="activateNodeId(key)">+</button><button ng-click="open(key)">edit</button><button ng-click="removeNodeId(key)">remove</button></td>
                     </tr>
                 </table>
             </div>
             <button ng-click="saveConfig()">Save</button>
+            <div ng-controller="MysensorsGWSettingsController">
+              <script type="text/ng-template" id="myModalContent.html">
+                  <div class="modal-header">
+                      <h3 class="modal-title">Select the sensor to edit</h3>
+                  </div>
+                  <div class="modal-body">
+                      <ul>
+                          <li ng-repeat="sensor in sensors">
+                              <a href="#" ng-click="$event.preventDefault(); selected.sensor = sensor.name">{{ sensor.name }}</a>
+                          </li>
+                      </ul>
+                      Selected: <b>{{ selected.sensor }}</b>
+                  </div>
+                  <div class="modal-footer">
+                      <button class="btn btn-primary" type="button" ng-click="ok()">OK</button>
+                      <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+                  </div>
+              </script>
+              <!-- <div ng-show="selected">Selection from a modal: {{ selected }}</div>-->
+          </div>
         </div>
         <div class="col-xs-12 col-sm-8">
             <div class="panel panel-default">
