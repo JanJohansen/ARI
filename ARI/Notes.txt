@@ -61,47 +61,36 @@ Client->App: watchCB(App2.val1 or alias1???, value)
 
 
 /*****************************************************************************/
-
-{
-	"portName": "COM3",
-	"nodes": {
-		"1": {
-			"name": "Energy meter",
-			"version": "1.0",
-			"batteryLevel": "50",
-			"sensuators": {
-				"0": { 
-					"name": "Power", 
-					"values": {
-						"V_WATT": {
-							"name": "Watt",
-							"value": "42"
-						},
-						"V_KWH": {
-							"name": "KWh",
-							"value": "23865432"
-						},
-						"V_VAR1": {
-							"name": "var1",
-							"value": "23865432"
-						}
-					} 
-				},
-				"1":{
-					"name": "Light"
-					"mSType": "S_LIGHT",
-					"values": {
-						"V_STATUS": {
-							"name": "Status",
-							"value": "1"
-						}
-
-					}
-				}
-			}
-		}
-	}
-}
-
 to debug node-red use this command:
 node-debug node_modules/node-red/red.js -v -s settings.js
+
+//-----------------------------------------------------------------------------
+Devices vs. Users:
+Devices:
+	Register deviceInfo...
+	Has role: Device (sensuator) vs. controller (able to set other device values).
+	
+Users:
+	Has role: Get rights
+	Can store data in own file area - handled by pluign?
+
+Thoughts:
+Device: LivingroomDoorPanel
+User: Admin/.../Guest
+Values: 
+	LivingroomDoorPanel.LightScene = 1...5
+	LivingroomDoorPanel.FunctionScene = "Home theater mode", "Full Light", "Watch TV", "Dine".
+View on device "LivingroomDoorPanel"
+
+
+GUI_Builder
+	Functions
+		loadPanel
+		savePanel
+		listPanels
+	Values
+		LivingroomDoorPanel.LightScene = 1...5
+		LivingroomDoorPanel.FunctionScene = "Home theater mode", "Full Light", "Watch TV", "Dine".
+		OfficePanel.LightScene = 1...5
+		OfficePanel.FunctionScene = "Home theater mode", "Full Light", "Watch TV", "Dine".
+		OfficePanel.MainLightState = On

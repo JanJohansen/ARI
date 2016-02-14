@@ -129,7 +129,7 @@ AriClientServer.prototype._notify = function (command, parameters) {
 /*****************************************************************************/
 AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
     if (!pars.name) { console.log("Error: Missing name of client whentrying to register client! - Ignoring..."); return; }
-    var clientName = pars.name;
+    //var clientName = pars.name;
 
     var authToken = pars.authToken;
     if (authToken) {
@@ -142,19 +142,17 @@ AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
         } else {
             // Authentication OK
             console.log("authentication success:", token);
-            var user = token.name;
 
             // Link this client to clientModel.
-            if(clientName != user) var clientModelName = user + "/" + clientName;
-            else var clientModelName = user;
-            this.name = clientModelName;
+            var clientModelName = token.name;
+            this.name = token.name;
 
             this.clientModel = this._server.clientModels[clientModelName];
             if (this.clientModel) {
                 // clientModel found.
                 this.clientModel.online = true;
                 this.clientModel.__clientServer = this;
-                callback(null, { "name": clientName });
+                callback(null, { "name": clientModelName });
                 return;
             } else {
                 // clientModel not found. Create it.
@@ -170,7 +168,7 @@ AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
 
                 this._server.clientModels[clientModelName] = this.clientModel;
 
-                callback(null, { "name": clientName });
+                callback(null, { "name": clientModelName });
                 return;
             }
         }
@@ -179,6 +177,9 @@ AriClientServer.prototype._webcall_CONNECT = function (pars, callback) {
     }
 };
 
+// AuthTokens are given to clients and to users.
+// Users must provide name and password to get the associated token.
+// Devices get a token if the system allows device registration.
 AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
 
     if (!pars.name) { callback("Error: Missing name parameter when requesting authToken.", null); return; }
@@ -214,7 +215,7 @@ AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
             return;
         }
 
-        // Find available user name.
+        // Find available client name.
         var newName = name;
         var count = 1;
         while (true) {
@@ -222,12 +223,6 @@ AriClientServer.prototype._webcall_REQAUTHTOKEN = function (pars, callback) {
             newName = name + "(" + count + ")";
             count++;
         }
-
-        // Create new user.
-        this._server.userModels[newName] = {};
-        this._server.userModels[newName].name = newName;
-        this._server.userModels[newName].created = new Date().toISOString();
-        this._server.userModels[newName].role= role;
 
         // Reply with authToken and possibly new Name.
         var payload = { "name": newName, "role": pars.role, "created": new Date().toISOString() };
@@ -267,6 +262,10 @@ AriClientServer.prototype._webnotify_SETCLIENTINFO = function (clientInfo) {
     }
     // Perform deep merge from remote clientInfo to local clientModel.
     deepMerge(clientInfo, this.clientModel);
+
+    // Make sure name is the one osed in token!. (E.g. given name from server and not the default name from client.)
+    this.clientModel.name = this.name;
+
 }
 
 var deepMerge = function (source, destination) {

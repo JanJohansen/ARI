@@ -42,7 +42,7 @@ ari.onconnect = function (result) {
     ari.setValue("lastBoot", new Date(os.uptime()).toISOString());
     
     // Provide system infor each second.
-    var reportInterval = 1000;
+    var reportInterval = 60000;
     var lastIdle = 0;
     setInterval(function () {
         var cpus = os.cpus();
