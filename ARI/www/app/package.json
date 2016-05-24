@@ -15,6 +15,7 @@
     "bootstrap": "^3.3.5",
     "d3": "^3.5.6",
     "interact.js": "^1.2.6",
-    "jquery": "^2.1.4"
+    "jquery": "^2.1.4",
+    "oclazyload": "^1.0.9"
   }
 }

@@ -1,0 +1,33 @@
+﻿{
+	"name": "Gauge1",
+	"iconFile": "./icon.jpg",
+	"width": 300,
+	"height": 150,
+	"maintainAspectRatio":  true,
+	"attributes": {
+		"name": {
+			"type": "string",
+			"expression": "Gauge1"
+		},
+		"min": {
+			"type": "number",
+			"expression": "0"
+		},
+		"max": {
+			"type": "number",
+			"expression": "100"
+		},
+		"value": {
+			"type": "number",
+			"expression": "50"
+		},
+		"label": {
+			"type": "text",
+			"expression": "???"
+		},
+		"unit": {
+			"type": "text",
+			"expression": "º"
+		}
+	}
+}

@@ -1,0 +1,90 @@
+﻿{
+	"widgets": [
+		{
+			"name": "Button1",
+			"iconFile": "./icon.jpg",
+			"controller": "Button1.js",
+			"width": 100,
+			"height": 50,
+			"maintainAspectRatio": false,
+			"attributes": {
+				"text": {
+					"type": "string",
+					"expression": "Text?"
+				},
+				"label": {
+					"type": "string",
+					"expression": "Label?"
+				},
+				"fontSize": {
+					"type": "number",
+					"expression": "20em"
+				},
+				"color": {
+					"type": "string",
+					"expression": "blue"
+				}
+			}
+		},
+		{
+			"name": "Gauge1",
+			"iconFile": "icon.jpg",
+			"controller": "Gauge1.js",
+			"width": 300,
+			"height": 150,
+			"maintainAspectRatio": true,
+			"attributes": {
+				"name": {
+					"type": "string",
+					"expression": "Gauge1"
+				},
+				"min": {
+					"type": "number",
+					"expression": "0"
+				},
+				"max": {
+					"type": "number",
+					"expression": "100"
+				},
+				"value": {
+					"type": "number",
+					"expression": "50"
+				},
+				"label": {
+					"type": "text",
+					"expression": "???"
+				},
+				"unit": {
+					"type": "text",
+					"expression": "º"
+				}
+			}
+		},
+		{
+			"name": "Slider1",
+			"iconFile": "icon.jpg"
+		},
+		{
+			"name": "Text1",
+			"iconFile": "./icon.jpg",
+			"controller": "Text1.js",
+			"width": 300,
+			"height": 150,
+			"maintainAspectRatio": false,
+			"attributes": {
+				"text": {
+					"type": "string",
+					"expression": "???"
+				},
+				"fontSize": {
+					"type": "number",
+					"expression": "20em"
+				},
+				"color": {
+					"type": "string",
+					"expression": "blue"
+				}
+			}
+		}
+	]
+}

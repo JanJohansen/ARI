@@ -1,0 +1,13 @@
+{
+  "name": "PhilipsHueGW",
+  "version": "0.0.0",
+  "description": "Philips Hue gateway plugin for ARI.",
+  "main": "HueGW.js",
+  "author": {
+    "name": "Jan Johansen",
+    "email": ""
+  },
+  "dependencies": {
+    "node-hue-api": "^2.2.0"
+  }
+}

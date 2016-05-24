@@ -1,52 +1,77 @@
 ﻿'use strict';
     
 var app = angular.module('ari');
-app.directive('d3GaugeDelete', [ 
+app.directive('gauge1', [ 
     function ($window) {
-        console.log("registering d3-gauge directive.");
+        console.log("registering gauge1 directive.");
         return {
             restrict: 'EA',
             scope: {
-                value: "=",
-                min: "=",
-                max: "=",
-                label: "@",
-                unit: "@"
+                value: "=?",
+                min: "=?",
+                max: "=?",
+                label: "=?",
+                unit: "=?"
             },
             link: function (scope, element, attrs) {
                 console.log("link  ngGauge");
+                // Debug:
+                scope.ThisIs = "Gauge1";
                 
-                var update = function () {
-/*                    console.log("scope.value", scope.value);
-                    console.log("scope.unit", scope.unit);
-                    console.log("scope.min", scope.min);
-                    console.log("scope.max", scope.max);
-                    console.log("scope.label", scope.label);
-*/
-                    arc.transition()
-                      .duration(750)
-                      .call(arcTween, myScale(scope.value));
-
-                    label.text(function (d) { return scope.label; });
-                    valueLabel.text(function (d) { return scope.value + scope.unit; });
-                };
-
-                /*setInterval(function () {
-                    console.log("UPDATE!");
-                    scope.value = Math.random() * 100;
-                    scope.$apply();
-                }, 1500);*/
+                // Set defaults.
+                scope.min = scope.min || 0;
+                scope.max = scope.max || 100;
+                scope.value = scope.value || 50;
+                scope.label = scope.label || "";
+                scope.unit = scope.unit || "";
                 
+                /*
+                console.log("scope.value", scope.value);
+                console.log("scope.unit", scope.unit);
+                console.log("scope.min", scope.min);
+                console.log("scope.max", scope.max);
+                console.log("scope.label", scope.label);
+                */
                 // watch for data changes and re-render if changed.
                 scope.$watch('value', function (newVal, oldVal) {
                     if (!newVal) return;
-                    console.log("WATCH value", newVal, oldVal);
-                    update();
+                    valueLabel.text(function (d) { return scope.value + scope.unit; });
+                    arc.transition()
+                      .duration(750)
+                      .call(arcTween, myScale(scope.value));
                 }, true);
                 
-                //if (!scope.value) scope.value = scope.min;
-                //scope.value = scope.value || 0;
-
+                scope.$watch('label', function (newVal, oldVal) {
+                    if (!newVal) return;
+                    label.text(function (d) { return scope.label; });
+                }, true);
+                
+                scope.$watch('unit', function (newVal, oldVal) {
+                    if (!newVal) return;
+                    valueLabel.text(function (d) { return scope.value + scope.unit; });
+                }, true);
+                
+                scope.$watch('min', function (newVal, oldVal) {
+                    if (!newVal) return;
+                    myScale = d3.scale.linear()
+                        .domain([scope.min, scope.max])
+                        .range([-0.5 * Math.PI, 0.5 * Math.PI]);
+                    arc.transition()
+                        .duration(750)
+                        .call(arcTween, myScale(scope.value));
+                }, true);
+                
+                scope.$watch('max', function (newVal, oldVal) {
+                    if (!newVal) return;
+                    myScale = d3.scale.linear()
+                        .domain([scope.min, scope.max])
+                        .range([-0.5 * Math.PI, 0.5 * Math.PI]);
+                    arc.transition()
+                        .duration(750)
+                        .call(arcTween, myScale(scope.value));
+                }, true);
+                
+                
                 // Define SVG.
                 var svg = d3.select(element[0])// Select "self"element.
                     .append("svg")// Prepare SVG content
@@ -73,7 +98,7 @@ app.directive('d3GaugeDelete', [
                     .datum({ endAngle: myScale(scope.min) })
                     .attr("d", arcFunc)
                     .attr("transform", "translate(" + WIDTH / 2 + ", " + HEIGHT + ")")
-                    .style("fill", "yellow");
+                    .style("fill", "#FFFF00");
                     
                 // outerArc
                 var outerArc = d3.svg.arc()
@@ -85,7 +110,7 @@ app.directive('d3GaugeDelete', [
                     .attr("d", outerArc)
                     .attr("transform", "translate(" + WIDTH / 2 + ", " + HEIGHT + ")")
                     .style("stroke-width", "10")
-                    .style("stroke", "blue")
+                    .style("stroke", "#202080")
                     .style("fill-opacity", "0");
                     
                 // valueText

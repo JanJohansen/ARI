@@ -1,9 +1,9 @@
 'use strict';
 
 // Declare app level module which depends on views, and components
-var ariModule = angular.module('ari', ['ngRoute', 'ngAnimate', 'ui.bootstrap']);
+var ariModule = angular.module('ari', ['ngRoute', 'ngAnimate', 'ui.bootstrap', 'oc.lazyLoad']);
 
-ariModule.controller('ariMainController', ['$scope', '$http', 'AriUser', '$uibModal',
+ariModule.controller('ariMainController', ['$scope', '$http', 'AriUser', '$uibModal', 
     function ($scope, $http, AriUser) {
         $scope.user = AriUser;
     }
@@ -63,7 +63,7 @@ ariModule.config(function ($controllerProvider, $compileProvider, $filterProvide
 
 // Routes for "hash"'es.
 ariModule.config(['$routeProvider', 
-    function ($routeProvider) {
+    function ($routeProvider, $locationProvider) {
         $routeProvider.
         when('/users', {
             templateUrl: 'views/users.html',

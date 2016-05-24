@@ -1,0 +1,31 @@
+{
+	"packageInfo": {
+		"icon": "someIcon.ico",
+		"name": "GUI-Builder",
+		"version": "0.0.1",
+		"description": "Frontend builder to design simple web apps to be used as controllers.",
+		"homepage": "?",
+		"gitUrl": "..."
+	},
+	"plugins": [
+		{
+			"name": "GUI-Builder",
+			"version": "0.0.1",
+			"icon": "file.ico",
+			"description": "Front end builder.",
+			"info": { },
+			"nodeMain": "GuiBuilder.js"
+		}
+	],
+	"views": [
+		{
+			"name": "editor",
+			"version": "0.0.1",
+			"icon": "editor.ico",
+			"description": "Build new GUIs.",
+			"ngView": "www/editor.html",
+			"ngController": "www/editor.js", 
+			"minDefaultTargetRole": "admin"
+		}
+	]
+}

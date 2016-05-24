@@ -1,20 +1,20 @@
 {
 	"packageInfo": {
 		"icon": "someIcon.ico",
-		"name": "MysensorsGW",
+		"name": "PhilipsHueGW",
 		"version": "0.0.1",
-		"description": "Mysensors network interface.",
+		"description": "Philips Hue gateway.",
 		"homepage": "?",
 		"gitUrl": "..."
 	},
 	"plugins": [
 		{
-			"name": "MysensorsGW",
+			"name": "PhilipsHueGW",
 			"version": "0.0.1",
 			"icon": "file.ico",
-			"description": "Plugin to interface to Mysensors network..",
+			"description": "Plugin to interface to Philips Hue lights..",
 			"info": { },
-			"nodeMain": "MysensorsGW.js"
+			"nodeMain": "DISABLED_HueGW.js"
 		}
 	],
 	"views": [
@@ -22,7 +22,7 @@
 			"name": "Settings",
 			"version": "0.0.1",
 			"icon": "settings.ico",
-			"description": "Settings view for MysensorsGW plugin.",
+			"description": "Settings view for PhilipsHueGW plugin.",
 			"ngView": "www/settings.html",
 			"ngController": "www/settings.js", 
 			"minDefaultTargetRole": "admin"

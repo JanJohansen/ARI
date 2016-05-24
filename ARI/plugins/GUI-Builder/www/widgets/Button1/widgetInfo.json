@@ -1,0 +1,22 @@
+﻿{
+	"name": "Button1",
+	"iconFile": "./icon.jpg",
+	"controller": "Button1.js",
+	"width": 100,
+	"height": 50,
+	"maintainAspectRatio":  false,
+	"attributes": {
+		"text": {
+			"type": "string",
+			"expression": "???"
+		},
+		"fontSize": {
+			"type": "number",
+			"expression": "20em"
+		},
+		"color": {
+			"type": "string",
+			"expression": "blue"
+		}
+	}
+}

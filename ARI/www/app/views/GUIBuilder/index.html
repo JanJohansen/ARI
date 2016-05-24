@@ -1,4 +1,4 @@
-<div id="flexcontainer" ng-controller="UIBuilderController">
+<div id="flexcontainer" ng-controller="GUIBuilderController">
 
     <link href="style.css" rel="stylesheet" />
     <script src="../../node_modules/interact.js/dist/interact.min.js"></script>
@@ -14,50 +14,85 @@
             bottom: 1px;
         }
 
-        /*Custom font for numbers*/
-        @font-face {
-	        font-family: "bebas";
-	        src: url("http://thecodeplayer.com/uploads/fonts/BebasNeue.otf");
-        }
-
-        .uielement{
+        .guielement{
             border: solid;
             border-color: blue;
             border-width: 1px;
             border-style:dashed;
             display:inline-block;
-            position: relative; /* needed for placement of ui element and wrench symbol etc.*/
+            position: absolute; /* needed for placement of ui element and wrench symbol etc.*/
         }
 
-        .toolMenu{
+        .elementMenu {
             position:absolute;
             left:-2px; 
             top:-27px;
             background-color: #808080;
             opacity:0.5;
         }
-        button {
+        .elementMenu > button {
             padding: 0px 0px 0px 1px;
             /*line-height:0;*/
+        }
+        .ddMenu {
+            background: rgb(0, 0, 0);
+            position: relative;
+            z-index: 999999999;
+            /*background-color: black;*/
         }
 
     </style>
 
-    <ari-value name="ari.time" value="time" ></ari-value>
+    <div class="menu">
+        <button><span class="glyphicon glyphicon-cloud-download" ng-click="load();"></span></button>
+        <button><span class="glyphicon glyphicon-cloud-upload" ng-click="save();"></span></button>
+        <button ng-click="isCollapsed = !isCollapsed;"><span class="glyphicon glyphicon-plus"></span></button>
+        <div class="ddMenu" uib-collapse="!isCollapsed">
+            <div class="ddMenu well well-lg">
+                <button ng-click="addElement();">Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+                <button>Test!</button>
+            </div>
+        </div>
+    </div>
+
+    <ari-value name="EspTestThing.rawHum" value="rawHum" ></ari-value>
     <ari-value name="GW433.Garage.temperature" value="GTemp" ></ari-value>
     <ari-value name="GW433.Livingroom.temperature" value="LTemp"></ari-value>
 
-    <h1 class="uielement" style="display:inline-block;">{{time}}</h1>
-    <h2 class="uielement" style="display:inline-block;">{{LTemp}}</h2>
-    <h3 class="uielement" style="display:inline-block;">{{GTemp}}</h3>
+    <!--<d3-gauge class="guielement" value="hum" unit="°C" min="15" max="25" style="width:300px;"></d3-gauge>-->
+    <d3-gauge class="guielement" value="rawHum" label="Bedroom RH" unit="%" min="0" max="100" style="width:300px;"></d3-gauge>
+    <d3-gauge class="guielement" value="GTemp" label="Garage T" unit="°" min="-10" max="40" style="width:300px;"></d3-gauge>
 
-    <div class="uielement">
+    <!--
+    <h1 class="guielement">{{LTemp}}</h1>
+    <h2 class="guielement">{{GTemp}}</h2>
+    <h2 class="guielement">{{rawHum}}</h2>
+    -->
+    
+
+    <!--<div class="guielement">
         
-        <canvas id="myCanvas" width=100 height=100 style="position:relative; left:0px; top:0px;"></canvas>
-        <div class="toolMenu">
-            <button>
-                <span class="glyphicon glyphicon-wrench" ng-click="togleModal();"></span>
-            </button>
+        <canvas id="myCanvas" width="100%" height=100 ></canvas>
+        <div class="elementMenu">
+            <button><span class="glyphicon glyphicon-wrench" ng-click="editElement();"></span></button>
+            <button><span class="glyphicon glyphicon-trash" ng-click="deleteElement();"></span></button>
         </div>
         
         <script type="text/ng-template" id="myModalContent.html">
@@ -79,14 +114,15 @@
         </script>
     </div>
 
-    <canvas id="gauge" width="300" height="300" style="display:inline-block;" class="uielement" ></canvas>
+    <canvas class="guielement" id="gauge" style="width:300px; height:300px;" ></canvas>
+        -->
 
 
     <script>
 
 
         // DRAW STUFF!!!!
-        var canvas = document.getElementById('myCanvas');
+/*        var canvas = document.getElementById('myCanvas');
         var context = canvas.getContext('2d');
         var centerX = canvas.width / 2;
         var centerY = canvas.height / 2;
@@ -103,9 +139,9 @@
         context.shadowOffsetX = 0;
         context.shadowOffsetY = 0;
         context.stroke();
-
+        */
         // target elements with the "draggable" class
-        interact('.uielement')
+        interact('.guielement')
         .draggable({
             // enable inertial throwing
             inertia: true,
@@ -122,33 +158,77 @@
             onmove: dragMoveListener,
             // call this function on every dragend event
             onend: function (event) {
-                var textEl = event.target.querySelector('p');
-
-                textEl && (textEl.textContent =
-                    'moved a distance of '
-                    + (Math.sqrt(event.dx * event.dx +
-                                event.dy * event.dy) | 0) + 'px');
+            },
+            snap: {
+                targets: [
+                    interact.createSnapGrid({
+                        x: 10, 
+                        y: 10, 
+                        //range: 10,
+                        offset: { x: 0, y: 0 }
+                    })
+                ],
+                relativePoints: [
+                  //{ x: 0, y: 0 },   // snap relative to the element's top-left,
+                  { x: 0.5, y: 0.5 }   // to the center
+                  //{ x: 1, y: 1 }    // and to the bottom-right
+                ]
             }
         })
         .resizable({
-/*            onstart: function (event) {},
-            onmove : function (event) {},
-            onend  : function (event) {},
-
-            edges: {
-                top   : true,       // Use pointer coords to check for resize.
-                left  : false,      // Disable resizing from left edge.
-                bottom: '.resize-s',// Resize if pointer target matches selector
-                right : handleEl    // Resize if pointer target is the given Element
+            onstart: function (event) {
+                //console.log(event);
             },
-*/
+            onmove: function (event) {
+                //console.log(event);
+
+                var target = event.target;
+
+                // update the element's style
+                target.setAttribute('width', event.rect.width);
+                target.setAttribute('height', event.rect.height);
+                target.style.width = event.rect.width + 'px';
+                target.style.height = event.rect.height + 'px';
+
+                // translate when resizing from top or left edges
+                var x = parseInt(target.style.left) || 0;
+                var y = parseInt(target.style.top) || 0;
+                x += event.deltaRect.left;
+                y += event.deltaRect.top;
+
+                target.style.left = x + 'px';
+                target.style.top = y + 'px';
+
+
+                //x += event.deltaRect.left;
+                //y += event.deltaRect.top;
+
+                //target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+
+                //target.setAttribute('data-x', x);
+                //target.setAttribute('data-y', y);
+
+                //target.width = x;
+                //target.height =y;
+
+                //target.textContent = event.rect.width + '×' + event.rect.height;
+            },
+            onend: function (event) {
+                //console.log(event);
+            },
+            edges: {
+                top   : true,
+                left  : true,
+                bottom: true,
+                right : true
+            },
             // Width and height can be adjusted independently. When `true`, width and
             // height are adjusted at a 1:1 ratio.
             square: false,
 
             // Width and height can be adjusted independently. When `true`, width and
             // height maintain the aspect ratio they had when resizing started.
-            preserveAspectRatio: false,
+            preserveAspectRatio: true,
 
             // a value of 'none' will limit the resize rect to a minimum of 0x0
             // 'negate' will allow the rect to have negative width/height
@@ -158,33 +238,45 @@
         });
 
         function dragMoveListener(event) {
-            var target = event.target,
-                // keep the dragged position in the data-x/data-y attributes
-                x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
-                y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+            var target = event.target;
+
+            //target.style.left = parseInt(target.style.left) + parseInt(event.dx) + 'px';
+            //target.style.top = parseInt(target.style.top) + event.dy + 'px';
+
+            // keep the dragged position in the data-x/data-y attributes
+            //var x = (parseFloat(target.getAttribute('left')) || 0) + event.dx;
+            //var y = (parseFloat(target.getAttribute('top')) || 0) + event.dy;
+
+            //target.setAttribute('left', x);
+            //target.setAttribute('top', y);
+
+            var x = parseInt(target.style.left) || 0;
+            var y = parseInt(target.style.top) || 0;
+            x += event.dx;
+            y += event.dy;
+
+            target.style.left = x + 'px';
+            target.style.top = y + 'px';
 
             // translate the element
-            target.style.webkitTransform =
-            target.style.transform =
-            'translate(' + x + 'px, ' + y + 'px)';
+            //target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
 
             // update the posiion attributes
-            target.setAttribute('data-x', x);
-            target.setAttribute('data-y', y);
+            //target.setAttribute('data-x', x);
+            //target.setAttribute('data-y', y);
         }
 
         // this is used later in the resizing and gesture demos
-        window.dragMoveListener = dragMoveListener;
+        //window.dragMoveListener = dragMoveListener;
 
-
+        /*
         // Gauge stuff ********************************************************
 //        window.onload = function () {
             //canvas initialization
             var canvas = document.getElementById("gauge");
             var ctx = canvas.getContext("2d");
             //dimensions
-            var W = canvas.width;
-            var H = canvas.height;
+            
             //Variables
             var degrees = 0;
             var new_degrees = 0;
@@ -195,6 +287,10 @@
             var animation_loop, redraw_loop;
 
             function init() {
+                //console.log("ComputedStyle:", window.getComputedStyle(canvas, null));
+                var W = parseInt(window.getComputedStyle(canvas, null).getPropertyValue("width")); //canvas.width;
+                var H = parseInt(window.getComputedStyle(canvas, null).getPropertyValue("height"));  //canvas.height;
+                //console.log("W:", W, "H:", H);
                 //Clear the canvas everytime a chart is drawn
                 ctx.clearRect(0, 0, W, H);
 
@@ -202,8 +298,8 @@
                 ctx.beginPath();
                 ctx.strokeStyle = bgcolor;
                 ctx.lineWidth = 30;
-                ctx.arc(W / 2, H / 2, 100, 0, Math.PI * 2, false); //you can see the arc now
-
+                ctx.arc(W / 2, H / 2, Math.min(W / 2, H / 2) - (ctx.lineWidth / 2), 0, Math.PI * 2, false); //you can see the arc now
+                
                 ctx.shadowColor = '#000088';
                 ctx.shadowBlur = 100;
                 ctx.shadowOffsetX = 0;
@@ -219,7 +315,7 @@
                 ctx.lineWidth = 30;
                 //The arc starts from the rightmost end. If we deduct 90 degrees from the angles
                 //the arc will start from the topmost end
-                ctx.arc(W / 2, H / 2, 100, 0 - 90 * Math.PI / 180, radians - 90 * Math.PI / 180, false);
+                ctx.arc(W / 2, H / 2, Math.min(W / 2, H / 2) - (ctx.lineWidth / 2), 0 - 90 * Math.PI / 180, radians - 90 * Math.PI / 180, false);
                 //you can see the arc now
                 ctx.stroke();
 
@@ -252,13 +348,10 @@
             //function to make the chart move to new degrees
             function animate_to() {
                 //clear animation loop if degrees reaches to new_degrees
-                if (degrees == new_degrees)
-                    clearInterval(animation_loop);
+                if (degrees == new_degrees) clearInterval(animation_loop);
 
-                if (degrees < new_degrees)
-                    degrees++;
-                else
-                    degrees--;
+                if (degrees < new_degrees) degrees++;
+                else degrees--;
 
                 init();
             }
@@ -267,5 +360,6 @@
             draw();
             redraw_loop = setInterval(draw, 2000); //Draw a new chart every 2 seconds
        // }
+       */
     </script>
 </div>

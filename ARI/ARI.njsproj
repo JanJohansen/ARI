@@ -16,7 +16,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>748a0f1c-9626-4a98-b093-073b1251d035</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>server.js</StartupFile>
+    <StartupFile>plugins\PhilipsHueGW\HueGW.js</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -38,6 +38,12 @@
     <Compile Include="ariclientserver.js" />
     <Compile Include="ariserverserver.js" />
     <Compile Include="configStore.js" />
+    <Compile Include="plugins\GUI-Builder\GuiBuilder.js" />
+    <Compile Include="plugins\GUI-Builder\www\editor.js" />
+    <Compile Include="plugins\GUI-Builder\www\guiBElement.js" />
+    <Compile Include="plugins\GUI-Builder\www\widgets\Button1\Button1.js" />
+    <Compile Include="plugins\GUI-Builder\www\widgets\Gauge1\Gauge1.js" />
+    <Compile Include="plugins\GUI-Builder\www\widgets\Text1\Text1.js" />
     <Compile Include="plugins\MysensorsGW\MysensorsGW.js" />
     <Compile Include="plugins\MysensorsGW\www\settings.js" />
     <Compile Include="plugins\Node-Red\ariNodes\ari-in.js" />
@@ -46,12 +52,15 @@
     <Compile Include="plugins\Node-Red\ariNodes\AriSingleton.js" />
     <Compile Include="plugins\Node-Red\settings.js" />
     <Compile Include="plugins\Node-Red\www\config.js" />
+    <Compile Include="plugins\PhilipsHueGW\HueGW.js" />
+    <Compile Include="plugins\PhilipsHueGW\www\settings.js" />
     <Compile Include="plugins\SysInfo\sysInfo.js" />
     <Compile Include="server.js" />
     <Compile Include="sorted-object-array.js" />
     <Compile Include="www\app\app.js" />
     <Compile Include="www\app\ariclient.js" />
     <Compile Include="www\app\ngAriValue.js" />
+    <Compile Include="www\app\ngAriValueFilter.js" />
     <Compile Include="www\app\ngD3.js" />
     <Compile Include="www\app\ngHBarChart.js" />
     <Compile Include="www\app\ngLineChart.js" />
@@ -67,7 +76,7 @@
     <Compile Include="www\app\views\floor\controller.js" />
     <Compile Include="www\app\views\logging\controller.js" />
     <Compile Include="www\app\views\login\controller.js" />
-    <Compile Include="www\app\views\uibuilder\controller.js" />
+    <Compile Include="www\app\views\GUIBuilder\controller.js" />
     <Compile Include="www\app\views\users\controller.js" />
     <Compile Include="www\app\routeResolver.js" />
     <Compile Include="www\app\script.js" />
@@ -78,6 +87,17 @@
     <Content Include="nodemon.json" />
     <Content Include="package.json" />
     <Content Include="documentation\readme.html" />
+    <Content Include="plugins\GUI-Builder\ariManifest.json" />
+    <Content Include="plugins\GUI-Builder\www\editor.html" />
+    <Content Include="plugins\GUI-Builder\www\guiBElement.html" />
+    <Content Include="plugins\GUI-Builder\www\widgets\Button1\icon.JPG" />
+    <Content Include="plugins\GUI-Builder\www\widgets\Button1\widgetInfo.json" />
+    <Content Include="plugins\GUI-Builder\www\widgets\Gauge1\icon.JPG" />
+    <Content Include="plugins\GUI-Builder\www\widgets\Gauge1\widgetInfo.json" />
+    <Content Include="plugins\GUI-Builder\www\widgets\Slider1\icon.JPG" />
+    <Content Include="plugins\GUI-Builder\www\widgets\Text1\icon.JPG" />
+    <Content Include="plugins\GUI-Builder\www\widgets\Text1\widgetInfo.json" />
+    <Content Include="plugins\GUI-Builder\www\widgets\widgetsInfo.json" />
     <Content Include="plugins\MysensorsGW\ariManifest.json" />
     <Content Include="plugins\MysensorsGW\config.default.json" />
     <Content Include="plugins\MysensorsGW\package.json" />
@@ -88,6 +108,11 @@
     <Content Include="plugins\Node-Red\ariNodes\ari-set.html" />
     <Content Include="plugins\Node-Red\package.json" />
     <Content Include="plugins\Node-Red\www\config.html" />
+    <Content Include="plugins\PhilipsHueGW\.gitignore" />
+    <Content Include="plugins\PhilipsHueGW\ariManifest.json" />
+    <Content Include="plugins\PhilipsHueGW\config.default.json" />
+    <Content Include="plugins\PhilipsHueGW\package.json" />
+    <Content Include="plugins\PhilipsHueGW\www\settings.html" />
     <Content Include="plugins\SysInfo\ariManifest.json" />
     <Content Include="README.md" />
     <Content Include="Todo.txt" />
@@ -107,10 +132,11 @@
     <Content Include="www\app\views\floor\g3356.png" />
     <Content Include="www\app\views\floor\index.html" />
     <Content Include="www\app\views\floor\style.css" />
+    <Content Include="www\app\views\GUIBuilder\widgets\widgets.json" />
     <Content Include="www\app\views\logging\index.html" />
     <Content Include="www\app\views\login\index.html" />
-    <Content Include="www\app\views\uibuilder\index.html" />
-    <Content Include="www\app\views\uibuilder\style.css" />
+    <Content Include="www\app\views\GUIBuilder\index.html" />
+    <Content Include="www\app\views\GUIBuilder\style.css" />
     <Content Include="www\app\views\users\index.html" />
     <Content Include="www\README.md" />
   </ItemGroup>
@@ -118,6 +144,14 @@
     <Folder Include="documentation\" />
     <Folder Include="node_modules\" />
     <Folder Include="plugins\" />
+    <Folder Include="plugins\GUI-Builder\" />
+    <Folder Include="plugins\GUI-Builder\guiFiles\" />
+    <Folder Include="plugins\GUI-Builder\www\" />
+    <Folder Include="plugins\GUI-Builder\www\widgets\" />
+    <Folder Include="plugins\GUI-Builder\www\widgets\Button1\" />
+    <Folder Include="plugins\GUI-Builder\www\widgets\Gauge1\" />
+    <Folder Include="plugins\GUI-Builder\www\widgets\Slider1\" />
+    <Folder Include="plugins\GUI-Builder\www\widgets\Text1\" />
     <Folder Include="plugins\MysensorsGW\" />
     <Folder Include="plugins\MysensorsGW\www\" />
     <Folder Include="plugins\Node-Red\" />
@@ -125,6 +159,8 @@
     <Folder Include="plugins\Node-Red\node_modules\" />
     <Folder Include="plugins\Node-Red\node_modules\node-red\" />
     <Folder Include="plugins\Node-Red\www\" />
+    <Folder Include="plugins\PhilipsHueGW\" />
+    <Folder Include="plugins\PhilipsHueGW\www\" />
     <Folder Include="plugins\SysInfo\" />
     <Folder Include="plugins\SysInfo\views\" />
     <Folder Include="www\" />
@@ -136,9 +172,13 @@
     <Folder Include="www\app\views\clients\" />
     <Folder Include="www\app\views\clock\" />
     <Folder Include="www\app\views\floor\" />
+    <Folder Include="www\app\views\GUIBuilder\widgets\" />
+    <Folder Include="www\app\views\GUIBuilder\widgets\Button1\" />
+    <Folder Include="www\app\views\GUIBuilder\widgets\Gauge1\" />
+    <Folder Include="www\app\views\GUIBuilder\widgets\Slider1\" />
     <Folder Include="www\app\views\logging\" />
     <Folder Include="www\app\views\login\" />
-    <Folder Include="www\app\views\UIBuilder\" />
+    <Folder Include="www\app\views\GUIBuilder\" />
     <Folder Include="www\app\views\users\" />
     <Folder Include="www\app\scripts\" />
   </ItemGroup>

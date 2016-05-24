@@ -1,0 +1,23 @@
+﻿{
+	"name": "Text1",
+	"iconFile": "./icon.jpg",
+	"controller": "Text1.js",
+	"width": 300,
+	"height": 150,
+	"maintainAspectRatio":  false,
+	"attributes": {
+		"text": {
+			"type": "string",
+			"expression": "???"
+		},
+		"fontSize": {
+			"type": "number",
+			"expression": "20em"
+		},
+		"color": {
+			"type": "string",
+			"expression": "blue"
+		}
+
+	}
+}

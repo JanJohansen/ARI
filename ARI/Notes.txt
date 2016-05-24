@@ -94,3 +94,17 @@ GUI_Builder
 		OfficePanel.LightScene = 1...5
 		OfficePanel.FunctionScene = "Home theater mode", "Full Light", "Watch TV", "Dine".
 		OfficePanel.MainLightState = On
+
+
+
+
+
+
+
+widgetInfo.attributes.max.type = "number"	// Used by editor
+widgetInfo.attributes.max.default = "30"	// Used by editor to reset to default
+widgetInfo.attributes.max.code = "30"		// Used to create ngAriValues to update x.value? --- Dest param = "widgetInfo.attributes.max.value" ???
+widgetInfo.attributes.max.value = "30"		// Live value used by the element and DOM.
+
+widgetInfo.attributes.value.code = "{{Livingroom.Temperature}}"
+widgetInfo.attributes.value.value = "22.3"

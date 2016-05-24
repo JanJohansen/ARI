@@ -57,8 +57,12 @@ AriClientServer.prototype._handleMessage = function (message) {
         var responseId = msg.res;
         // Get stored callback from calling function.
         msg.callback = self._pendingCallbacks[msg.res];
-        delete self._pendingCallbacks[msg.res];
-        msg.callback(msg.err, msg.result);
+        if (msg.callback) {
+            delete self._pendingCallbacks[msg.res];
+            msg.callback(msg.err, msg.result);
+        } else {
+            console.log("ERROR!: Response to unknown request ID received! - Ignoring...");
+        }
     } else {
         // Notofication message.
         var cmd = msg.cmd;
@@ -387,7 +391,8 @@ AriClientServer.prototype._webnotify_PUBLISH = function (pars) {
 AriClientServer.prototype._webnotify_WATCHVALUE = function (pars) {
     var name = pars.name;
     if (!name) { callback("Error: No name parameter specified!", null); return; }
-
+    
+    if (!this.clientModel) return;  // Seen an error once! - Maybe due to disconnection right after request!? This should fix it.!
     if (!this.clientModel._watches) this.clientModel._watches = {};
     this.clientModel._watches[name] = {}; // Just indicate that this client watches this value.
     

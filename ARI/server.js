@@ -92,8 +92,12 @@ app.post('/api/users/login', function (req, res) {
 app.use("/", express.static(__dirname + "/www/app"));    // Serve static files. (Note: Don't use relative path since it is relative to CWD (Current Working Dir!") Yaiks!
 // Serve plugin views.
 app.get("/plugins/:plugin/:view", function (request, response, next) {
-    console.log("http GET plugins...");
+    console.log("http GET plugins:", request.params.plugin, "-", request.params.view);
     response.sendFile(__dirname + "/plugins/" + request.params.plugin + "/www/" + request.params.view);
+});
+app.get("/plugins/:plugin/*", function (request, response, next) {
+    console.log("http GET plugins:", request.params[0]);
+    response.sendFile(__dirname + "/plugins/" + request.params.plugin + "/www/" + request.params[0]);
 });
 
 

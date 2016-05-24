@@ -1,0 +1,121 @@
+<div ng-controller="GUIBuilderController">
+    <div oc-lazy-load=["plugins/gui-builder/guiBElement.js"]>
+        <!--<guib-element></guib-element>-->
+        <!--<link href="style.css" rel="stylesheet" />-->
+        <script src="../../node_modules/interact.js/dist/interact.min.js"></script>
+        <style>
+            #flexcontainer {
+                display: block;
+                background-color: black;
+                flex-direction: column;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 1px;
+            }
+
+            .guielement {
+                border: solid;
+                border-color: blue;
+                border-width: 1px;
+                border-style: dashed;
+                display: inline-block;
+                position: absolute; /* needed for placement of ui element and wrench symbol etc.*/
+            }
+
+            .elementMenu {
+                position: absolute;
+                left: -2px;
+                top: -27px;
+                background-color: #808080;
+                opacity: 0.5;
+            }
+
+            .elementMenu > button {
+                padding: 0px 0px 0px 1px;
+                /*line-height:0;*/
+            }
+
+            .ddMenu {
+                background: rgb(0, 0, 0);
+                position: relative;
+                z-index: 999999999;
+                /*background-color: black;*/
+            }
+
+            .ddMenu label {
+                color: white;
+            }
+
+            .popup {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                -webkit-transform: translate(-50%, -50%);
+                transform: translate(-50%, -50%);
+            }
+
+            /* Element Editor modal stuf */
+            form  { display: table;      }
+	        p     { display: table-row;  }
+	        label { display: table-cell; padding: 0 10px 0 0;}
+	        input { display: table-cell; }
+
+        </style>
+
+        <!-- Element editor "popup" -->
+        <div class="ddMenu popup" uib-collapse="!showElementEditor">
+            <div class="ddMenu well well-lg" style="margin-bottom:0px;">
+                <form>
+                    <p ng-repeat="(key, value) in widgetModel.attributes">
+                        <label for="value">{{key}}</label>
+                        <input id="value" type="text" ng-model="value.expression" ng-model-options="{ updateOn: 'blur' }"/>
+                    </p>
+                    <button ng-click="showElementEditor = false; editDone();">Close</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main design container -->
+        <div id="flexcontainer" style="position:absolute; width:100%; height:100%; z-index:0;">
+            
+            <!-- Menu -->
+            <div class="menu" style="position:absolute; z-index:9999999999999999;">
+                <button ng-click="load();"><span class="glyphicon glyphicon-cloud-download"></span></button>
+                <button ng-click="save();"><span class="glyphicon glyphicon-cloud-upload"></span></button>
+                <button ng-click="editor.editMode = !editor.editMode;"><span ng-if="editor.editMode" class="glyphicon glyphicon-play"></span><span ng-if="!editor.editMode" class="glyphicon glyphicon-pencil"></span></button>
+                <button ng-click="isCollapsed = !isCollapsed;"><span class="glyphicon glyphicon-plus"></span></button>
+                <div class="ddMenu" uib-collapse="!isCollapsed">
+                    <div class="ddMenu well well-lg" style="margin-bottom:0px;">
+                        <span ng-repeat="widget in widgetsInfo.widgets">
+                            <img src="{{widget.iconUrl}}" style="max-width:200px; max-height:200px;" ng-click="addWidget(widget);">
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Elements in container -->
+            <div ng-repeat="widgetModel in widgets track by widgetModel.id">
+                <guib-element widget-model="widgetModel" ></guib-element>
+            </div>
+            
+            <!--
+            <div style="height:100%; width:100%;">{{element.name}}</div>
+            <div ng-repeat="element in elements" oc-lazy-load="element.controller"></div>
+            -->
+            
+            
+
+            <!--
+            <ari-value name="EspTestThing.rawHum" value="rawHum"></ari-value>
+            <ari-value name="GW433.Garage.temperature" value="GTemp"></ari-value>
+            <ari-value name="GW433.Livingroom.temperature" value="LTemp"></ari-value>
+            <d3-gauge class="guielement" value="rawHum" label="Bedroom RH" unit="%" min="0" max="100" style="width:300px;"></d3-gauge>
+            <d3-gauge class="guielement" value="GTemp" label="Garage T" unit="°" min="-10" max="40" style="width:300px;"></d3-gauge>
+            -->
+        </div>
+
+
+    </div>
+</div>

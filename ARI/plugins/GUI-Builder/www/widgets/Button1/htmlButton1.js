@@ -1,54 +1,48 @@
 ﻿'use strict';
     
 var app = angular.module('ari');
-app.directive('d3GaugeDelete', [ 
+app.directive('button1', [ 
     function ($window) {
-        console.log("registering d3-gauge directive.");
         return {
             restrict: 'EA',
             scope: {
-                value: "=",
-                min: "=",
-                max: "=",
-                label: "@",
-                unit: "@"
+                text: "@",
             },
-            link: function (scope, element, attrs) {
-                console.log("link  ngGauge");
+            //template: "<button>{{text}}</button>",
+            link: function (scope, element, iAttrs) {
                 
-                var update = function () {
-/*                    console.log("scope.value", scope.value);
-                    console.log("scope.unit", scope.unit);
-                    console.log("scope.min", scope.min);
-                    console.log("scope.max", scope.max);
-                    console.log("scope.label", scope.label);
-*/
-                    arc.transition()
-                      .duration(750)
-                      .call(arcTween, myScale(scope.value));
-
-                    label.text(function (d) { return scope.label; });
-                    valueLabel.text(function (d) { return scope.value + scope.unit; });
-                };
-
-                /*setInterval(function () {
-                    console.log("UPDATE!");
-                    scope.value = Math.random() * 100;
-                    scope.$apply();
-                }, 1500);*/
+                scope.text = scope.text || "????";
                 
                 // watch for data changes and re-render if changed.
-                scope.$watch('value', function (newVal, oldVal) {
+                scope.$watch('text', function (newVal, oldVal) {
                     if (!newVal) return;
-                    console.log("WATCH value", newVal, oldVal);
-                    update();
+                    //update();
                 }, true);
                 
-                //if (!scope.value) scope.value = scope.min;
-                //scope.value = scope.value || 0;
+                var newElement = document.createElement("BUTTON");        // Create a <button> element
+                var t = document.createTextNode("CLICK ME");       // Create a text node
+                newElement.appendChild(t);                                // Append the text to <button>
+                
+                /*
+                t.css({
+                    //display: "block-inline",
+                    //position: 'absolute',
+                    width: "100%",
+                    height: "100%"
+                });
+                element.css({
+                    //display: "block-inline",
+                    //position: 'absolute',
+                    width: "100%",
+                    height: "100%"
+                });
+                 * */
+                element.prepend(newElement);
 
+                              
+/*
                 // Define SVG.
-                var svg = d3.select(element[0])// Select "self"element.
+                var svg = d3.select(iElement[0])// Select "self"element.
                     .append("svg")// Prepare SVG content
                     .attr("width", "100%")// at full width.
                     .attr("height", "100%")// at full width.
@@ -157,7 +151,7 @@ app.directive('d3GaugeDelete', [
                         };
                     });
                 }
-
+*/
             }
         }
     }
