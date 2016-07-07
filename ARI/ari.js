@@ -92,7 +92,7 @@ var Ari = module.exports.Ari = function (options) {
                     try {
                         msg = JSON.parse(message);
                     } catch (e) {
-                        console.log("ERROR: Not correctky formatted JSON in message!");
+                        console.log("ERROR: Incorrectly formatted JSON in message!");
                     }
                     
                     if (msg) {

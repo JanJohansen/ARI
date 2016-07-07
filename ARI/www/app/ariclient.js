@@ -314,6 +314,12 @@ AriClient.prototype.registerValue = function (name, optionals, inputCallback) {
     this.sendClientInfo();
 }
 
+// Check if value has been registered.
+AriClient.prototype.isValueRegistered = function (name) {
+    if (this.clientModel.values[name]) return true;
+    else return false;
+}
+
 // Remove info about value and send update to server.
 AriClient.prototype.unRegisterValue = function (name) {
    delete this.clientModel.values[name];

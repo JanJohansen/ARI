@@ -403,6 +403,17 @@ ari.onconnect = function (result) {
         case "0": // Battery Level 0-100
           config.nodes[msMsg.nodeId].batteryLevel = msMsg.payload;
           configStore.save(config);
+                
+          var nodeName = config.nodes[msMsg.nodeId].name;
+          if (nodeName) {
+            // Register "battery value" if we havent done before.        
+            if (!ari.isValueRegistered(nodeName + ".batteryLevel")) ari.registerValue(nodeName + ".batteryLevel", {});
+                    
+            // Update new level.        
+            console.log("MysensorsGW." + nodeName + ".batteryLevel =", msMsg.payload);
+            ari.setValue(nodeName + ".batteryLevel", msMsg.payload);
+          }
+                
           break;
         case "6": // Config Metric or Imperial
           setMetric(msMsg);

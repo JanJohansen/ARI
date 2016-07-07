@@ -63,12 +63,21 @@ ari.onconnect = function (result) {
                     console.log("\tOn:", light.state.on, "Brightness:", light.state.bri, "Reachable:", light.state.reachable);
                     
                     //update light status.
-                    lights[light.name] = { on: light.state.on, brightness: light.state.bri, reachable: light.state.reachable };
+                    lights[light.name] = { on: light.state.on, brightness: light.state.bri, reachable: light.state.reachable, id: light.id };
                     if (!newLights[light.name]) {
                         // New light!
                         ari.registerValue(light.name + ".brightness", {}, function (name, value) {
                             // This function is called if remote client wants to set this input.
-                            console.log("EXTERNAL SETVALUE:", name, value);
+                            var i = name.indexOf(".brightness");
+                            if (i > 0) {
+                                var lightName = name.substring(0, i);
+                                if (lights[lightName]) {
+                                    console.log("Setting light:", name, "=", value);
+                                    var value = parseFloat(value) || value;
+                                    if (value <= 0) api.setLightState(lights[lightName].id, { "on": false })
+                                    else api.setLightState(lights[lightName].id, { "on": true, "bri": value * 255 / 100 })
+                                } else console.log("Error: Trying to set unknown light!? -", name, "=", value);
+                            }
                         });
                         ari.setValue(light.name + ".brightness", light.state.on == false ? 0 : (light.state.bri * 100) / 254);
                     } else {

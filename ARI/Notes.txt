@@ -2,7 +2,7 @@
 Sequence diagram showing communication calls and command types used.
 For https://www.websequencediagrams.com
 
-title ARI Communication Sequence
+title ARI System level Communication Sequence
 
 participant App
 participant Client
