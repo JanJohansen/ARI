@@ -14,7 +14,7 @@
 			"icon": "file.ico",
 			"description": "Plugin to interface to Philips Hue lights..",
 			"info": { },
-			"nodeMain": "DISABLED_HueGW.js"
+			"nodeMain": "HueGW.js"
 		}
 	],
 	"views": [
