@@ -268,9 +268,9 @@ ari.onconnect = function (result) {
 
       serialPort = new SerialPort(name, {
           baudrate: 115200,
-          parser: SerialPortModule.parsers.readline('\n')},
-          false
-      );
+          parser: SerialPortModule.parsers.readline('\n'),
+          autoOpen: false
+      });
 
       serialPort.open();
 
