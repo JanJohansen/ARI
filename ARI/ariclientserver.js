@@ -37,6 +37,7 @@ AriClientServer.prototype._handleMessage = function (message) {
         // Request message.
         var cmd = msg.cmd;
         if (!cmd) { console.log("Error: Missing comand in telegram! - Ignoring..."); return; };
+        if (!msg.pars) { console.log("Error: Missing \"pars\" in telegram! - Ignoring..."); return; };
 
         var functionName = "_webcall_" + cmd;
         if (functionName in self) {
@@ -247,7 +248,7 @@ AriClientServer.prototype._webnotify_SETCLIENTINFO = function (clientInfo) {
 
     // clientInfo has already been JSON.parsed!
 
-    // TODO: Merge client info with present info... Remove values, functions, etc. not in Info from client.
+    // Merge client info with present info... Remove values, functions, etc. not in Info from client.
     if (clientInfo.values) {
         for (var key in this.clientModel.values) {
             if (!clientInfo.values[key]) {
@@ -267,9 +268,8 @@ AriClientServer.prototype._webnotify_SETCLIENTINFO = function (clientInfo) {
     // Perform deep merge from remote clientInfo to local clientModel.
     deepMerge(clientInfo, this.clientModel);
 
-    // Make sure name is the one osed in token!. (E.g. given name from server and not the default name from client.)
+    // Make sure name is the one used in token!. (E.g. given name from server and not the default name from client.)
     this.clientModel.name = this.name;
-
 }
 
 var deepMerge = function (source, destination) {

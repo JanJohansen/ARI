@@ -8,7 +8,7 @@ if (typeof window === 'undefined') {
 else {
 }
 
-function transferOpts(origOpts, newOpts){
+function transferOpts(origOpts, newOpts) {
     if (newOpts == null) return;
     for (var key in newOpts) {
         if (key.indexOf("_") != 0) origOpts[key] = newOpts[key];    // Copy all but "private" members.

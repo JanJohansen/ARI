@@ -75,14 +75,14 @@ ari.onconnect = function (result) {
                                     console.log("Setting light:", name, "=", value);
                                     var value = parseFloat(value) || value;
                                     if (value <= 0) api.setLightState(lights[lightName].id, { "on": false })
-                                    else api.setLightState(lights[lightName].id, { "on": true, "bri": value * 255 / 100 })
+                                    else api.setLightState(lights[lightName].id, { "on": true, "bri": value * 255 })
                                 } else console.log("Error: Trying to set unknown light!? -", name, "=", value);
                             }
                         });
-                        ari.setValue(light.name + ".brightness", light.state.on == false ? 0 : (light.state.bri * 100) / 254);
+                        ari.setValue(light.name + ".brightness", light.state.on == false ? 0 : (light.state.bri) / 254);
                     } else {
                         // existing light
-                        ari.setValue(light.name + ".brightness", light.state.on == false ? 0 : (light.state.bri * 100) / 254);
+                        ari.setValue(light.name + ".brightness", light.state.on == false ? 0 : (light.state.bri) / 254);
                     }
                     
                     // Store currently reported lights to be able to detect removed lights!

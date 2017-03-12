@@ -49,12 +49,12 @@ var Ari = module.exports.Ari = function (options) {
         ws.on("close", clientServer.handleClose);
         ws.on("error", clientServer.handleClose);
         ws.on("message", clientServer.handleMessage);
-        clientServer.onSendMessage = function (msg) { 
+        clientServer.onSendMessage = function (msg) {
             if (ws.readyState !== ws.OPEN) {
                 console.log('ERROR!!! - WS not opened');
             }
             else ws.send(msg);
-        }
+        };
     });
     
     

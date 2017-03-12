@@ -48,7 +48,7 @@ ariModule.register.controller('loggingController', ["$scope", "$interval", 'AriC
             {
                 "name": "", // Depends on selected logs.
                 "startTime": 0,
-                "endTime": new Date(), 
+                "endTime": new Date(8640000000000000), // max possible date!
                 "minInterval": 0, 
                 "interpolation": "mean"
             };

@@ -2,7 +2,8 @@
  "nodes": {
   "node-red": {
    "name": "node-red",
-   "version": "0.11.2",
+   "version": "0.15.2",
+   "local": false,
    "nodes": {
     "sentiment": {
      "name": "sentiment",
@@ -10,6 +11,7 @@
       "sentiment"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\analysis\\72-sentiment.js"
     },
@@ -19,6 +21,7 @@
       "inject"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\core\\20-inject.js"
     },
@@ -28,6 +31,7 @@
       "catch"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\core\\25-catch.js"
     },
@@ -37,6 +41,7 @@
       "debug"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\core\\58-debug.js"
     },
@@ -46,6 +51,7 @@
       "exec"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\core\\75-exec.js"
     },
@@ -55,6 +61,7 @@
       "function"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\core\\80-function.js"
     },
@@ -64,6 +71,7 @@
       "template"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\core\\80-template.js"
     },
@@ -73,6 +81,7 @@
       "delay"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\core\\89-delay.js"
     },
@@ -82,6 +91,7 @@
       "trigger"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\core\\89-trigger.js"
     },
@@ -91,6 +101,7 @@
       "comment"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\core\\90-comment.js"
     },
@@ -100,6 +111,7 @@
       "unknown"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\core\\98-unknown.js"
     },
@@ -108,9 +120,11 @@
      "types": [
       "rpi-gpio in",
       "rpi-gpio out",
-      "rpi-mouse"
+      "rpi-mouse",
+      "rpi-keyboard"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\hardware\\36-rpi-gpio.js"
     },
@@ -122,6 +136,7 @@
       "mqtt-broker"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\io\\10-mqtt.js"
     },
@@ -129,10 +144,10 @@
      "name": "httpin",
      "types": [
       "http in",
-      "http response",
-      "http request"
+      "http response"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\io\\21-httpin.js"
     },
@@ -145,6 +160,7 @@
       "websocket-client"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\io\\22-websocket.js"
     },
@@ -154,6 +170,7 @@
       "watch"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\io\\23-watch.js"
     },
@@ -165,6 +182,7 @@
       "tcp request"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\io\\31-tcpin.js"
     },
@@ -175,6 +193,7 @@
       "udp out"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\io\\32-udp.js"
     },
@@ -184,6 +203,7 @@
       "switch"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\logic\\10-switch.js"
     },
@@ -193,6 +213,7 @@
       "change"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\logic\\15-change.js"
     },
@@ -202,6 +223,7 @@
       "range"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\logic\\16-range.js"
     },
@@ -211,6 +233,7 @@
       "csv"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\parsers\\70-CSV.js"
     },
@@ -220,6 +243,7 @@
       "html"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\parsers\\70-HTML.js"
     },
@@ -229,6 +253,7 @@
       "json"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\parsers\\70-JSON.js"
     },
@@ -238,6 +263,7 @@
       "xml"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\parsers\\70-XML.js"
     },
@@ -247,6 +273,7 @@
       "tail"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\storage\\28-tail.js"
     },
@@ -257,6 +284,7 @@
       "file in"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\storage\\50-file.js"
     },
@@ -266,6 +294,7 @@
       "ari-in"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\ariNodes\\ari-in.js"
     },
@@ -275,6 +304,7 @@
       "ari-registerValue"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\ariNodes\\ari-registerValue.js"
     },
@@ -284,14 +314,68 @@
       "ari-set"
      ],
      "enabled": true,
+     "local": false,
      "module": "node-red",
      "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\ariNodes\\ari-set.js"
+    },
+    "status": {
+     "name": "status",
+     "types": [
+      "status"
+     ],
+     "enabled": true,
+     "local": false,
+     "module": "node-red",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\core\\25-status.js"
+    },
+    "link": {
+     "name": "link",
+     "types": [
+      "link in",
+      "link out"
+     ],
+     "enabled": true,
+     "local": false,
+     "module": "node-red",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\core\\60-link.js"
+    },
+    "tls": {
+     "name": "tls",
+     "types": [
+      "tls-config"
+     ],
+     "enabled": true,
+     "local": false,
+     "module": "node-red",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\io\\05-tls.js"
+    },
+    "httprequest": {
+     "name": "httprequest",
+     "types": [
+      "http request"
+     ],
+     "enabled": true,
+     "local": false,
+     "module": "node-red",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\io\\21-httprequest.js"
+    },
+    "split": {
+     "name": "split",
+     "types": [
+      "split",
+      "join"
+     ],
+     "enabled": true,
+     "local": false,
+     "module": "node-red",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\nodes\\core\\logic\\17-split.js"
     }
    }
   },
   "node-red-node-email": {
    "name": "node-red-node-email",
-   "version": "0.1.0",
+   "version": "0.1.12",
+   "local": true,
    "nodes": {
     "email": {
      "name": "email",
@@ -300,14 +384,16 @@
       "e-mail in"
      ],
      "enabled": true,
+     "local": true,
      "module": "node-red-node-email",
-     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\node_modules\\node-red-node-email\\61-email.js"
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-node-email\\61-email.js"
     }
    }
   },
   "node-red-node-feedparser": {
    "name": "node-red-node-feedparser",
-   "version": "0.1.3",
+   "version": "0.1.7",
+   "local": true,
    "nodes": {
     "feedparse": {
      "name": "feedparse",
@@ -315,14 +401,16 @@
       "feedparse"
      ],
      "enabled": true,
+     "local": true,
      "module": "node-red-node-feedparser",
-     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\node_modules\\node-red-node-feedparser\\32-feedparse.js"
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-node-feedparser\\32-feedparse.js"
     }
    }
   },
   "node-red-node-rbe": {
    "name": "node-red-node-rbe",
-   "version": "0.1.0",
+   "version": "0.1.6",
+   "local": true,
    "nodes": {
     "rbe": {
      "name": "rbe",
@@ -330,14 +418,16 @@
       "rbe"
      ],
      "enabled": true,
+     "local": true,
      "module": "node-red-node-rbe",
-     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\node_modules\\node-red-node-rbe\\rbe.js"
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-node-rbe\\rbe.js"
     }
    }
   },
   "node-red-node-serialport": {
    "name": "node-red-node-serialport",
-   "version": "0.0.3",
+   "version": "0.4.1",
+   "local": true,
    "nodes": {
     "serialport": {
      "name": "serialport",
@@ -347,14 +437,16 @@
       "serial-port"
      ],
      "enabled": true,
+     "local": true,
      "module": "node-red-node-serialport",
-     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\node_modules\\node-red-node-serialport\\25-serial.js"
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-node-serialport\\25-serial.js"
     }
    }
   },
   "node-red-node-twitter": {
    "name": "node-red-node-twitter",
-   "version": "0.1.1",
+   "version": "0.1.9",
+   "local": true,
    "nodes": {
     "twitter": {
      "name": "twitter",
@@ -364,25 +456,189 @@
       "twitter out"
      ],
      "enabled": true,
+     "local": true,
      "module": "node-red-node-twitter",
-     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\node_modules\\node-red-node-twitter\\27-twitter.js"
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-node-twitter\\27-twitter.js"
     }
    }
   },
-  "node-red-node-ping": {
-   "name": "node-red-node-ping",
-   "version": "0.0.6",
+  "node-red-dashboard": {
+   "name": "node-red-dashboard",
+   "version": "2.1.0",
+   "local": true,
    "nodes": {
-    "ping": {
-     "name": "ping",
+    "ui_base": {
+     "name": "ui_base",
      "types": [
-      "ping"
+      "ui_base"
      ],
      "enabled": true,
-     "module": "node-red-node-ping",
-     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red\\node_modules\\node-red-node-ping\\88-ping.js"
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_base.js"
+    },
+    "ui_button": {
+     "name": "ui_button",
+     "types": [
+      "ui_button"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_button.js"
+    },
+    "ui_dropdown": {
+     "name": "ui_dropdown",
+     "types": [
+      "ui_dropdown"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_dropdown.js"
+    },
+    "ui_switch": {
+     "name": "ui_switch",
+     "types": [
+      "ui_switch"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_switch.js"
+    },
+    "ui_slider": {
+     "name": "ui_slider",
+     "types": [
+      "ui_slider"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_slider.js"
+    },
+    "ui_numeric": {
+     "name": "ui_numeric",
+     "types": [
+      "ui_numeric"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_numeric.js"
+    },
+    "ui_text_input": {
+     "name": "ui_text_input",
+     "types": [
+      "ui_text_input"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_text_input.js"
+    },
+    "ui_form": {
+     "name": "ui_form",
+     "types": [
+      "ui_form"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_form.js"
+    },
+    "ui_text": {
+     "name": "ui_text",
+     "types": [
+      "ui_text"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_text.js"
+    },
+    "ui_gauge": {
+     "name": "ui_gauge",
+     "types": [
+      "ui_gauge"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_gauge.js"
+    },
+    "ui_chart": {
+     "name": "ui_chart",
+     "types": [
+      "ui_chart"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_chart.js"
+    },
+    "ui_toast": {
+     "name": "ui_toast",
+     "types": [
+      "ui_toast"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_toast.js"
+    },
+    "ui_ui_control": {
+     "name": "ui_ui_control",
+     "types": [
+      "ui_ui_control"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_ui_control.js"
+    },
+    "ui_template": {
+     "name": "ui_template",
+     "types": [
+      "ui_template"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_template.js"
+    },
+    "ui_link": {
+     "name": "ui_link",
+     "types": [
+      "ui_link"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_link.js"
+    },
+    "ui_tab": {
+     "name": "ui_tab",
+     "types": [
+      "ui_tab"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_tab.js"
+    },
+    "ui_group": {
+     "name": "ui_group",
+     "types": [
+      "ui_group"
+     ],
+     "enabled": true,
+     "local": true,
+     "module": "node-red-dashboard",
+     "file": "C:\\Users\\Jan\\Desktop\\ARI\\ARI\\plugins\\Node-Red\\node_modules\\node-red-dashboard\\nodes\\ui_group.js"
     }
    }
   }
- }
+ },
+ "_credentialSecret": "6ccb48cd6620fe1bb2eefdc8b11ead681eebca0aeb5f4585b6e302fd33b9b28d"
 }
